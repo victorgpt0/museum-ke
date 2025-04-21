@@ -125,13 +125,23 @@ export default function NewArtifact({ categories }) {
                             </CardContent>
 
                             <CardFooter className="flex justify-end space-x-2">
-                                <Button variant="outline" type="button" onClick={() => window.history.back()}>
-                                    Cancel
-                                </Button>
-                                <Button type="submit" disabled={processing}>
-                                    {processing ? 'Saving...' : 'Save Artifact'}
-                                </Button>
-                            </CardFooter>
+    <Button 
+        variant="outline" 
+        type="button" 
+        onClick={() => window.history.back()}
+        className="dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700"
+    >
+        Cancel
+    </Button>
+    <Button 
+        type="submit" 
+        disabled={processing}
+        className="bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-900 dark:text-white dark:hover:bg-gray-800"
+    >
+        {processing ? 'Saving...' : 'Save Artifact'}
+    </Button>
+</CardFooter>
+
                         </form>
                     </Card>
                 </div>
