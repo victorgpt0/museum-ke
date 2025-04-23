@@ -19,5 +19,8 @@ Route::get('/artifacts', [ArtifactController::class, 'index']);
 Route::get('/artifacts/category/{categoryId}', [ArtifactController::class, 'byCategory']);
 Route::get('/artifacts/{id}', [ArtifactController::class, 'show']);
 
+Route::get('/dashboard/new-artifact', [ArtifactController::class, 'create'])->name('artifacts.create');
+Route::post('/artifacts', [ArtifactController::class, 'store'])->name('artifacts.store');
+
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';
