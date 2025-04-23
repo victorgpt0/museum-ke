@@ -10,6 +10,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Artifact extends Model
 {
     use HasFactory;
+    use HasHashId;
+
     protected $table = 'artifact';
 
     /**
@@ -110,7 +112,7 @@ class Artifact extends Model
     /**
      * Helper method to find all artifacts that are related to each other
      * in the same group (sharing the same root relationship)
-     * 
+     *
      * @return \Illuminate\Database\Eloquent\Collection
      */
     public function getRelatedGroup()
@@ -118,12 +120,12 @@ class Artifact extends Model
         // If this artifact is related to another one, find the root artifact
         if ($this->relation) {
             $rootArtifact = $this;
-            
+
             // Trace back to find the root artifact
             while ($rootArtifact->relation) {
                 $rootArtifact = $rootArtifact->relatedTo;
             }
-            
+
             // Get all artifacts related to the root
             return Artifact::where('id', $rootArtifact->id)
                 ->orWhere('relation', $rootArtifact->id)
@@ -134,7 +136,7 @@ class Artifact extends Model
                 })
                 ->get();
         }
-        
+
         // This is already a root artifact, get all related artifacts
         return Artifact::where('id', $this->id)
             ->orWhere('relation', $this->id)

@@ -11,14 +11,33 @@ class ArtifactController extends Controller
     /**
      * Get all artifacts
      */
-    public function index()
+    public function index(Request $request)
     {
-        $artifacts = Artifact::with(['category', 'relatedTo'])->get();
+        $perPage = $request->input('per_page', 10); // Default 10 items per page
+        $page = $request->input('page', 1);
+
+        $query = Artifact::with(['category', 'relatedTo']);
+
+        // Handle any filtering here if needed
+        if ($request->has('search')) {
+            $search = $request->input('search');
+            $query->where('title', 'like', "%{$search}%")
+                ->orWhere('description', 'like', "%{$search}%")
+                ->orWhereHas('category', function($q) use ($search) {
+                    $q->where('title', 'like', "%{$search}%");
+                });
+        }
+
+        $artifacts = $query->paginate($perPage);
         $totalArtifacts = Artifact::count();
-        
+
         return response()->json([
-            'artifacts' => $artifacts,
-            'total' => $totalArtifacts
+            'artifacts' => $artifacts->items(),
+            'total' => $totalArtifacts,
+            'current_page' => $artifacts->currentPage(),
+            'per_page' => $artifacts->perPage(),
+            'last_page' => $artifacts->lastPage(),
+            'total_pages' => ceil($totalArtifacts / $perPage)
         ]);
     }
 
@@ -30,7 +49,7 @@ class ArtifactController extends Controller
         $artifacts = Artifact::where('category_id', $categoryId)
             ->with(['category', 'relatedTo'])
             ->get();
-            
+
         return response()->json($artifacts);
     }
 
@@ -41,7 +60,7 @@ class ArtifactController extends Controller
     {
         $artifact = Artifact::with(['category', 'relatedTo', 'relatedArtifacts'])
             ->findOrFail($id);
-            
+
         return response()->json($artifact);
     }
 }

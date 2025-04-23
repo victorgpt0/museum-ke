@@ -27,6 +27,7 @@ class CategorySeeder extends Seeder
             ['title' => 'Palaeontology', 'description' => 'Fossil records and ancient remains'],
             ['title' => 'Numismatic', 'description' => 'Historical currency and coins'],
             ['title' => 'Entomology', 'description' => 'Insect specimens and related artifacts'],
+            ['title' => 'Art', 'description' => 'IDK'],
         ];
 
         foreach ($categories as $category) {

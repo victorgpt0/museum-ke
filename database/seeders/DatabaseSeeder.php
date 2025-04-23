@@ -16,10 +16,10 @@ class DatabaseSeeder extends Seeder
         // User seeding
         // User::factory(10)->create();
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+//        User::factory()->create([
+//            'name' => 'Test User',
+//            'email' => 'test@example.com',
+//        ]);
 
         // Call your ArtifactSeeder
         $this->call([
