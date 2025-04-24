@@ -22,5 +22,8 @@ Route::get('/artifacts/{id}', [ArtifactController::class, 'show']);
 Route::get('/dashboard/new-artifact', [ArtifactController::class, 'create'])->name('artifacts.create');
 Route::post('/artifacts', [ArtifactController::class, 'store'])->name('artifacts.store');
 
+Route::get('/maps', function () {
+    return Inertia::render('Map');
+})->name('map');
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';

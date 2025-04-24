@@ -26,17 +26,18 @@ const mainNavItems: ExtendedNavItem[] = [
                 href: '/dashboard/new-artifact',
                 icon: Plus,
             },
-            {
-                title: 'Maps',
-                href: '/dashboard/maps',
-                icon: Map,
-            }
+            
         ]
     },
     {
         title: 'welcome',
         href: '/',
         icon: LayoutGrid,
+    },
+    {
+        title: 'Maps',
+        href: '/maps',
+        icon: Map,
     }
 ];
 
