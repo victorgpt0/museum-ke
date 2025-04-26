@@ -3,8 +3,9 @@ import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link, router } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid, Map, Plus, ChevronDown, ChevronRight } from 'lucide-react';
+import { BookOpen, Folder, LayoutGrid, Map, Plus, ChevronDown, ChevronRight, MessageSquareText} from 'lucide-react';
 import AppLogo from './app-logo';
+
 import { useState, useEffect } from 'react';
 
 // Extend NavItem type to include children for submenus
@@ -48,6 +49,11 @@ const mainNavItems: ExtendedNavItem[] = [
                 icon: Map,
             }
         ]
+    },
+    {
+        title: 'AI Assistant',
+        href: '/ai',
+        icon: MessageSquareText,
     }
 ];
 
