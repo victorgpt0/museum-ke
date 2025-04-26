@@ -4,6 +4,8 @@ import { Head } from '@inertiajs/react';
 import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Icon, LatLng, LatLngBounds, LeafletMouseEvent } from 'leaflet';
+import AppLayout from '@/layouts/app-layout';
+import { type BreadcrumbItem } from '@/types';
 
 // Fix marker icon issues in React-Leaflet
 import icon from 'leaflet/dist/images/marker-icon.png';
@@ -47,6 +49,23 @@ const museums = [
 ];
 
 export default function Map({ mapType = 'all' }) {
+  // Define breadcrumbs based on mapType
+  const breadcrumbs: BreadcrumbItem[] = mapType === 'museums' ? [
+    {
+      title: 'Maps',
+      href: '/map',
+    },
+    {
+      title: 'Museums Map',
+      href: '/map/museums',
+    }
+  ] : [
+    {
+      title: 'Maps',
+      href: '/map',
+    }
+  ];
+
   // Setup map configuration based on the mapType
   const [mapConfig, setMapConfig] = useState({
     center: [0.0236, 37.9062] as [number, number],
@@ -117,6 +136,8 @@ export default function Map({ mapType = 'all' }) {
       };
       
       setCustomMarkers([...customMarkers, newMarker]);
+      // Optionally clear the clicked position after adding marker
+      // setClickedPosition(null);
     }
   };
 
@@ -162,69 +183,80 @@ export default function Map({ mapType = 'all' }) {
     [-4.68, 41.9]  // Northeast corner
   );
   
-  // Render different content based on map type
-  if (mapType === 'museums') {
-    return (
-      <>
-        <Head title="Museums Map" />
-        
+  // Create the map content based on mapType
+  const renderMapContent = () => {
+    if (mapType === 'museums') {
+      return (
         <div className="p-6">
           <h1 className="text-2xl font-bold mb-4">Nairobi Museums Map</h1>
           
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-1">
-              {mapConfig.selectedMuseum && (
-                <div className="bg-white p-4 rounded-lg shadow mb-4">
-                  <h2 className="text-xl font-semibold mb-3">{mapConfig.selectedMuseum.name}</h2>
-                  <div className="space-y-2">
-                    <p className="text-gray-700">{mapConfig.selectedMuseum.description}</p>
-                    <div className="text-sm">
-                      <p><span className="font-medium">Address:</span> {mapConfig.selectedMuseum.address}</p>
-                      <p><span className="font-medium">Established:</span> {mapConfig.selectedMuseum.yearEstablished}</p>
-                      <p><span className="font-medium">Coordinates:</span> {mapConfig.selectedMuseum.coordinates[0]}, {mapConfig.selectedMuseum.coordinates[1]}</p>
+          <div className="grid grid-cols-1 gap-6">
+            {/* Museum details */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+              <div className="lg:col-span-2">
+                {mapConfig.selectedMuseum && (
+                  <div className="bg-white p-4 rounded-lg shadow mb-4">
+                    <h2 className="text-xl font-semibold mb-3">{mapConfig.selectedMuseum.name}</h2>
+                    <div className="space-y-2">
+                      <p className="text-gray-700">{mapConfig.selectedMuseum.description}</p>
+                      <div className="text-sm">
+                        <p><span className="font-medium">Address:</span> {mapConfig.selectedMuseum.address}</p>
+                        <p><span className="font-medium">Established:</span> {mapConfig.selectedMuseum.yearEstablished}</p>
+                        <p><span className="font-medium">Coordinates:</span> {mapConfig.selectedMuseum.coordinates[0]}, {mapConfig.selectedMuseum.coordinates[1]}</p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              )}
-              
-              <div className="bg-white p-4 rounded-lg shadow mb-4">
-                <h3 className="font-semibold mb-2">Museums in Database</h3>
-                <ul className="space-y-2">
-                  {museums.map(museum => (
-                    <li 
-                      key={museum.id}
-                      className={`p-2 rounded cursor-pointer ${mapConfig.selectedMuseum?.id === museum.id ? 'bg-blue-100' : 'hover:bg-gray-100'}`}
-                      onClick={() => setMapConfig(prev => ({...prev, selectedMuseum: museum, center: museum.coordinates, zoom: 16}))}
-                    >
-                      {museum.name}
-                    </li>
-                  ))}
-                </ul>
+                )}
               </div>
               
-              {clickedPosition && (
-                <div className="bg-white p-4 rounded-lg shadow">
-                  <h3 className="font-semibold mb-2">Clicked Location</h3>
-                  <div className="text-sm space-y-1">
+              <div className="lg:col-span-1">
+                <div className="bg-white p-4 rounded-lg shadow mb-4">
+                  <h3 className="font-semibold mb-2">Museums in Database</h3>
+                  <ul className="space-y-2">
+                    {museums.map(museum => (
+                      <li 
+                        key={museum.id}
+                        className={`p-2 rounded cursor-pointer ${mapConfig.selectedMuseum?.id === museum.id ? 'bg-blue-100' : 'hover:bg-gray-100'}`}
+                        onClick={() => setMapConfig(prev => ({...prev, selectedMuseum: museum, center: museum.coordinates, zoom: 16}))}
+                      >
+                        {museum.name}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+            
+            {/* Clicked location info - NOW ABOVE THE MAP */}
+            {clickedPosition && (
+              <div className="bg-white p-4 rounded-lg shadow mb-4">
+                <h3 className="font-semibold mb-2">Clicked Location</h3>
+                <div className="flex flex-wrap gap-4">
+                  <div className="space-y-1">
                     <p><span className="font-medium">Latitude:</span> {clickedPosition.latlng[0].toFixed(6)}</p>
                     <p><span className="font-medium">Longitude:</span> {clickedPosition.latlng[1].toFixed(6)}</p>
+                  </div>
+                  <div className="space-y-1">
                     {clickedPosition.isLoading ? (
                       <p className="text-gray-500">Loading address...</p>
                     ) : (
                       <p><span className="font-medium">Address:</span> {clickedPosition.address}</p>
                     )}
+                  </div>
+                  <div className="ml-auto">
                     <button 
                       onClick={addCustomMarker}
-                      className="mt-2 bg-blue-500 hover:bg-blue-600 text-white py-1 px-3 rounded text-sm"
+                      className="bg-blue-500 hover:bg-blue-600 text-white py-1 px-3 rounded text-sm"
                     >
                       Add Marker Here
                     </button>
                   </div>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
             
-            <div className="lg:col-span-2">
+            {/* Map container */}
+            <div className="w-full">
               <div style={{ height: '500px', width: '100%' }} className="rounded-lg overflow-hidden shadow">
                 <MapContainer 
                   center={mapConfig.center}
@@ -313,53 +345,14 @@ export default function Map({ mapType = 'all' }) {
                 </MapContainer>
               </div>
             </div>
-          </div>
-        </div>
-      </>
-    );
-  }
-  
-  // Default Kenya map view
-  return (
-    <>
-      <Head title="Kenya Map" />
-      
-      <div className="p-6">
-        <h1 className="text-2xl font-bold mb-4">Kenya Map</h1>
-        
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-4">
-          <div className="lg:col-span-1 bg-white p-4 rounded-lg shadow">
-            <h2 className="text-lg font-semibold mb-2">Map Information</h2>
             
-            {clickedPosition && (
-              <div className="mt-4">
-                <h3 className="text-md font-medium mb-2">Clicked Location</h3>
-                <div className="bg-gray-50 p-3 rounded">
-                  <p className="text-sm">Latitude: {clickedPosition.latlng[0].toFixed(6)}</p>
-                  <p className="text-sm">Longitude: {clickedPosition.latlng[1].toFixed(6)}</p>
-                  
-                  {clickedPosition.isLoading ? (
-                    <p className="text-sm text-gray-500 mt-2">Loading address...</p>
-                  ) : (
-                    <p className="text-sm mt-2">Address: {clickedPosition.address}</p>
-                  )}
-                  
-                  <button 
-                    onClick={addCustomMarker}
-                    className="mt-3 bg-blue-500 hover:bg-blue-600 text-white py-1 px-3 rounded text-sm"
-                  >
-                    Save as Marker
-                  </button>
-                </div>
-              </div>
-            )}
-            
+            {/* Custom markers list */}
             {customMarkers.length > 0 && (
-              <div className="mt-4">
-                <h3 className="text-md font-medium mb-2">Your Markers</h3>
-                <ul className="space-y-2">
+              <div className="bg-white p-4 rounded-lg shadow mt-4">
+                <h3 className="text-md font-medium mb-2">Your Saved Markers</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
                   {customMarkers.map(marker => (
-                    <li key={marker.id} className="text-sm bg-gray-50 p-2 rounded flex justify-between items-center">
+                    <div key={marker.id} className="text-sm bg-gray-50 p-2 rounded flex justify-between items-center">
                       <span>{marker.name}</span>
                       <button
                         onClick={() => {
@@ -369,98 +362,166 @@ export default function Map({ mapType = 'all' }) {
                       >
                         Remove
                       </button>
-                    </li>
+                    </div>
                   ))}
-                </ul>
+                </div>
               </div>
             )}
           </div>
+        </div>
+      );
+    }
+    
+    // Default Kenya map view
+    return (
+      <div className="p-6">
+        <h1 className="text-2xl font-bold mb-4">Kenya Map</h1>
+        
+        <div className="grid grid-cols-1 gap-4 mb-4">
+          {/* Location Info Display - NOW ABOVE THE MAP */}
+          {clickedPosition && (
+            <div className="bg-white p-4 rounded-lg shadow">
+              <h3 className="text-md font-medium mb-2">Clicked Location</h3>
+              <div className="flex flex-wrap justify-between items-center">
+                <div className="flex gap-6">
+                  <div>
+                    <p className="text-sm"><span className="font-medium">Latitude:</span> {clickedPosition.latlng[0].toFixed(6)}</p>
+                    <p className="text-sm"><span className="font-medium">Longitude:</span> {clickedPosition.latlng[1].toFixed(6)}</p>
+                  </div>
+                  
+                  {clickedPosition.isLoading ? (
+                    <p className="text-sm text-gray-500">Loading address...</p>
+                  ) : (
+                    <p className="text-sm"><span className="font-medium">Address:</span> {clickedPosition.address}</p>
+                  )}
+                </div>
+                
+                <button 
+                  onClick={addCustomMarker}
+                  className="bg-blue-500 hover:bg-blue-600 text-white py-1 px-3 rounded text-sm"
+                >
+                  Save as Marker
+                </button>
+              </div>
+            </div>
+          )}
           
-          <div className="lg:col-span-3">
-            <div style={{ height: '600px', width: '100%' }} className="rounded-lg overflow-hidden shadow">
-              <MapContainer 
-                center={mapConfig.center}
-                zoom={mapConfig.zoom}
-                scrollWheelZoom={true}
-                style={{ height: '100%', width: '100%' }}
-                bounds={kenyaBounds}
-                maxBounds={kenyaBounds.pad(0.5)}
-              >
-                <TileLayer
-                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                />
-                
-                {/* Click handler component */}
-                <ClickHandler onMapClick={handleMapClick} />
-                
-                {/* Nairobi marker */}
-                <Marker position={[-1.2921, 36.8219]}>
+          {/* Map Container */}
+          <div style={{ height: '600px', width: '100%' }} className="rounded-lg overflow-hidden shadow">
+            <MapContainer 
+              center={mapConfig.center}
+              zoom={mapConfig.zoom}
+              scrollWheelZoom={true}
+              style={{ height: '100%', width: '100%' }}
+              bounds={kenyaBounds}
+              maxBounds={kenyaBounds.pad(0.5)}
+            >
+              <TileLayer
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              />
+              
+              {/* Click handler component */}
+              <ClickHandler onMapClick={handleMapClick} />
+              
+              {/* Nairobi marker */}
+              <Marker position={[-1.2921, 36.8219]}>
+                <Popup>
+                  Nairobi - Capital City of Kenya
+                </Popup>
+              </Marker>
+              
+              {/* Museum markers */}
+              {museums.map(museum => (
+                <Marker key={museum.id} position={museum.coordinates}>
                   <Popup>
-                    Nairobi - Capital City of Kenya
+                    <div>
+                      <h3 className="font-bold">{museum.name}</h3>
+                      <p>{museum.description.substring(0, 100)}...</p>
+                      <p className="text-sm mt-1">Coordinates: {museum.coordinates[0]}, {museum.coordinates[1]}</p>
+                    </div>
                   </Popup>
                 </Marker>
-                
-                {/* Museum markers */}
-                {museums.map(museum => (
-                  <Marker key={museum.id} position={museum.coordinates}>
-                    <Popup>
-                      <div>
-                        <h3 className="font-bold">{museum.name}</h3>
-                        <p>{museum.description.substring(0, 100)}...</p>
-                        <p className="text-sm mt-1">Coordinates: {museum.coordinates[0]}, {museum.coordinates[1]}</p>
-                      </div>
-                    </Popup>
-                  </Marker>
-                ))}
-                
-                {/* Custom markers added by user */}
-                {customMarkers.map(marker => (
-                  <Marker 
-                    key={marker.id}
-                    position={marker.position}
-                  >
-                    <Popup>
-                      <div>
-                        <h3 className="font-bold">{marker.name}</h3>
-                        <p className="text-xs mt-1">
-                          Lat: {marker.position[0].toFixed(6)}, Lng: {marker.position[1].toFixed(6)}
-                        </p>
-                        <button
-                          onClick={() => {
-                            setCustomMarkers(customMarkers.filter(m => m.id !== marker.id));
-                          }}
-                          className="mt-2 bg-red-500 hover:bg-red-600 text-white py-1 px-2 rounded text-xs"
-                        >
-                          Remove
-                        </button>
-                      </div>
-                    </Popup>
-                  </Marker>
-                ))}
-                
-                {/* Marker at clicked position */}
-                {clickedPosition && (
-                  <Marker 
-                    position={clickedPosition.latlng}
-                    opacity={0.7}
-                  >
-                    <Popup>
-                      <div>
-                        <h3 className="font-bold">Selected Location</h3>
-                        <p className="text-xs">
-                          Lat: {clickedPosition.latlng[0].toFixed(6)}, 
-                          Lng: {clickedPosition.latlng[1].toFixed(6)}
-                        </p>
-                      </div>
-                    </Popup>
-                  </Marker>
-                )}
-              </MapContainer>
-            </div>
+              ))}
+              
+              {/* Custom markers added by user */}
+              {customMarkers.map(marker => (
+                <Marker 
+                  key={marker.id}
+                  position={marker.position}
+                >
+                  <Popup>
+                    <div>
+                      <h3 className="font-bold">{marker.name}</h3>
+                      <p className="text-xs mt-1">
+                        Lat: {marker.position[0].toFixed(6)}, Lng: {marker.position[1].toFixed(6)}
+                      </p>
+                      <button
+                        onClick={() => {
+                          setCustomMarkers(customMarkers.filter(m => m.id !== marker.id));
+                        }}
+                        className="mt-2 bg-red-500 hover:bg-red-600 text-white py-1 px-2 rounded text-xs"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </Popup>
+                </Marker>
+              ))}
+              
+              {/* Marker at clicked position */}
+              {clickedPosition && (
+                <Marker 
+                  position={clickedPosition.latlng}
+                  opacity={0.7}
+                >
+                  <Popup>
+                    <div>
+                      <h3 className="font-bold">Selected Location</h3>
+                      <p className="text-xs">
+                        Lat: {clickedPosition.latlng[0].toFixed(6)}, 
+                        Lng: {clickedPosition.latlng[1].toFixed(6)}
+                      </p>
+                    </div>
+                  </Popup>
+                </Marker>
+              )}
+            </MapContainer>
           </div>
+          
+          {/* Custom markers list - BELOW THE MAP */}
+          {customMarkers.length > 0 && (
+            <div className="bg-white p-4 rounded-lg shadow">
+              <h3 className="text-md font-medium mb-2">Your Markers</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                {customMarkers.map(marker => (
+                  <div key={marker.id} className="text-sm bg-gray-50 p-2 rounded flex justify-between items-center">
+                    <span>{marker.name}</span>
+                    <button
+                      onClick={() => {
+                        setCustomMarkers(customMarkers.filter(m => m.id !== marker.id));
+                      }}
+                      className="text-red-500 hover:text-red-700"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
-    </>
+    );
+  };
+
+  // Wrap everything in AppLayout
+  return (
+    <AppLayout breadcrumbs={breadcrumbs}>
+      <Head title={mapType === 'museums' ? "Museums Map" : "Kenya Map"} />
+      <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
+        {renderMapContent()}
+      </div>
+    </AppLayout>
   );
 }
