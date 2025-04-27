@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Head } from '@inertiajs/react';
 import axios from 'axios';
 import AppLayout from '@/layouts/app-layout';
+import ReactMarkdown from 'react-markdown';
 
 export default function AI() {
     const [query, setQuery] = useState('');
@@ -64,7 +65,9 @@ export default function AI() {
                             {response && (
                                 <div className="bg-gray-100 p-4 rounded-lg">
                                     <h2 className="text-lg font-semibold mb-2">Response:</h2>
-                                    <div className="whitespace-pre-wrap">{response}</div>
+                                    <div className="prose max-w-none">
+                                        <ReactMarkdown>{response}</ReactMarkdown>
+                                    </div>
                                 </div>
                             )}
                         </div>
