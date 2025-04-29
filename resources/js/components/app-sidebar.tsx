@@ -29,11 +29,6 @@ const mainNavItems: ExtendedNavItem[] = [
         ]
     },
     {
-        title: 'welcome',
-        href: '/',
-        icon: LayoutGrid,
-    },
-    {
         title: 'Maps',
         href: '/map',  // This is now the default URL when clicked
         icon: Map,
@@ -50,24 +45,15 @@ const mainNavItems: ExtendedNavItem[] = [
             }
         ]
     },
+
+];
+
+const footerNavItems: NavItem[] = [
     {
         title: 'AI Assistant',
         href: '/ai',
         icon: MessageSquareText,
     }
-];
-
-const footerNavItems: NavItem[] = [
-    {
-        title: 'Repository',
-        href: 'https://github.com/laravel/react-starter-kit',
-        icon: Folder,
-    },
-    {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits',
-        icon: BookOpen,
-    },
 ];
 
 // Create a new NavMainWithDropdowns component with a soft navigation approach
@@ -86,7 +72,7 @@ function NavMainWithDropdowns({ items }: { items: ExtendedNavItem[] }) {
         // Check if this is an internal route that should use Inertia
         if (href.startsWith('/')) {
             e.preventDefault();
-            router.visit(href, { 
+            router.visit(href, {
                 preserveScroll: true,
                 preserveState: true,
                 replace: true
@@ -161,7 +147,7 @@ export function AppSidebar() {
                         <SidebarMenuButton size="lg" asChild>
                             <Link href="/dashboard" onClick={(e) => {
                                 e.preventDefault();
-                                router.visit('/dashboard', { 
+                                router.visit('/dashboard', {
                                     preserveScroll: true,
                                     preserveState: true
                                 });
