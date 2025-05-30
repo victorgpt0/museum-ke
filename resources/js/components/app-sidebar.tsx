@@ -3,7 +3,15 @@ import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link, router } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid, Map, Plus, ChevronDown, ChevronRight, MessageSquareText} from 'lucide-react';
+import {
+    LayoutGrid,
+    Map,
+    Plus,
+    ChevronDown,
+    ChevronRight,
+    MessageSquareText,
+    UsersRound
+} from 'lucide-react';
 import AppLogo from './app-logo';
 
 import { useState, useEffect } from 'react';
@@ -45,6 +53,11 @@ const mainNavItems: ExtendedNavItem[] = [
             }
         ]
     },
+    {
+        title: 'Users',
+        href: '/users',
+        icon: UsersRound,
+    }
 
 ];
 

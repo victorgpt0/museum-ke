@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\ArtifactController;
@@ -10,9 +11,12 @@ Route::get('/', function () {
 })->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
+
     Route::get('dashboard', function () {
         return Inertia::render('dashboard');
     })->name('dashboard');
+
+    Route::resource('users', UserController::class)->except('show');
 });
 
 Route::get('/artifacts', [ArtifactController::class, 'index']);
@@ -38,5 +42,8 @@ Route::get('/ai', function () {
 Route::post('/api/ai/query', [App\Http\Controllers\AIController::class, 'query'])
     ->middleware(['auth'])
     ->name('ai.query');
+
+
+
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';
