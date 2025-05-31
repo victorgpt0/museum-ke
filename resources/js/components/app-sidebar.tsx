@@ -29,6 +29,11 @@ const mainNavItems: ExtendedNavItem[] = [
         href: '/dashboard',
         icon: LayoutGrid,
         children: [
+             {
+                title: 'full dashboard',
+                href: '/dashboard',
+                icon: View,
+            },
             {
                 title: 'New Artifact',
                 href: '/dashboard/new-artifact',
@@ -59,6 +64,23 @@ const mainNavItems: ExtendedNavItem[] = [
         icon: UsersRound,
     }
 
+    {
+        title: 'Archives',
+        href: '/archives',  // Default URL when Archives is clicked
+        icon: Archive,
+        children: [
+            {
+                title: 'View Archives',
+                href: '/archives',
+                icon: Folder,
+            },
+            {
+                title: 'New File',
+                href: '/archives/new-file',
+                icon: FileText,
+            }
+        ]
+    },
 ];
 
 const footerNavItems: NavItem[] = [
@@ -139,18 +161,37 @@ function NavMainWithDropdowns({ items }: { items: ExtendedNavItem[] }) {
 }
 
 export function AppSidebar() {
-    // Auto-expand the Maps item if we're on a map route
+    const [expandedItems, setExpandedItems] = useState<{ [key: string]: boolean }>({});
+
+    // Auto-expand menu items based on current route
     useEffect(() => {
         const path = window.location.pathname;
+
+        // Auto-expand Maps if we're on a map route
         if (path.startsWith('/map')) {
             setExpandedItems((prev) => ({
                 ...prev,
                 'Maps': true
             }));
         }
+
+        // Auto-expand Archives if we're on an archives route
+        if (path.startsWith('/archives')) {
+            setExpandedItems((prev) => ({
+                ...prev,
+                'Archives': true
+            }));
+        }
+
+        // Auto-expand Dashboard if we're on a dashboard route
+        if (path.startsWith('/dashboard')) {
+            setExpandedItems((prev) => ({
+                ...prev,
+                'Dashboard': true
+            }));
+        }
     }, []);
 
-    const [expandedItems, setExpandedItems] = useState<{ [key: string]: boolean }>({});
 
     return (
         <Sidebar collapsible="icon" variant="inset">
