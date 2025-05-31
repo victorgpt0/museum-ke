@@ -7,7 +7,6 @@ import {
     DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
 import { Bell, BellRing } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
 
 interface Notification {
     id: number;
@@ -40,18 +39,59 @@ const Notifications: React.FC = () => {
             <DropdownMenuTrigger className="relative">
                 <div className="relative">
                     {unreadCount > 0 ? (
-                        <Badge
-                            variant="destructive"
-                            className="absolute -top-2 -right-2 px-1.5 py-0.5 text-xs"
+                        <span
+                            className="
+                                absolute -top-1.5 -right-1.5
+                                bg-red-500 text-white
+                                rounded-full
+                                w-4 h-4
+                                flex items-center justify-center
+                                text-[10px]
+                                font-bold
+                                z-10
+                                border-2 border-white
+                                dark:border-gray-800
+                            "
+
                         >
                             {unreadCount}
-                        </Badge>
+                        </span>
                     ) : null}
-                    {unreadCount > 0 ? (
-                        <BellRing className="text-primary hover:text-primary/80" />
-                    ) : (
-                        <Bell className="text-muted-foreground hover:text-foreground" />
-                    )}
+                    <button
+                        className="
+                            p-1.5
+                            rounded-full
+                            border
+                            border-gray-200
+                            dark:border-gray-700
+                            hover:bg-gray-100
+                            dark:hover:bg-gray-700
+                            transition-colors
+                            relative
+                            focus:outline-none
+                            focus:ring-0
+                            focus:border-transparent
+                        "
+                    >
+                        {unreadCount > 0 ? (
+                            <BellRing
+                                className="
+                                    w-5 h-5
+                                    text-primary
+                                    dark:text-primary-light
+                                "
+                            />
+                        ) : (
+                            <Bell
+                                className="
+                                    w-5 h-5
+                                    text-gray-500
+                                    dark:text-gray-400
+                                "
+                            />
+                        )}
+                    </button>
+
                 </div>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-80">

@@ -1,4 +1,5 @@
 import React, { JSX } from 'react';
+import { Link } from '@inertiajs/react';
 
 interface Column<T> {
     label: string;
@@ -20,6 +21,12 @@ const Table = <T, >({
                     }: TableProps<T>): JSX.Element => {
     return (
         <div className={`p-5`}>
+            <Link
+                href={'/users/create'}
+                className="cursor-pointer px-3 py-2 text-xs font-medium text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+            >
+                Create New
+            </Link>
         <div className="overflow-x-auto mt-3 rounded-md">
             <table className="min-w-full table-auto text-sm text-left rtl:text-right">
                 <thead className="text-xs uppercase bg-gray-100 dark:bg-gray-900">
