@@ -2,15 +2,20 @@ import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@/lib/utils"
+import { AlertCircle, AlertTriangle, CheckCircle2, Info, XCircle } from 'lucide-react';
 
 const alertVariants = cva(
   "relative w-full rounded-lg border px-4 py-3 text-sm grid has-[>svg]:grid-cols-[calc(var(--spacing)*4)_1fr] grid-cols-[0_1fr] has-[>svg]:gap-x-3 gap-y-0.5 items-start [&>svg]:size-4 [&>svg]:translate-y-0.5 [&>svg]:text-current",
   {
     variants: {
       variant: {
-        default: "bg-background text-foreground",
+        default: "bg-blue-50 text-blue-800",
         destructive:
           "text-destructive-foreground [&>svg]:text-current *:data-[slot=alert-description]:text-destructive-foreground/80",
+          success: 'bg-green-50 text-green-800',
+          error: 'bg-red-50 text-red-800',
+          warning: 'bg-yellow-50 text-yellow-800',
+          info: 'bg-blue-50 text-blue-800',
       },
     },
     defaultVariants: {
@@ -19,18 +24,36 @@ const alertVariants = cva(
   }
 )
 
+const variantIcons = {
+    default: Info,
+    success: CheckCircle2,
+    error: XCircle,
+    warning: AlertTriangle,
+    info: AlertCircle
+};
+
 function Alert({
+    children,
   className,
   variant,
   ...props
 }: React.ComponentProps<"div"> & VariantProps<typeof alertVariants>) {
+    const Icon = variantIcons[variant];
   return (
     <div
       data-slot="alert"
       role="alert"
       className={cn(alertVariants({ variant }), className)}
       {...props}
-    />
+    >
+        <Icon className={cn('mr-2', {
+            'text-blue-500': variant === 'default' || variant === 'info',
+            'text-green-500': variant === 'success',
+            'text-red-500': variant === 'error',
+            'text-yellow-500': variant === 'warning'
+        })} size={20}></Icon>
+        <div>{children}</div>
+    </div>
   )
 }
 

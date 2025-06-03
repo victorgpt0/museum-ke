@@ -1,5 +1,6 @@
 import React, { JSX } from 'react';
 import { Link } from '@inertiajs/react';
+import { Button } from '@/components/ui/button';
 
 interface Column<T> {
     label: string;
@@ -8,6 +9,7 @@ interface Column<T> {
 
 interface TableProps<T> {
     data: T[];
+    resource: string;
     columns: Column<T>[];
     onEdit?: (item: T) => void;
     onDelete?: (item: T) => void;
@@ -15,6 +17,7 @@ interface TableProps<T> {
 
 const Table = <T, >({
                         data,
+                        resource,
                         columns,
                         onEdit,
                         onDelete
@@ -22,7 +25,7 @@ const Table = <T, >({
     return (
         <div className={`p-5`}>
             <Link
-                href={'/users/create'}
+                href={`/${resource}/create`}
                 className="cursor-pointer px-3 py-2 text-xs font-medium text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
             >
                 Create New
@@ -64,20 +67,20 @@ const Table = <T, >({
                             <td className="px-6 py-2">
                                 <div className="flex space-x-2">
                                     {onEdit && (
-                                        <button
+                                        <Button
                                             onClick={() => onEdit(item)}
                                             className="cursor-pointer px-3 py-2 text-xs font-medium text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
                                         >
                                             Edit
-                                        </button>
+                                        </Button>
                                     )}
                                     {onDelete && (
-                                        <button
+                                        <Button
                                             onClick={() => onDelete(item)}
                                             className="cursor-pointer px-3 py-2 text-xs font-medium text-white bg-red-700 rounded-lg hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-800 ml-1"
                                         >
                                             Delete
-                                        </button>
+                                        </Button>
                                     )}
                                 </div>
                             </td>

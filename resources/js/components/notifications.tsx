@@ -57,7 +57,7 @@ const Notifications: React.FC = () => {
                             {unreadCount}
                         </span>
                     ) : null}
-                    <button
+                    <div
                         className="
                             p-1.5
                             rounded-full
@@ -90,7 +90,7 @@ const Notifications: React.FC = () => {
                                 "
                             />
                         )}
-                    </button>
+                    </div>
 
                 </div>
             </DropdownMenuTrigger>

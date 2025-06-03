@@ -22,7 +22,7 @@ export default function index({users}){
           <Head title={`Users`}/>
 
           <div>
-              <Table data={users} columns={userColumns} onEdit={true} onDelete={true}/>
+              <Table data={users} resource={`users`} columns={userColumns} onEdit={true} onDelete={true}/>
           </div>
       </AppLayout>
     );

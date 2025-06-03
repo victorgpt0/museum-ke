@@ -10,7 +10,8 @@ import {
     ChevronDown,
     ChevronRight,
     MessageSquareText,
-    UsersRound
+    UsersRound,
+    View, Archive, Folder, FileText
 } from 'lucide-react';
 import AppLogo from './app-logo';
 
@@ -62,8 +63,7 @@ const mainNavItems: ExtendedNavItem[] = [
         title: 'Users',
         href: '/users',
         icon: UsersRound,
-    }
-
+    },
     {
         title: 'Archives',
         href: '/archives',  // Default URL when Archives is clicked

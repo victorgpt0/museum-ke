@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 use Inertia\Inertia;
 
 class UserController extends Controller
@@ -31,7 +34,28 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validator = Validator::make($request->all(), [
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()
+                ->back()
+                ->withInput()
+                ->withErrors($validator);
+        }
+
+        try {
+            User::create(
+                $request->only('name','email')
+                + ['password' => Hash::make('password')]
+            );
+            return to_route('users.index')->with('success','User Created Successfully');
+        } catch (\Exception $exception){
+            Log::error('User Create Error:',[$exception]);
+            return redirect()->back()->with('error','Something went wrong');
+        }
     }
 
     /**
