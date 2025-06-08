@@ -1,6 +1,6 @@
 import React, { JSX } from 'react';
 import { Link } from '@inertiajs/react';
-import { Button } from '@/components/ui/button';
+import DeleteConfirm from '@/components/delete-dialog';
 
 interface Column<T> {
     label: string;
@@ -10,17 +10,23 @@ interface Column<T> {
 interface TableProps<T> {
     data: T[];
     resource: string;
+    type: string;
     columns: Column<T>[];
+    onShow?: (item: T) => void;
     onEdit?: (item: T) => void;
     onDelete?: (item: T) => void;
+    requirePasswordOnDelete?: boolean;
 }
 
 const Table = <T, >({
                         data,
                         resource,
+    type,
                         columns,
+                        onShow,
                         onEdit,
-                        onDelete
+                        onDelete,
+    requirePasswordOnDelete = false,
                     }: TableProps<T>): JSX.Element => {
     return (
         <div className={`p-5`}>
@@ -66,21 +72,24 @@ const Table = <T, >({
                         {(onEdit || onDelete) && (
                             <td className="px-6 py-2">
                                 <div className="flex space-x-2">
+                                    {onShow && (
+                                        <Link
+                                            href={route(`${resource}.show`, item.id)}
+                                            className="cursor-pointer px-3 py-2 text-xs font-medium text-white bg-indigo-700 rounded-lg hover:bg-indigo-800 focus:ring-4 focus:outline-none focus:ring-indigo-300 dark:bg-indigo-600 dark:hover:bg-indigo-700 dark:focus:ring-indigo-800"
+                                        >
+                                            View
+                                        </Link>
+                                    )}
                                     {onEdit && (
-                                        <Button
-                                            onClick={() => onEdit(item)}
+                                        <Link
+                                            href={route(`${resource}.edit`, item.id)}
                                             className="cursor-pointer px-3 py-2 text-xs font-medium text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
                                         >
                                             Edit
-                                        </Button>
+                                        </Link>
                                     )}
                                     {onDelete && (
-                                        <Button
-                                            onClick={() => onDelete(item)}
-                                            className="cursor-pointer px-3 py-2 text-xs font-medium text-white bg-red-700 rounded-lg hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-800 ml-1"
-                                        >
-                                            Delete
-                                        </Button>
+                                       <DeleteConfirm itemType={type} deleteRoute={route(`${resource}.destroy`, item.id)} requirePassword={requirePasswordOnDelete}/>
                                     )}
                                 </div>
                             </td>

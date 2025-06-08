@@ -18,7 +18,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return Inertia::render('dashboard');
     })->name('dashboard');
 
-    Route::resource('users', UserController::class)->except('show');
+    Route::resource('users', UserController::class);
 });
 
 Route::get('/artifacts', [ArtifactController::class, 'index']);

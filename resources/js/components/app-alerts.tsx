@@ -1,26 +1,45 @@
 import { usePage } from '@inertiajs/react';
 import { Alert } from '@/components/ui/alert';
+import { useEffect, useState } from 'react';
 
-const AlertComponent = () => {  // Add arrow function syntax
+const FLASH_TYPES = ['success', 'error', 'info', 'warning'] as const;
+
+const AlertComponent = () => {
     const { flash } = usePage().props;
-    const flashTypes= [
-        'success',
-        'error',
-        'info',
-        'warning'
-    ] as const;
+    const [visibleAlerts, setVisibleAlerts] = useState<Record<string, string>>({});
+
+    useEffect(() => {
+        // Populate initial visible alerts
+        const newVisibleAlerts: Record<string, string> = {};
+        FLASH_TYPES.forEach((type) => {
+            if (flash[type]) {
+                newVisibleAlerts[type] = flash[type] as string;
+            }
+        });
+        setVisibleAlerts(newVisibleAlerts);
+
+        const timeouts = Object.keys(newVisibleAlerts).map((type) =>
+            setTimeout(() => {
+                setVisibleAlerts(prev => {
+                    const updated = {...prev};
+                    delete updated[type];
+                    return updated;
+                });
+            }, 5000)
+        );
+
+        return () => timeouts.forEach(clearTimeout);
+    }, [flash]);
 
     return (
         <>
-            {flashTypes.map((type) =>
-                flash[type] ? (
-                    <div key={type} className="p-6">
-                        <Alert variant={type}>
-                            { flash[type] as string }
-                        </Alert>
-                    </div>
-                ) : null
-            )}
+            {Object.entries(visibleAlerts).map(([type, message]) => (
+                <div key={type} className="p-6">
+                    <Alert variant={type as string}>
+                        {message}
+                    </Alert>
+                </div>
+            ))}
         </>
     );
 }

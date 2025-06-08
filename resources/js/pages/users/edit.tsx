@@ -1,4 +1,4 @@
-import { BreadcrumbItem } from '@/types';
+import { BreadcrumbItem, User } from '@/types';
 import AppLayout from '@/layouts/app-layout';
 import { Head, useForm } from '@inertiajs/react';
 import { Input } from '@/components/ui/input';
@@ -21,35 +21,36 @@ interface Props {
         value: string,
         label: string,
     }>
+    user: User
 }
-const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Users',
-        href: '/users',
-    },
-    {
-        title: 'Create',
-        href: '/users/create',
-    }
-];
+export default function Edit({ roles, user }: Props){
+    const breadcrumbs: BreadcrumbItem[] = [
+        {
+            title: 'Users',
+            href: '/users',
+        },
+        {
+            title: 'Edit',
+            href: `/users/${user.id}/edit`,
+        },
+    ];
 
-export default function Create({ roles }: Props){
-    const {data, setData, errors, post, processing} = useForm({
-        name: '',
-        email: '',
-        role: '',
+    const {data, setData, errors, put, processing} = useForm({
+        name: user.name || '',
+        email: user.email || '',
+        role: user.role || '',
     });
 
     const submit = (e: FormEvent) => {
         e.preventDefault();
-        post(route('users.store'), {
+        put(route('users.update', user.id), {
             preserveScroll: true,
         });
     }
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title={`Create User`}/>
+            <Head title={`Edit User`}/>
 
             <form onSubmit={submit} className={`p-6 space-y-6 mt-4 max-w-md mx-auto`}>
                 <div className={`grid gap-2`}>
@@ -89,15 +90,15 @@ export default function Create({ roles }: Props){
                         </SelectTrigger>
                         <SelectContent>
                             <SelectGroup>
-                            <SelectLabel>Roles</SelectLabel>
-                            {roles.map((role) => (
-                                <SelectItem
-                                    key={role.value}
-                                    value={role.value}
-                                >
-                                    {role.label}
-                                </SelectItem>
-                            ))}
+                                <SelectLabel>Roles</SelectLabel>
+                                {roles.map((role) => (
+                                    <SelectItem
+                                        key={role.value}
+                                        value={role.value}
+                                    >
+                                        {role.label}
+                                    </SelectItem>
+                                ))}
                             </SelectGroup>
                         </SelectContent>
                     </Select>
@@ -106,7 +107,7 @@ export default function Create({ roles }: Props){
 
                 <Button type="submit"
                         disabled={processing}
-                >CREATE</Button>
+                >Edit</Button>
             </form>
         </AppLayout>
     );
