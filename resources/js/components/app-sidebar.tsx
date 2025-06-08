@@ -1,7 +1,7 @@
 import { NavFooter } from '@/components/nav-footer';
 import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
-import { type NavItem } from '@/types';
+import { NavGroup, type NavItem } from '@/types';
 import { Link, router } from '@inertiajs/react';
 import {
     LayoutGrid,
@@ -11,7 +11,7 @@ import {
     ChevronRight,
     MessageSquareText,
     UsersRound,
-    View, Archive, Folder, FileText
+    View, Archive, Folder, FileText, Shield
 } from 'lucide-react';
 import AppLogo from './app-logo';
 
@@ -63,6 +63,11 @@ const mainNavItems: ExtendedNavItem[] = [
         title: 'Users',
         href: '/users',
         icon: UsersRound,
+    },
+    {
+        title: 'Roles',
+        href: '/roles',
+        icon: Shield,
     },
     {
         title: 'Archives',

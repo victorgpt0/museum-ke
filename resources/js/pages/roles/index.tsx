@@ -5,29 +5,28 @@ import Table from '@/components/ui/table';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
-        title: 'Users',
-        href: '/users',
+        title: 'Roles',
+        href: '/roles',
     }
 ];
 
-const userColumns = [
+const roleColumns = [
     { label: 'ID', accessor: 'id' },
     { label: 'Name', accessor: 'name' },
-    { label: 'Email', accessor: 'email' },
-    { label: 'Roles', accessor: 'roles',
-        render: (roles: Role[]) => {
-            if (!roles || roles.length === 0) {
-                return <span className="text-gray-500">No role</span>;
+    { label: 'Permissions', accessor: 'permissions',
+        render: (permissions: Permission[]) => {
+            if (!permissions || permissions.length === 0) {
+                return <span className="text-gray-500">No permissions</span>;
             }
 
             return (
                 <div className="flex gap-1 overflow-x-auto max-w-xs xl:max-w-xl scrollbar-hide">
-                    {roles.map((role) => (
+                    {permissions.map((permission) => (
                         <span
-                            key={role.id}
+                            key={permission.id}
                             className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full"
                         >
-                            {role.name}
+                            {permission.name}
                         </span>
                     ))}
                 </div>
@@ -36,17 +35,21 @@ const userColumns = [
     },
 ];
 
-export default function Index({users}: User){
+interface Props {
+    roles: Role[]
+}
+
+export default function Index({roles}: Props){
     return (
       <AppLayout breadcrumbs={breadcrumbs}>
-          <Head title={`Users`}/>
+          <Head title={`Roles`}/>
 
           <div>
               <Table
-                  data={users}
-                  resource={`users`}
-                  type={`User`}
-                  columns={userColumns}
+                  data={roles}
+                  resource={`roles`}
+                  type={`Role`}
+                  columns={roleColumns}
                   onShow={true}
                   onEdit={true}
                   onDelete={true}

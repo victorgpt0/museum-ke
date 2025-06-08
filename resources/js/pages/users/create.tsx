@@ -85,7 +85,7 @@ export default function Create({ roles }: Props){
                         onValueChange={(value) => setData('role', value)}
                     >
                         <SelectTrigger>
-                            <SelectValue placeholder="Select a role" />
+                            <SelectValue placeholder="Select a role"/>
                         </SelectTrigger>
                         <SelectContent>
                             <SelectGroup>
@@ -93,7 +93,7 @@ export default function Create({ roles }: Props){
                             {roles.map((role) => (
                                 <SelectItem
                                     key={role.value}
-                                    value={role.value}
+                                    value={role.label}
                                 >
                                     {role.label}
                                 </SelectItem>

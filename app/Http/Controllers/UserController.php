@@ -5,22 +5,38 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Services\StaticDataService;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
+use Illuminate\Routing\Controllers\Middleware;
 use Spatie\Permission\Models\Role;
 
-class UserController extends Controller
+class UserController extends Controller implements HasMiddleware
 {
+
+    /**
+     * Describe permissions for this Resource.
+     */
+    public static function middleware(): array
+    {
+        return [
+            new Middleware('permission:users.view', only: ['index', 'show']),
+            new Middleware('permission:users.create', only: ['create', 'store']),
+            new Middleware('permission:users.edit', only: ['edit', 'update']),
+            new Middleware('permission:users.delete', only: ['destroy']),
+            ];
+    }
+
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
         return Inertia::render('users/index',[
-            'users' => User::all()
+            'users' => User::with('roles')->get(),
         ]);
     }
 
@@ -53,10 +69,13 @@ class UserController extends Controller
         }
 
         try {
-            User::create(
+            $user = User::create(
                 $request->only('name','email')
                 + ['password' => Hash::make('password')]
             );
+
+            $user->syncRoles([$request->role]);
+
             return to_route('users.index')->with('success','User Created Successfully');
         } catch (\Exception $exception){
             Log::error('User Create Error:',[$exception]);
@@ -82,6 +101,7 @@ class UserController extends Controller
         $user = User::find($id);
         return Inertia::render('users/edit',[
             'user' => $user,
+            'userRoles' => $user->roles->pluck('name')->first(),
             'roles' => StaticDataService::getRoles()
         ]);
     }
@@ -109,7 +129,10 @@ class UserController extends Controller
 
         $user->name = $request->name;
         $user->email = $request->email;
+
         $user->save();
+
+        $user->syncRoles([$request->role]);
 
         return to_route('users.index')->with('success','User Updated Successfully');
     }
@@ -123,8 +146,7 @@ class UserController extends Controller
             'password' => ['nullable', 'current_password']
         ]);
 
-        $user = User::find($id);
-        $user->delete();
+        User::destroy($id);
 
         return to_route('users.index')->with('success','User Deleted Successfully');
     }

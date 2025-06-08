@@ -1,10 +1,12 @@
 import React, { JSX } from 'react';
 import { Link } from '@inertiajs/react';
 import DeleteConfirm from '@/components/delete-dialog';
+import Can from '@/lib/can';
 
 interface Column<T> {
     label: string;
     accessor: keyof T;
+    render?: (value: any, item: T) => JSX.Element | string | number;
 }
 
 interface TableProps<T> {
@@ -12,30 +14,26 @@ interface TableProps<T> {
     resource: string;
     type: string;
     columns: Column<T>[];
-    onShow?: (item: T) => void;
-    onEdit?: (item: T) => void;
-    onDelete?: (item: T) => void;
     requirePasswordOnDelete?: boolean;
 }
 
 const Table = <T, >({
                         data,
                         resource,
-    type,
+                        type,
                         columns,
-                        onShow,
-                        onEdit,
-                        onDelete,
-    requirePasswordOnDelete = false,
+                        requirePasswordOnDelete = false,
                     }: TableProps<T>): JSX.Element => {
     return (
         <div className={`p-5`}>
+            {Can(`${resource}.create`) &&
             <Link
                 href={`/${resource}/create`}
                 className="cursor-pointer px-3 py-2 text-xs font-medium text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
             >
                 Create New
             </Link>
+            }
         <div className="overflow-x-auto mt-3 rounded-md">
             <table className="min-w-full table-auto text-sm text-left rtl:text-right">
                 <thead className="text-xs uppercase bg-gray-100 dark:bg-gray-900">
@@ -48,11 +46,11 @@ const Table = <T, >({
                             {column.label}
                         </th>
                     ))}
-                    {(onEdit || onDelete) && (
-                        <th className="px-6 py-3">
-                            Actions
-                        </th>
-                    )}
+
+                    <th className="px-6 py-3">
+                        Actions
+                    </th>
+
                 </tr>
                 </thead>
                 <tbody>
@@ -66,13 +64,16 @@ const Table = <T, >({
                                 key={column.accessor as string}
                                 className="px-6 py-2"
                             >
-                                {item[column.accessor]}
+                                {column.render
+                                    ? column.render(item[column.accessor], item)
+                                    : item[column.accessor]
+                                }
                             </td>
                         ))}
-                        {(onEdit || onDelete) && (
+
                             <td className="px-6 py-2">
                                 <div className="flex space-x-2">
-                                    {onShow && (
+                                    {Can(`${resource}.view`) && (
                                         <Link
                                             href={route(`${resource}.show`, item.id)}
                                             className="cursor-pointer px-3 py-2 text-xs font-medium text-white bg-indigo-700 rounded-lg hover:bg-indigo-800 focus:ring-4 focus:outline-none focus:ring-indigo-300 dark:bg-indigo-600 dark:hover:bg-indigo-700 dark:focus:ring-indigo-800"
@@ -80,7 +81,7 @@ const Table = <T, >({
                                             View
                                         </Link>
                                     )}
-                                    {onEdit && (
+                                    {Can(`${resource}.edit`) && (
                                         <Link
                                             href={route(`${resource}.edit`, item.id)}
                                             className="cursor-pointer px-3 py-2 text-xs font-medium text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
@@ -88,12 +89,12 @@ const Table = <T, >({
                                             Edit
                                         </Link>
                                     )}
-                                    {onDelete && (
+                                    {Can(`${resource}.delete`) && (
                                        <DeleteConfirm itemType={type} deleteRoute={route(`${resource}.destroy`, item.id)} requirePassword={requirePasswordOnDelete}/>
                                     )}
                                 </div>
                             </td>
-                        )}
+
                     </tr>
                 ))}
                 </tbody>

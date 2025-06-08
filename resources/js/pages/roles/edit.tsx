@@ -21,10 +21,9 @@ interface Props {
         value: string,
         label: string,
     }>
-    user: User,
-
+    user: User
 }
-export default function Edit({ roles, user, userRoles }: Props){
+export default function Edit({ roles, user }: Props){
     const breadcrumbs: BreadcrumbItem[] = [
         {
             title: 'Users',
@@ -39,7 +38,7 @@ export default function Edit({ roles, user, userRoles }: Props){
     const {data, setData, errors, put, processing} = useForm({
         name: user.name || '',
         email: user.email || '',
-        role: userRoles || '',
+        role: user.role || '',
     });
 
     const submit = (e: FormEvent) => {
@@ -95,7 +94,7 @@ export default function Edit({ roles, user, userRoles }: Props){
                                 {roles.map((role) => (
                                     <SelectItem
                                         key={role.value}
-                                        value={role.label}
+                                        value={role.value}
                                     >
                                         {role.label}
                                     </SelectItem>

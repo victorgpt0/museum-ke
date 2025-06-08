@@ -65,7 +65,7 @@ export default function DeleteConfirm({
                         </>
                     ) : (
                         <>
-                            You are about to permanently delete <strong>{itemType}</strong>.
+                            You are about to permanently delete this <strong>{itemType}</strong>.
                         </>
                     )}
                     This action cannot be undone and all associated data will be lost.
