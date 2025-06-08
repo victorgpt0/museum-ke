@@ -5,6 +5,7 @@ namespace App\Providers;
 use Hashids\Hashids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
@@ -32,5 +33,8 @@ class AppServiceProvider extends ServiceProvider
 //        URL::forceScheme('https');
         Vite::usePrefetchStrategy('aggressive');
 
+        Gate::before(function ($user, $ability) {
+            return $user->hasRole('SuperAdmin') ? true : null;
+        });
     }
 }
