@@ -2,9 +2,12 @@
 
 namespace Database\Seeders;
 
+use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 class PermissionSeeder extends Seeder
 {
@@ -13,6 +16,8 @@ class PermissionSeeder extends Seeder
      */
     public function run(): void
     {
+        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+
         $permissions = [
             "users.create",
             "users.view",
@@ -27,5 +32,15 @@ class PermissionSeeder extends Seeder
         foreach ($permissions as $permission) {
             Permission::create(['name' => $permission]);
         }
+
+        //Initialize super-admin
+        $role = Role::create(['name' => 'SuperAdmin']);
+
+        $super_admin = User::factory()->create([
+            'name' => 'Super Admin',
+            'email' => 'superadmin@museum.ke',
+        ]);
+
+        $super_admin->assignRole($role);
     }
 }

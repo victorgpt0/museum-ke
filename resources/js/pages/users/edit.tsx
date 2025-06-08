@@ -22,6 +22,7 @@ interface Props {
         label: string,
     }>
     user: User,
+    userRoles: string,
 
 }
 export default function Edit({ roles, user, userRoles }: Props){
