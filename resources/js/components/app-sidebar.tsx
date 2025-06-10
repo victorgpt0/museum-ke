@@ -76,6 +76,11 @@ const mainNavItems: ExtendedNavItem[] = [
             href: '/curator/acquisition-history',  // Added leading slash and made consistent
             icon: History,
         },
+         {
+            title: 'Acquisition Proposal',
+            href: '/curator/acquisition-portal',
+            icon: FileCheck,
+        },
         {
             title: 'New Proposal',
             href: '/curator/new-proposal',

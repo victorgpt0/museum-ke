@@ -47,6 +47,9 @@ Route::get('/map', function () {
 Route::get('/curator/acquisition-history', function () {
     return Inertia::render('curator/acquisition-history'); // Points to your React component
 });
+Route::get('/curator/acquisition-portal', function () {
+    return Inertia::render('curator/acquisition-portal'); // Points to your React component
+});
 // AI Page Route
 Route::get('/ai', function () {
     return Inertia::render('AI');
