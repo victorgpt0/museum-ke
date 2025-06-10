@@ -42,6 +42,11 @@ Route::get('/archives/{archive}/download', [ArchivesController::class, 'download
 Route::get('/map', function () {
     return Inertia::render('Map');
 })->name('map');
+
+//Acquisition
+Route::get('/curator/acquisition-history', function () {
+    return Inertia::render('curator/acquisition-history'); // Points to your React component
+});
 // AI Page Route
 Route::get('/ai', function () {
     return Inertia::render('AI');
