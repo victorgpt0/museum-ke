@@ -1,4 +1,4 @@
-import { BreadcrumbItem, Permission, Role, User } from '@/types';
+import { BreadcrumbItem, PaginatedResults, Permission, Role, User } from '@/types';
 import AppLayout from '@/layouts/app-layout';
 import { Head } from '@inertiajs/react';
 import Table from '@/components/ui/table';
@@ -24,7 +24,7 @@ const roleColumns = [
                     {permissions.map((permission) => (
                         <span
                             key={permission.id}
-                            className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full"
+                            className="inline-flex bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full"
                         >
                             {permission.name}
                         </span>
@@ -35,24 +35,21 @@ const roleColumns = [
     },
 ];
 
-interface Props {
-    roles: Role[]
-}
-
-export default function Index({roles}: Props){
+export default function Index({roles}: PaginatedResults<Role>){
     return (
       <AppLayout breadcrumbs={breadcrumbs}>
           <Head title={`Roles`}/>
 
           <div>
               <Table
-                  data={roles}
+                  data={roles.data}
                   resource={`roles`}
                   type={`Role`}
                   columns={roleColumns}
-                  onShow={true}
-                  onEdit={true}
-                  onDelete={true}
+                  paginationLinks={roles.links}
+                  from={roles.from}
+                  to={roles.to}
+                  total={roles.total}
                   requirePasswordOnDelete={true}/>
           </div>
       </AppLayout>

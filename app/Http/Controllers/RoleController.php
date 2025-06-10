@@ -28,7 +28,13 @@ class RoleController extends Controller implements HasMiddleware
     public function index()
     {
         return Inertia::render('roles/index',[
-            'roles' => Role::with('permissions')->get()
+            'roles' => Role::query()
+                ->with('permissions')
+                ->when(request('search'), fn ($query, $search) =>
+                $query->where('name', 'like', "%{$search}%")
+                )
+                ->paginate(request('perPage', 10))
+                ->withQueryString(),
         ]);
     }
 

@@ -1,4 +1,3 @@
-// resources/js/Components/Notifications.tsx
 import React, { useState } from 'react';
 import {
     DropdownMenu,
@@ -7,6 +6,7 @@ import {
     DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
 import { Bell, BellRing } from 'lucide-react';
+import { router } from '@inertiajs/react';
 
 interface Notification {
     id: number;
@@ -31,6 +31,36 @@ const Notifications: React.FC = () => {
             timestamp: '1 hour ago'
         }
     ]);
+
+    const markAsRead = (id: string) => {
+        router.post(route('notifications.mark-as-read', id), {}, {
+            preserveScroll: true,
+            preserveState: true,
+            only: ['notifications', 'unreadCount'], // Only reload these props
+            onSuccess: () => {
+                // Handle success
+            }
+        })
+    }
+
+    const markAllAsRead = () => {
+        router.post(route('notifications.mark-all-as-read'), {}, {
+            preserveScroll: true,
+            preserveState: true,
+            only: ['notifications', 'unreadCount'], // Only reload these props
+            onSuccess: () => {
+                // Handle success
+            }
+        })
+    }
+
+    const deleteNotification = (id: string) => {
+        router.delete(route('notifications.destroy', id), {
+            preserveScroll: true,
+            preserveState: true,
+            only: ['notifications', 'unreadCount']
+        })
+    }
 
     const unreadCount = notifications.filter(n => !n.read).length;
 
@@ -99,12 +129,7 @@ const Notifications: React.FC = () => {
                     <h3 className="text-lg font-semibold">Notifications</h3>
                     {unreadCount > 0 && (
                         <button
-                            onClick={() => {
-                                // Mark all as read logic
-                                setNotifications(
-                                    notifications.map(n => ({...n, read: true}))
-                                );
-                            }}
+                            onClick={markAllAsRead}
                             className="text-sm text-muted-foreground hover:text-foreground"
                         >
                             Mark all as read

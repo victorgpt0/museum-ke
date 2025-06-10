@@ -1,4 +1,4 @@
-import { BreadcrumbItem, Permission, Role, User } from '@/types';
+import { BreadcrumbItem, PaginatedResults, Role, User } from '@/types';
 import AppLayout from '@/layouts/app-layout';
 import { Head } from '@inertiajs/react';
 import Table from '@/components/ui/table';
@@ -36,21 +36,22 @@ const userColumns = [
     },
 ];
 
-export default function Index({users}: User){
+export default function Index({users}: PaginatedResults<User>){
     return (
       <AppLayout breadcrumbs={breadcrumbs}>
           <Head title={`Users`}/>
 
           <div>
               <Table
-                  data={users}
+                  data={users.data}
                   resource={`users`}
                   type={`User`}
                   columns={userColumns}
-                  onShow={true}
-                  onEdit={true}
-                  onDelete={true}
-                  requirePasswordOnDelete={true}/>
+                  paginationLinks={users.links}
+                  from={users.from}
+                  to={users.to}
+                  total={users.total}
+                  requirePasswordOnDelete={true} />
           </div>
       </AppLayout>
     );

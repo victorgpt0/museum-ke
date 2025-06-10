@@ -21,6 +21,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::resource('users', UserController::class);
     Route::resource('roles', RoleController::class);
+
+    Route::prefix('notifications')
+        ->controller(\App\Http\Controllers\NotificationController::class)
+        ->name('notifications.')
+        ->group(function () {
+        Route::get('/', 'index')->name('index');
+        Route::post('/{id}/read','markAsRead')->name('mark-as-read');
+        Route::post('/read-all', 'markAllAsRead')->name('mark-all-as-read');
+        Route::delete('/{id}', 'destroy')->name('destroy');
+    });
+
 });
 
 Route::get('/artifacts', [ArtifactController::class, 'index']);

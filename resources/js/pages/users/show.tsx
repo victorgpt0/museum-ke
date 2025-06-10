@@ -4,9 +4,10 @@ import { Head } from '@inertiajs/react';
 import { UserInfo } from '@/components/user-info';
 
 interface Props {
-    user: User
+    user: User,
+    userRole: string,
 }
-export default function Index({user}: Props){
+export default function Index({user, userRole}: Props){
 
     const breadcrumbs: BreadcrumbItem[] = [
         {
@@ -24,7 +25,7 @@ export default function Index({user}: Props){
             <Head title={`View User`}/>
 
             <div className={`p-6 flex flex-col items-center space-y-6`}>
-                <UserInfo user={user} showEmail={true} showRole={true}/>
+                <UserInfo user={user} userRole={userRole} showEmail={true} showRole={true}/>
             </div>
 
         </AppLayout>

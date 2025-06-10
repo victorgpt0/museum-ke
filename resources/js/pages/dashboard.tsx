@@ -120,7 +120,7 @@ export default function Dashboard() {
                             <PlaceholderPattern className="size-full stroke-neutral-900/20 dark:stroke-neutral-100/20" />
                         </div>
                     ) : (
-                        <div className="overflow-hidden rounded-lg border dark:border-gray-700">
+                        <div className="overflow-x-auto rounded-lg border dark:border-gray-700">
                             <table className="min-w-full divide-y dark:divide-gray-700">
                                 <thead className="bg-gray-50 dark:bg-gray-800">
                                     <tr>

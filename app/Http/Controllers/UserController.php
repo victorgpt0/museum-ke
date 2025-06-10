@@ -12,7 +12,6 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Illuminate\Routing\Controllers\Middleware;
-use Spatie\Permission\Models\Role;
 
 class UserController extends Controller implements HasMiddleware
 {
@@ -36,7 +35,13 @@ class UserController extends Controller implements HasMiddleware
     public function index()
     {
         return Inertia::render('users/index',[
-            'users' => User::with('roles')->get(),
+            'users' => User::query()
+                ->with('roles')
+                ->when(request('search'), fn ($query, $search) =>
+                $query->where('name', 'like', "%{$search}%")
+                )
+                ->paginate(request('perPage', 10))
+                ->withQueryString(),
         ]);
     }
 
@@ -58,7 +63,7 @@ class UserController extends Controller implements HasMiddleware
         $validator = Validator::make($request->all(), [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
-            'role' => ['nullable', 'exists:roles,name']
+            'role' => ['required', 'exists:roles,name']
         ]);
 
         if ($validator->fails()) {
@@ -88,8 +93,10 @@ class UserController extends Controller implements HasMiddleware
      */
     public function show(string $id)
     {
+        $user = User::find($id);
         return Inertia::render('users/show',[
-            'user' => User::find($id)
+            'user' => $user,
+            'userRole' => $user->getRoleNames()
         ]);
     }
 
