@@ -120,16 +120,32 @@ class DonationController extends Controller
     /**
      * Show all donation proposals (admin view)
      */
-    public function index()
-    {
-        $proposals = ArtifactProposal::with(['donor', 'media'])
-            ->latest()
-            ->paginate(10);
+  public function index()
+{
+    $proposals = ArtifactProposal::with(['donor', 'media'])
+        ->latest()
+        ->paginate(10);
 
-        return Inertia::render('Admin/DonationProposals', [
-            'proposals' => $proposals
-        ]);
-    }
+    return Inertia::render('curator/acquisition-history', [
+        'proposals' => $proposals
+    ]);
+}
+
+/**
+ * Update proposal status
+ */
+public function updateStatus(Request $request, ArtifactProposal $artifactProposal)
+{
+    $request->validate([
+        'status' => 'required|in:pending,approved,rejected,under_review'
+    ]);
+
+    $artifactProposal->update([
+        'proposal_status' => $request->status
+    ]);
+
+    return back()->with('success', 'Proposal status updated successfully.');
+}
 
     /**
      * Show a specific donation proposal
@@ -138,7 +154,7 @@ class DonationController extends Controller
     {
         $artifactProposal->load(['donor', 'media']);
 
-        return Inertia::render('Admin/DonationProposalDetail', [
+        return Inertia::render('curator/DonationProposalDetail', [
             'proposal' => $artifactProposal
         ]);
     }
@@ -146,16 +162,5 @@ class DonationController extends Controller
     /**
      * Update proposal status
      */
-    public function updateStatus(Request $request, ArtifactProposal $artifactProposal)
-    {
-        $request->validate([
-            'status' => 'required|in:pending,approved,rejected,under_review'
-        ]);
-
-        $artifactProposal->update([
-            'proposal_status' => $request->status
-        ]);
-
-        return back()->with('success', 'Proposal status updated successfully.');
-    }
+   
 }

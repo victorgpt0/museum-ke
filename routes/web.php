@@ -60,6 +60,18 @@ Route::get('/map', function () {
 Route::get('/curator/acquisition-portal', [DonationController::class, 'create'])->name('donations.create');
 Route::post('/curator/save', [DonationController::class, 'store'])->name('donations.store');
 
+    // Display all donation proposals
+    Route::get('/curator/acquisition-history', [DonationController::class, 'index'])->name('admin.donations.index');
+    
+    // Show specific donation proposal
+    Route::get('/curator/acquisition-history/{artifactProposal}', [DonationController::class, 'show'])->name('admin.donations.show');
+    
+    // Update proposal status
+    Route::patch('/curator/acquisition-history/status', [DonationController::class, 'updateStatus'])->name('admin.donations.update-status');
+
+// Public donation form
+Route::get('/donate', [DonationController::class, 'create'])->name('donations.create');
+Route::post('/donate', [DonationController::class, 'store'])->name('donations.store');
 // AI Page Route
 Route::get('/ai', function () {
     return Inertia::render('AI');

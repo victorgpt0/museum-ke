@@ -1,85 +1,69 @@
 import React, { useState } from 'react';
 import { Head } from '@inertiajs/react';
+import { router } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem } from '@/types';
+
+interface Media {
+  id: number;
+  original_url: string;
+  name: string;
+}
+
+interface Donor {
+  id: number;
+  fullname: string;
+  email: string;
+  contact: string;
+  next_of_kin_fullname?: string;
+  next_of_kin_email?: string;
+  next_of_kin_contact?: string;
+}
 
 interface ArtifactProposal {
   id: number;
   title: string;
   description: string;
   source: string;
-  images: string[];
-  dateSubmitted: string;
-  proposalStatus: 'approved' | 'rejected' | 'pending';
-  donorName: string;
-  donorEmail: string;
+  proposal_status: 'approved' | 'rejected' | 'pending' | 'under_review';
+  created_at: string;
+  updated_at: string;
+  donor: Donor;
+  media: Media[];
 }
 
-const AcquisitionHistory: React.FC = () => {
+interface PaginatedProposals {
+  data: ArtifactProposal[];
+  current_page: number;
+  last_page: number;
+  per_page: number;
+  total: number;
+  links: Array<{
+    url: string | null;
+    label: string;
+    active: boolean;
+  }>;
+}
+
+interface Props {
+  proposals: PaginatedProposals;
+}
+
+const AcquisitionHistory: React.FC<Props> = ({ proposals }) => {
   const [selectedFilter, setSelectedFilter] = useState<string>('all');
 
-  // Mock data for artifact proposals to Nairobi National Museum
-  const mockProposals: ArtifactProposal[] = [
-    {
-      id: 1,
-      title: "Kikuyu Traditional Gourd",
-      description: "A beautifully crafted traditional water gourd used by the Kikuyu community in the early 1900s. Features intricate geometric patterns and shows signs of daily use.",
-      source: "Private Family Collection - Kiambu County",
-      images: ["/storage/artifacts/kikuyu-gourd-1.jpg", "/storage/artifacts/kikuyu-gourd-2.jpg"],
-      dateSubmitted: "2024-03-15",
-      proposalStatus: "approved",
-      donorName: "Mary Wanjiku Kamau",
-      donorEmail: "mary.kamau@gmail.com"
-    },
-    {
-      id: 2,
-      title: "Colonial Era Railway Lantern",
-      description: "Original kerosene lantern used during the construction of the Uganda Railway (1896-1901). Made of brass and iron with original glass intact.",
-      source: "Mombasa Railway Station Archives",
-      images: ["/storage/artifacts/railway-lantern.jpg"],
-      dateSubmitted: "2024-04-02",
-      proposalStatus: "pending",
-      donorName: "James Mwangi Njoroge",
-      donorEmail: "j.njoroge@krc.co.ke"
-    },
-    {
-      id: 3,
-      title: "Maasai Ceremonial Spear",
-      description: "Hand-forged iron spear head with traditional wooden shaft. Used in coming-of-age ceremonies by Maasai warriors in Kajiado region.",
-      source: "Kajiado Cultural Center",
-      images: ["/storage/artifacts/maasai-spear-1.jpg", "/storage/artifacts/maasai-spear-2.jpg", "/storage/artifacts/maasai-spear-3.jpg"],
-      dateSubmitted: "2024-02-28",
-      proposalStatus: "rejected",
-      donorName: "Ole Sankale Parsitau",
-      donorEmail: "sankale.parsitau@yahoo.com"
-    },
-    {
-      id: 4,
-      title: "Swahili Poetry Manuscript",
-      description: "Handwritten collection of classical Swahili poems dating back to the 18th century. Written in Arabic script on traditional paper.",
-      source: "Lamu Cultural Heritage Foundation",
-      images: ["/storage/artifacts/swahili-manuscript.jpg"],
-      dateSubmitted: "2024-05-10",
-      proposalStatus: "approved",
-      donorName: "Dr. Fatima Al-Busaidy",
-      donorEmail: "f.albusaidy@lamuheritage.org"
-    },
-    {
-      id: 5,
-      title: "Stone Age Tools Collection",
-      description: "Set of 12 stone tools including hand axes and scrapers discovered in Olorgesailie. Estimated to be 200,000-500,000 years old.",
-      source: "Archaeological Excavation - Olorgesailie",
-      images: ["/storage/artifacts/stone-tools-1.jpg", "/storage/artifacts/stone-tools-2.jpg"],
-      dateSubmitted: "2024-01-20",
-      proposalStatus: "pending",
-      donorName: "Prof. David Kiprotich",
-      donorEmail: "d.kiprotich@archaeology.ac.ke"
-    }
-  ];
-
+  // Filter proposals based on status
   const filteredProposals = selectedFilter === 'all' 
-    ? mockProposals 
-    : mockProposals.filter(proposal => proposal.proposalStatus === selectedFilter);
+    ? proposals.data 
+    : proposals.data.filter(proposal => proposal.proposal_status === selectedFilter);
+
+  // Count proposals by status
+  const statusCounts = {
+    all: proposals.data.length,
+    pending: proposals.data.filter(p => p.proposal_status === 'pending').length,
+    approved: proposals.data.filter(p => p.proposal_status === 'approved').length,
+    rejected: proposals.data.filter(p => p.proposal_status === 'rejected').length,
+    under_review: proposals.data.filter(p => p.proposal_status === 'under_review').length,
+  };
 
   const getStatusBadge = (status: string) => {
     const baseClasses = "px-3 py-1 rounded-full text-sm font-medium";
@@ -90,6 +74,8 @@ const AcquisitionHistory: React.FC = () => {
         return `${baseClasses} bg-red-100 text-red-800`;
       case 'pending':
         return `${baseClasses} bg-yellow-100 text-yellow-800`;
+      case 'under_review':
+        return `${baseClasses} bg-blue-100 text-blue-800`;
       default:
         return `${baseClasses} bg-gray-100 text-gray-800`;
     }
@@ -103,9 +89,23 @@ const AcquisitionHistory: React.FC = () => {
     });
   };
 
+  const handleStatusUpdate = (proposalId: number, status: string) => {
+    router.patch(`/curator/acquisition-history/${proposalId}/status`, {
+      status: status
+    }, {
+      preserveScroll: true,
+      onSuccess: () => {
+        // Optional: Show success message
+      }
+    });
+  };
+
+  const handleViewDetails = (proposalId: number) => {
+    router.visit(`/curator/acquisition-history/${proposalId}`);
+  };
+
   return (
-     <AppLayout>
-    
+    <AppLayout>
       <Head title="Acquisition History - Nairobi National Museum" />
       
       <div className="min-h-screen bg-gray-50 py-8">
@@ -123,12 +123,13 @@ const AcquisitionHistory: React.FC = () => {
           {/* Filter Tabs */}
           <div className="mb-6">
             <div className="border-b border-gray-200">
-              <nav className="-mb-px flex space-x-8">
+              <nav className="-mb-px flex space-x-8 overflow-x-auto">
                 {[
-                  { key: 'all', label: 'All Proposals', count: mockProposals.length },
-                  { key: 'pending', label: 'Pending', count: mockProposals.filter(p => p.proposalStatus === 'pending').length },
-                  { key: 'approved', label: 'Approved', count: mockProposals.filter(p => p.proposalStatus === 'approved').length },
-                  { key: 'rejected', label: 'Rejected', count: mockProposals.filter(p => p.proposalStatus === 'rejected').length },
+                  { key: 'all', label: 'All Proposals', count: statusCounts.all },
+                  { key: 'pending', label: 'Pending', count: statusCounts.pending },
+                  { key: 'under_review', label: 'Under Review', count: statusCounts.under_review },
+                  { key: 'approved', label: 'Approved', count: statusCounts.approved },
+                  { key: 'rejected', label: 'Rejected', count: statusCounts.rejected },
                 ].map((tab) => (
                   <button
                     key={tab.key}
@@ -155,12 +156,13 @@ const AcquisitionHistory: React.FC = () => {
                     <h3 className="text-xl font-semibold text-gray-900 mb-2">
                       {proposal.title}
                     </h3>
-                    <span className={getStatusBadge(proposal.proposalStatus)}>
-                      {proposal.proposalStatus.charAt(0).toUpperCase() + proposal.proposalStatus.slice(1)}
+                    <span className={getStatusBadge(proposal.proposal_status)}>
+                      {proposal.proposal_status.charAt(0).toUpperCase() + 
+                       proposal.proposal_status.slice(1).replace('_', ' ')}
                     </span>
                   </div>
                   <div className="text-right text-sm text-gray-500">
-                    Submitted: {formatDate(proposal.dateSubmitted)}
+                    Submitted: {formatDate(proposal.created_at)}
                   </div>
                 </div>
 
@@ -168,13 +170,26 @@ const AcquisitionHistory: React.FC = () => {
                   {/* Images */}
                   <div className="lg:col-span-1">
                     <h4 className="font-medium text-gray-900 mb-2">Images</h4>
-                    <div className="grid grid-cols-2 gap-2">
-                      {proposal.images.map((image, index) => (
-                        <div key={index} className="aspect-square bg-gray-100 rounded-lg flex items-center justify-center text-gray-400 text-xs">
-                          {image.split('/').pop()}
-                        </div>
-                      ))}
-                    </div>
+                    {proposal.media && proposal.media.length > 0 ? (
+                      <div className="grid grid-cols-2 gap-2">
+                        {proposal.media.map((image, index) => (
+                          <div key={image.id} className="aspect-square rounded-lg overflow-hidden">
+                            <img
+                              src={image.original_url}
+                              alt={`${proposal.title} - Image ${index + 1}`}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                e.currentTarget.src = '/images/placeholder.jpg';
+                              }}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="aspect-square bg-gray-100 rounded-lg flex items-center justify-center text-gray-400 text-sm">
+                        No images uploaded
+                      </div>
+                    )}
                   </div>
 
                   {/* Details */}
@@ -195,28 +210,93 @@ const AcquisitionHistory: React.FC = () => {
                       <div>
                         <h4 className="font-medium text-gray-900 mb-1">Donor Information</h4>
                         <p className="text-gray-600 text-sm">
-                          {proposal.donorName}
+                          {proposal.donor.fullname}
                           <br />
-                          <a href={`mailto:${proposal.donorEmail}`} className="text-blue-600 hover:text-blue-800">
-                            {proposal.donorEmail}
+                          <a 
+                            href={`mailto:${proposal.donor.email}`} 
+                            className="text-blue-600 hover:text-blue-800"
+                          >
+                            {proposal.donor.email}
                           </a>
+                          <br />
+                          <span className="text-gray-500">{proposal.donor.contact}</span>
                         </p>
                       </div>
                     </div>
+
+                    {/* Next of Kin Information (if available) */}
+                    {proposal.donor.next_of_kin_fullname && (
+                      <div>
+                        <h4 className="font-medium text-gray-900 mb-1">Next of Kin</h4>
+                        <p className="text-gray-600 text-sm">
+                          {proposal.donor.next_of_kin_fullname}
+                          {proposal.donor.next_of_kin_email && (
+                            <>
+                              <br />
+                              <a 
+                                href={`mailto:${proposal.donor.next_of_kin_email}`} 
+                                className="text-blue-600 hover:text-blue-800"
+                              >
+                                {proposal.donor.next_of_kin_email}
+                              </a>
+                            </>
+                          )}
+                          {proposal.donor.next_of_kin_contact && (
+                            <>
+                              <br />
+                              <span className="text-gray-500">{proposal.donor.next_of_kin_contact}</span>
+                            </>
+                          )}
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
 
                 {/* Action Buttons */}
                 <div className="mt-6 pt-4 border-t border-gray-100 flex justify-end space-x-3">
-                  <button className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  <button 
+                    onClick={() => handleViewDetails(proposal.id)}
+                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
                     View Details
                   </button>
-                  {proposal.proposalStatus === 'pending' && (
+                  
+                  {proposal.proposal_status === 'pending' && (
                     <>
-                      <button className="px-4 py-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500">
+                      <button 
+                        onClick={() => handleStatusUpdate(proposal.id, 'under_review')}
+                        className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      >
+                        Review
+                      </button>
+                      <button 
+                        onClick={() => handleStatusUpdate(proposal.id, 'approved')}
+                        className="px-4 py-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+                      >
                         Approve
                       </button>
-                      <button className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500">
+                      <button 
+                        onClick={() => handleStatusUpdate(proposal.id, 'rejected')}
+                        className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
+                      >
+                        Reject
+                      </button>
+                    </>
+                  )}
+
+                  {proposal.proposal_status === 'under_review' && (
+                    <>
+                      <button 
+                        onClick={() => handleStatusUpdate(proposal.id, 'approved')}
+                        className="px-4 py-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+                      >
+                        Approve
+                      </button>
+                      <button 
+                        onClick={() => handleStatusUpdate(proposal.id, 'rejected')}
+                        className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
+                      >
                         Reject
                       </button>
                     </>
@@ -225,6 +305,34 @@ const AcquisitionHistory: React.FC = () => {
               </div>
             ))}
           </div>
+
+          {/* Pagination */}
+          {proposals.last_page > 1 && (
+            <div className="mt-8 flex items-center justify-between">
+              <div className="text-sm text-gray-700">
+                Showing {((proposals.current_page - 1) * proposals.per_page) + 1} to{' '}
+                {Math.min(proposals.current_page * proposals.per_page, proposals.total)} of{' '}
+                {proposals.total} results
+              </div>
+              <div className="flex space-x-2">
+                {proposals.links.map((link, index) => (
+                  <button
+                    key={index}
+                    onClick={() => link.url && router.visit(link.url)}
+                    disabled={!link.url}
+                    className={`px-3 py-2 text-sm font-medium rounded-md ${
+                      link.active
+                        ? 'bg-blue-600 text-white'
+                        : link.url
+                        ? 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50'
+                        : 'text-gray-400 bg-gray-100 cursor-not-allowed'
+                    }`}
+                    dangerouslySetInnerHTML={{ __html: link.label }}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Empty State */}
           {filteredProposals.length === 0 && (
