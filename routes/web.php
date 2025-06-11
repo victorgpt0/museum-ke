@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\ArtifactController;
 use App\Http\Controllers\ArchivesController;
+use App\Http\Controllers\DonationController;
 
 
 
@@ -55,12 +56,10 @@ Route::get('/map', function () {
 })->name('map');
 
 //Acquisition
-Route::get('/curator/acquisition-history', function () {
-    return Inertia::render('curator/acquisition-history'); // Points to your React component
-});
-Route::get('/curator/acquisition-portal', function () {
-    return Inertia::render('curator/acquisition-portal'); // Points to your React component
-});
+
+Route::get('/curator/acquisition-portal', [DonationController::class, 'create'])->name('donations.create');
+Route::post('/curator/save', [DonationController::class, 'store'])->name('donations.store');
+
 // AI Page Route
 Route::get('/ai', function () {
     return Inertia::render('AI');

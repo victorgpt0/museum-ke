@@ -1,17 +1,16 @@
-import React, { useState } from 'react';
-import { Head, useForm } from '@inertiajs/react';
+import React, { useState, useEffect } from 'react';
+import { Head, useForm, usePage } from '@inertiajs/react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Upload, X, ImageIcon } from 'lucide-react';
+import { Upload, X, CheckCircle, AlertCircle } from 'lucide-react';
 
 interface DonationFormData {
     title: string;
     description: string;
     source: string;
-    images: File[];
     donor_full_name: string;
     donor_email: string;
     donor_phone: string;
@@ -20,15 +19,25 @@ interface DonationFormData {
     next_of_kin_phone: string;
 }
 
+interface PageProps {
+    errors: Record<string, string>;
+    flash: {
+        success?: string;
+        error?: string;
+    };
+}
+
 export default function DonationForm() {
+    const { errors, flash } = usePage<PageProps>().props;
     const [selectedImages, setSelectedImages] = useState<File[]>([]);
     const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+    const [uploadedMediaIds, setUploadedMediaIds] = useState<string[]>([]);
+    const [isUploadingImages, setIsUploadingImages] = useState(false);
 
-    const { data, setData, post, processing, errors } = useForm<DonationFormData>({
+    const { data, setData, post, processing, reset } = useForm<DonationFormData>({
         title: '',
         description: '',
         source: '',
-        images: [],
         donor_full_name: '',
         donor_email: '',
         donor_phone: '',
@@ -37,15 +46,94 @@ export default function DonationForm() {
         next_of_kin_phone: ''
     });
 
+    // Clean up object URLs on component unmount
+    useEffect(() => {
+        return () => {
+            imagePreviews.forEach(url => URL.revokeObjectURL(url));
+        };
+    }, [imagePreviews]);
+
+    // Reset form on successful submission
+    useEffect(() => {
+        if (flash.success) {
+            reset();
+            setSelectedImages([]);
+            setImagePreviews([]);
+            setUploadedMediaIds([]);
+        }
+    }, [flash.success, reset]);
+
     const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = Array.from(e.target.files || []);
         
+        if (files.length === 0) return;
+
+        // Validate file types
+        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+        const invalidFiles = files.filter(file => !allowedTypes.includes(file.type));
+        if (invalidFiles.length > 0) {
+            alert(`Please upload only image files (JPEG, JPG, PNG, WebP).`);
+            return;
+        }
+
+        // Validate file sizes (5MB max per file)
+        const oversizedFiles = files.filter(file => file.size > 5 * 1024 * 1024);
+        if (oversizedFiles.length > 0) {
+            alert(`Some files are too large. Maximum file size is 5MB. Please choose smaller files.`);
+            return;
+        }
+
         // Create preview URLs
         const previews = files.map(file => URL.createObjectURL(file));
         
-        setSelectedImages(prev => [...prev, ...files]);
-        setImagePreviews(prev => [...prev, ...previews]);
-        setData('images', [...selectedImages, ...files]);
+        const newImages = [...selectedImages, ...files];
+        const newPreviews = [...imagePreviews, ...previews];
+        
+        setSelectedImages(newImages);
+        setImagePreviews(newPreviews);
+
+        // Optionally upload images immediately to temporary storage
+        uploadImagesToTemporaryStorage(files);
+    };
+
+    // Upload images to temporary storage (optional approach)
+    const uploadImagesToTemporaryStorage = async (files: File[]) => {
+        if (files.length === 0) return;
+
+        setIsUploadingImages(true);
+        
+        try {
+            const formData = new FormData();
+            files.forEach((file, index) => {
+                formData.append(`images[${index}]`, file);
+            });
+
+            const response = await fetch(route('media.temp-upload'), {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                },
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                console.log('Temporary upload successful:', result);
+                
+                // Store the temporary media IDs or file paths
+                if (result.media_ids) {
+                    setUploadedMediaIds(prev => [...prev, ...result.media_ids]);
+                }
+            } else {
+                console.error('Temporary upload failed:', response.statusText);
+                alert('Failed to upload some images. Please try again.');
+            }
+        } catch (error) {
+            console.error('Error uploading images:', error);
+            alert('Error uploading images. Please try again.');
+        } finally {
+            setIsUploadingImages(false);
+        }
     };
 
     const removeImage = (index: number) => {
@@ -54,31 +142,149 @@ export default function DonationForm() {
         
         const newImages = selectedImages.filter((_, i) => i !== index);
         const newPreviews = imagePreviews.filter((_, i) => i !== index);
+        const newMediaIds = uploadedMediaIds.filter((_, i) => i !== index);
         
         setSelectedImages(newImages);
         setImagePreviews(newPreviews);
-        setData('images', newImages);
+        setUploadedMediaIds(newMediaIds);
     };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         
-        // Create FormData for file upload
-        const formData = new FormData();
-        Object.entries(data).forEach(([key, value]) => {
-            if (key === 'images') {
-                selectedImages.forEach((file) => {
-                    formData.append('images[]', file);
-                });
-            } else {
+        console.log('Form submission started');
+        console.log('Form data:', data);
+        console.log('Selected images:', selectedImages);
+        console.log('Uploaded media IDs:', uploadedMediaIds);
+
+        // Validate required fields before submission
+        if (!data.title.trim()) {
+            alert('Please enter an artifact title');
+            return;
+        }
+        if (!data.description.trim()) {
+            alert('Please enter a description');
+            return;
+        }
+        if (!data.source.trim()) {
+            alert('Please enter the source/origin');
+            return;
+        }
+        if (!data.donor_full_name.trim()) {
+            alert('Please enter your full name');
+            return;
+        }
+        if (!data.donor_email.trim()) {
+            alert('Please enter your email address');
+            return;
+        }
+        if (!data.donor_phone.trim()) {
+            alert('Please enter your phone number');
+            return;
+        }
+
+        try {
+            // APPROACH 1: Send images with form data (Media Library handles in controller)
+            const formData = new FormData();
+            
+            // Add text fields
+            Object.entries(data).forEach(([key, value]) => {
                 formData.append(key, value as string);
+            });
+
+            // Add images for Media Library processing
+            selectedImages.forEach((file, index) => {
+                formData.append(`images[${index}]`, file);
+            });
+
+            // Add any temporary media IDs if using temporary upload approach
+            if (uploadedMediaIds.length > 0) {
+                uploadedMediaIds.forEach((mediaId, index) => {
+                    formData.append(`temp_media_ids[${index}]`, mediaId);
+                });
             }
+
+            console.log('FormData entries:');
+            for (let [key, value] of formData.entries()) {
+                console.log(key, value instanceof File ? `File: ${value.name}` : value);
+            }
+
+            // Use Inertia's post method with FormData
+            post(route('donations.store'), {
+                data: formData,
+                forceFormData: true,
+                preserveState: false,
+                preserveScroll: true,
+                onStart: () => {
+                    console.log('Request started');
+                },
+                onSuccess: (page) => {
+                    console.log('Request successful:', page);
+                },
+                onError: (errors) => {
+                    console.error('Request failed with errors:', errors);
+                },
+                onFinish: () => {
+                    console.log('Request finished');
+                }
+            });
+
+            // APPROACH 2: Alternative - Send form data first, then attach images
+            /*
+            post(route('donations.store'), {
+                data: {
+                    ...data,
+                    temp_media_ids: uploadedMediaIds, // If using temporary upload
+                    image_count: selectedImages.length
+                },
+                preserveState: false,
+                preserveScroll: true,
+                onStart: () => console.log('Request started'),
+                onSuccess: (response) => {
+                    console.log('Request successful:', response);
+                    
+                    // If donation was created successfully and we have images to attach
+                    if (response.props.donation_id && selectedImages.length > 0) {
+                        attachImagesToDonation(response.props.donation_id);
+                    }
+                },
+                onError: (errors) => console.error('Request failed:', errors),
+                onFinish: () => console.log('Request finished')
+            });
+            */
+
+        } catch (error) {
+            console.error('Error during form submission:', error);
+        }
+    };
+
+    // Alternative method: Attach images after donation creation
+    const attachImagesToDonation = async (donationId: string) => {
+        if (selectedImages.length === 0) return;
+
+        const formData = new FormData();
+        selectedImages.forEach((file, index) => {
+            formData.append(`images[${index}]`, file);
         });
 
-        post('/donations', {
-            data: formData,
-            forceFormData: true,
-        });
+        try {
+            const response = await fetch(route('donations.attach-media', donationId), {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                },
+            });
+
+            if (response.ok) {
+                console.log('Images attached successfully');
+                // Optionally trigger a success message or redirect
+            } else {
+                console.error('Failed to attach images');
+            }
+        } catch (error) {
+            console.error('Error attaching images:', error);
+        }
     };
 
     return (
@@ -95,6 +301,39 @@ export default function DonationForm() {
                             Thank you for your interest in donating to Nairobi National Museum
                         </p>
                     </div>
+
+                    {/* Debug Information - Remove in production */}
+                    {process.env.NODE_ENV === 'development' && (
+                        <div className="mb-6 border border-blue-200 bg-blue-50 p-4 rounded-md">
+                            <h3 className="font-semibold text-blue-800">Debug Info:</h3>
+                            <p className="text-blue-700">Processing: {processing ? 'Yes' : 'No'}</p>
+                            <p className="text-blue-700">Uploading Images: {isUploadingImages ? 'Yes' : 'No'}</p>
+                            <p className="text-blue-700">Errors: {JSON.stringify(errors)}</p>
+                            <p className="text-blue-700">Flash: {JSON.stringify(flash)}</p>
+                            <p className="text-blue-700">Selected Images: {selectedImages.length}</p>
+                            <p className="text-blue-700">Uploaded Media IDs: {uploadedMediaIds.length}</p>
+                        </div>
+                    )}
+
+                    {/* Success Message */}
+                    {flash.success && (
+                        <div className="mb-6 border border-green-200 bg-green-50 p-4 rounded-md flex items-center space-x-2">
+                            <CheckCircle className="h-4 w-4 text-green-600 flex-shrink-0" />
+                            <p className="text-green-800">
+                                {flash.success}
+                            </p>
+                        </div>
+                    )}
+
+                    {/* Error Message */}
+                    {(flash.error || errors.submission) && (
+                        <div className="mb-6 border border-red-200 bg-red-50 p-4 rounded-md flex items-center space-x-2">
+                            <AlertCircle className="h-4 w-4 text-red-600 flex-shrink-0" />
+                            <p className="text-red-800">
+                                {flash.error || errors.submission}
+                            </p>
+                        </div>
+                    )}
 
                     <form onSubmit={handleSubmit} className="space-y-8">
                         {/* Artifact Information */}
@@ -114,6 +353,7 @@ export default function DonationForm() {
                                         onChange={e => setData('title', e.target.value)}
                                         placeholder="Enter the name or title of the artifact"
                                         required
+                                        className={errors.title ? 'border-red-500' : ''}
                                     />
                                     {errors.title && <div className="text-red-500 text-sm">{errors.title}</div>}
                                 </div>
@@ -127,6 +367,7 @@ export default function DonationForm() {
                                         placeholder="Describe the artifact, its history, significance, and any other relevant details"
                                         rows={4}
                                         required
+                                        className={errors.description ? 'border-red-500' : ''}
                                     />
                                     {errors.description && <div className="text-red-500 text-sm">{errors.description}</div>}
                                 </div>
@@ -139,6 +380,7 @@ export default function DonationForm() {
                                         onChange={e => setData('source', e.target.value)}
                                         placeholder="Where did this artifact originate from? (e.g., Family collection, specific location, etc.)"
                                         required
+                                        className={errors.source ? 'border-red-500' : ''}
                                     />
                                     {errors.source && <div className="text-red-500 text-sm">{errors.source}</div>}
                                 </div>
@@ -150,20 +392,28 @@ export default function DonationForm() {
                                         <div className="text-center">
                                             <Upload className="mx-auto h-12 w-12 text-gray-400" />
                                             <div className="mt-4">
-                                                <Label htmlFor="images" className="cursor-pointer bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 inline-block">
-                                                    Choose Images
+                                                <Label 
+                                                    htmlFor="images" 
+                                                    className={`cursor-pointer px-4 py-2 rounded-md inline-block transition-colors ${
+                                                        isUploadingImages 
+                                                            ? 'bg-gray-400 text-white cursor-not-allowed' 
+                                                            : 'bg-blue-600 text-white hover:bg-blue-700'
+                                                    }`}
+                                                >
+                                                    {isUploadingImages ? 'Uploading...' : 'Choose Images'}
                                                 </Label>
                                                 <Input
                                                     id="images"
                                                     type="file"
                                                     multiple
-                                                    accept="image/*"
+                                                    accept="image/jpeg,image/jpg,image/png,image/webp"
                                                     onChange={handleImageUpload}
                                                     className="hidden"
+                                                    disabled={isUploadingImages}
                                                 />
                                             </div>
                                             <p className="mt-2 text-sm text-gray-500">
-                                                Upload multiple images of your artifact (PNG, JPG, JPEG)
+                                                Upload multiple images of your artifact (PNG, JPG, JPEG, WebP - Max 5MB each)
                                             </p>
                                         </div>
                                     </div>
@@ -183,9 +433,15 @@ export default function DonationForm() {
                                                         type="button"
                                                         onClick={() => removeImage(index)}
                                                         className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                        disabled={isUploadingImages}
                                                     >
                                                         <X size={16} />
                                                     </button>
+                                                    {uploadedMediaIds[index] && (
+                                                        <div className="absolute bottom-1 left-1 bg-green-500 text-white text-xs px-1 rounded">
+                                                            ✓
+                                                        </div>
+                                                    )}
                                                 </div>
                                             ))}
                                         </div>
@@ -211,6 +467,7 @@ export default function DonationForm() {
                                         onChange={e => setData('donor_full_name', e.target.value)}
                                         placeholder="Enter your full name"
                                         required
+                                        className={errors.donor_full_name ? 'border-red-500' : ''}
                                     />
                                     {errors.donor_full_name && <div className="text-red-500 text-sm">{errors.donor_full_name}</div>}
                                 </div>
@@ -225,6 +482,7 @@ export default function DonationForm() {
                                             onChange={e => setData('donor_email', e.target.value)}
                                             placeholder="your.email@example.com"
                                             required
+                                            className={errors.donor_email ? 'border-red-500' : ''}
                                         />
                                         {errors.donor_email && <div className="text-red-500 text-sm">{errors.donor_email}</div>}
                                     </div>
@@ -238,6 +496,7 @@ export default function DonationForm() {
                                             onChange={e => setData('donor_phone', e.target.value)}
                                             placeholder="+254 xxx xxx xxx"
                                             required
+                                            className={errors.donor_phone ? 'border-red-500' : ''}
                                         />
                                         {errors.donor_phone && <div className="text-red-500 text-sm">{errors.donor_phone}</div>}
                                     </div>
@@ -261,6 +520,7 @@ export default function DonationForm() {
                                         value={data.next_of_kin_name}
                                         onChange={e => setData('next_of_kin_name', e.target.value)}
                                         placeholder="Enter next of kin's full name"
+                                        className={errors.next_of_kin_name ? 'border-red-500' : ''}
                                     />
                                     {errors.next_of_kin_name && <div className="text-red-500 text-sm">{errors.next_of_kin_name}</div>}
                                 </div>
@@ -274,6 +534,7 @@ export default function DonationForm() {
                                             value={data.next_of_kin_email}
                                             onChange={e => setData('next_of_kin_email', e.target.value)}
                                             placeholder="nextofkin@example.com"
+                                            className={errors.next_of_kin_email ? 'border-red-500' : ''}
                                         />
                                         {errors.next_of_kin_email && <div className="text-red-500 text-sm">{errors.next_of_kin_email}</div>}
                                     </div>
@@ -286,6 +547,7 @@ export default function DonationForm() {
                                             value={data.next_of_kin_phone}
                                             onChange={e => setData('next_of_kin_phone', e.target.value)}
                                             placeholder="+254 xxx xxx xxx"
+                                            className={errors.next_of_kin_phone ? 'border-red-500' : ''}
                                         />
                                         {errors.next_of_kin_phone && <div className="text-red-500 text-sm">{errors.next_of_kin_phone}</div>}
                                     </div>
@@ -300,16 +562,17 @@ export default function DonationForm() {
                                     variant="outline" 
                                     type="button" 
                                     onClick={() => window.history.back()}
+                                    disabled={processing || isUploadingImages}
                                     className="dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700"
                                 >
                                     Cancel
                                 </Button>
                                 <Button 
                                     type="submit" 
-                                    disabled={processing}
+                                    disabled={processing || isUploadingImages}
                                     className="bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-600 dark:text-white dark:hover:bg-blue-700"
                                 >
-                                    {processing ? 'Submitting...' : 'Submit Donation'}
+                                    {processing ? 'Submitting...' : isUploadingImages ? 'Uploading Images...' : 'Submit Donation'}
                                 </Button>
                             </CardFooter>
                         </Card>
