@@ -51,11 +51,12 @@ class HandleInertiaRequests extends Middleware
                 ? $request->user()->notifications()->latest()->take(10)->get()->map(function ($notification) {
                     return [
                         'id' => $notification->id,
+                        'title' => $notification->data['title'] ?? 'New notification',
                         'message' => $notification->data['message'] ?? 'New notification',
+                        'url' => $notification->data['url'] ?? null,
                         'read' => $notification->read_at !== null,
                         'timestamp' => $notification->created_at->diffForHumans(),
-                        'type' => $notification->type,
-                        'data' => $notification->data,
+                        'notif_type' => $notification->data['type'] ?? 'info',
                     ];
                 })
                 : [],

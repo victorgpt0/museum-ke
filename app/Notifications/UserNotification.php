@@ -14,7 +14,7 @@ class UserNotification extends Notification implements ShouldBroadcast, ShouldQu
 {
     use Queueable;
 
-    protected $type;
+    protected $notif_type;
     protected $title;
     protected $message;
     protected $url;
@@ -23,12 +23,12 @@ class UserNotification extends Notification implements ShouldBroadcast, ShouldQu
     /**
      * Create a new notification instance.
      */
-    public function __construct($type = 'info', $title, $message, $url = null, $notifiableId = null)
+    public function __construct($notif_type = 'info', $title, $message, $url = null, $notifiableId = null)
     {
-        $this->type = $type;
+        $this->notif_type = $notif_type;
         $this->title = $title;
         $this->message = $message;
-        $this->url = $url;
+        $this->url = relative_route($url);
         $this->notifiableId = $notifiableId;
     }
 
@@ -61,7 +61,7 @@ class UserNotification extends Notification implements ShouldBroadcast, ShouldQu
     public function toArray(object $notifiable): array
     {
         return [
-            'type' => $this->type,
+            'type' => $this->notif_type,
             'title' => $this->title,
             'message' => $this->message,
             'url' => $this->url
@@ -74,11 +74,13 @@ class UserNotification extends Notification implements ShouldBroadcast, ShouldQu
             'id' => $this->id,
             'title' => $this->title,
             'message' => $this->message,
-            'type' => $this->type,
-            'action_url' => $this->url,
-            'created_at' => now()->toISOString(),
+            'notif_type' => $this->notif_type,
+            'url' => $this->url,
+            'read' => false,
+            'timestamp' => now()->diffForHumans(),
         ]);
     }
+
     public function broadcastAs(): string
     {
         return 'notification.created';
