@@ -82,7 +82,11 @@ Route::post('/api/ai/query', [App\Http\Controllers\AIController::class, 'query']
     ->middleware(['auth'])
     ->name('ai.query');
 
-
+//------PROJECT-------->
+//proposals
+Route::get('/project/new-proposal', function () {
+    return Inertia::render('Project/proposal/new-proposal');
+});
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';
