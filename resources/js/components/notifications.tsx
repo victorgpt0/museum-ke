@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -6,39 +6,85 @@ import {
     DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
 import { Bell, BellRing } from 'lucide-react';
-import { router } from '@inertiajs/react';
+import { router, usePage } from '@inertiajs/react';
+import { echo } from '@laravel/echo-react';
 
 interface Notification {
     id: number;
+    title: string;
     message: string;
+    type: string;
+    url: string;
     read: boolean;
-    timestamp: string;
+    created_at: string;
 }
 
+interface Props {
+    auth: {
+        user: {
+            id: number;
+        };
+    };
+    notifications?: Notification[];
+    unreadCount?: number;
+}
 const Notifications: React.FC = () => {
-    const [notifications, setNotifications] = useState<Notification[]>([
-        // Example notifications - replace with actual data fetching
-        {
-            id: 1,
-            message: 'New exhibition added',
-            read: false,
-            timestamp: '2 min ago'
-        },
-        {
-            id: 2,
-            message: 'Ticket sales report',
-            read: true,
-            timestamp: '1 hour ago'
-        }
-    ]);
+    const { auth, notifications: initialNotifications = [], unreadCount: initialUnreadCount = 0 } = usePage<Props>().props;
 
-    const markAsRead = (id: string) => {
+    const [notifications, setNotifications] = useState<Notification[]>(initialNotifications);
+    const [unreadCount, setUnreadCount] = useState(initialUnreadCount);
+
+    useEffect(() => {
+        const channel = echo().private(`user-notifications.${auth.user.id}`)
+            .listen('notification.created', (notification) => {
+                console.log('new notif',notification);
+
+                const newNotification: Notification = {
+                    id: notification.id || Date.now(),
+                    title: notification.data.title,
+                    message: notification.data.message,
+                    type: notification.data.type,
+                    url: notification.data.url,
+                    read: false,
+                    created_at: notification.created_at,
+                };
+
+                setNotifications(prev => [newNotification, ...prev]);
+                setUnreadCount(prev => prev + 1);
+
+                if(Notification.permission === 'granted'){
+                    new Notification(newNotification.title, {
+                        body: newNotification.message,
+                        icon: '/favicon.ico',
+                    });
+                }
+            })
+            .error((error) => {
+                console.log('broadcast error', error);
+            });
+
+        return () => {
+            channel.stopListening('.Illuminate\\Notifications\\Events\\BroadcastNotificationCreated');
+            echo().leaveChannel(`private-user-notifications.${auth.user.id}`);
+        }
+    }, [auth.user.id]);
+
+    useEffect(() => {
+        if('Notification' in window && Notification.permission !== 'granted'){
+            Notification.requestPermission();
+        }
+    }, []);
+
+    const markAsRead = (id: number) => {
         router.post(route('notifications.mark-as-read', id), {}, {
             preserveScroll: true,
             preserveState: true,
-            only: ['notifications', 'unreadCount'], // Only reload these props
+            only: ['notifications', 'unreadCount'],
             onSuccess: () => {
-                // Handle success
+                setNotifications(prev =>
+                    prev.map(n => n.id === id ? { ...n, read: true } : n)
+                );
+                setUnreadCount(prev => Math.max(0, prev - 1));
             }
         })
     }
@@ -49,20 +95,29 @@ const Notifications: React.FC = () => {
             preserveState: true,
             only: ['notifications', 'unreadCount'], // Only reload these props
             onSuccess: () => {
-                // Handle success
+                setNotifications(prev =>
+                    prev.map(n => ({ ...n, read: true }))
+                );
+                setUnreadCount(0);
             }
         })
     }
 
-    const deleteNotification = (id: string) => {
+    const deleteNotification = (id: number) => {
         router.delete(route('notifications.destroy', id), {
             preserveScroll: true,
             preserveState: true,
-            only: ['notifications', 'unreadCount']
+            only: ['notifications', 'unreadCount'],
+            onSuccess: () => {
+                const wasUnread = notifications.find(n => n.id === id)?.read === false;
+                setNotifications(prev => prev.filter(n => n.id !== id));
+                if (wasUnread) {
+                    setUnreadCount(prev => Math.max(0, prev - 1));
+                }
+            }
         })
     }
 
-    const unreadCount = notifications.filter(n => !n.read).length;
 
     return (
         <DropdownMenu>
@@ -84,7 +139,7 @@ const Notifications: React.FC = () => {
                             "
 
                         >
-                            {unreadCount}
+                            {unreadCount > 99 ? '99+' : unreadCount}
                         </span>
                     ) : null}
                     <div

@@ -47,6 +47,21 @@ class HandleInertiaRequests extends Middleware
                 'user' => $request->user(),
                 'permissions' => $request->user() ? $request->user()->getAllPermissions()->pluck('name')->toArray() : '[]'
             ],
+            'notifications' => $request->user()
+                ? $request->user()->notifications()->latest()->take(10)->get()->map(function ($notification) {
+                    return [
+                        'id' => $notification->id,
+                        'message' => $notification->data['message'] ?? 'New notification',
+                        'read' => $notification->read_at !== null,
+                        'timestamp' => $notification->created_at->diffForHumans(),
+                        'type' => $notification->type,
+                        'data' => $notification->data,
+                    ];
+                })
+                : [],
+            'unreadCount' => $request->user()
+                ? $request->user()->unreadNotifications()->count()
+                : 0,
             'ziggy' => fn (): array => [
                 ...(new Ziggy)->toArray(),
                 'location' => $request->url(),

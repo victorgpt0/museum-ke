@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -17,16 +18,18 @@ class UserNotification extends Notification implements ShouldBroadcast, ShouldQu
     protected $title;
     protected $message;
     protected $url;
+    protected $notifiableId;
 
     /**
      * Create a new notification instance.
      */
-    public function __construct($type = 'info', $title, $message, $url = null)
+    public function __construct($type = 'info', $title, $message, $url = null, $notifiableId = null)
     {
         $this->type = $type;
         $this->title = $title;
         $this->message = $message;
         $this->url = $url;
+        $this->notifiableId = $notifiableId;
     }
 
     /**
@@ -65,7 +68,7 @@ class UserNotification extends Notification implements ShouldBroadcast, ShouldQu
         ];
     }
 
-    public function toBroadcast($notifiable)
+    public function toBroadcast(object $notifiable): BroadcastMessage
     {
         return new BroadcastMessage([
             'id' => $this->id,
@@ -76,12 +79,14 @@ class UserNotification extends Notification implements ShouldBroadcast, ShouldQu
             'created_at' => now()->toISOString(),
         ]);
     }
-    public function broadcastAs()
+    public function broadcastAs(): string
     {
         return 'notification.created';
     }
-    public function broadcastOn()
+    public function broadcastOn(): array
     {
-        return ['user-notification'. $this->notifiable->id];
+        return [
+            new PrivateChannel('user-notifications.'. $this->notifiableId)
+        ];
     }
 }
