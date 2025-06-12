@@ -115,6 +115,61 @@ const mainNavItems: ExtendedNavItem[] = [
             }
         ]
     },
+    //FOR THE PROJECTS ITS GOING TO BEE TRICKY
+    //HERES MY IDEA, Ill separate menu options into proposal which will have submenus for both HOD and Initiator but authentication filter  these options according to role. 
+    //Projectproposal. projectoverview
+      {
+        title: 'Project Proposal',
+        href: '/myproposal/dashboard',  // Default URL when Archives is clicked
+        icon: Archive,
+        children: [
+            {
+                title: 'Make a project Proposal',
+                href: '/project/new-proposal',
+                icon: FileCheck,
+            },
+            {
+                title: 'View Proposal',   //this is for HOD and initiator, filter on role
+                href: '/myproposal/dashboard',
+                icon: FileText,
+            },
+           
+        ]
+    },
+    {
+        title: 'Project Milestone',
+        href: '/project/milestone',  // Default URL when Archives is clicked
+        icon: Archive,
+        children: [
+            {
+                title: 'Upload your Project Milestone',
+                href: '/project/new-milestone',
+                icon: Folder,
+            },
+            {
+                title: 'View Milestones', //dashboard of milestones with completion rate
+                href: '/project/milestone',
+                icon: FileText,
+            }
+        ]
+    },
+     {
+        title: 'Project Report',
+        href: '/project/report',  // Default URL when Archives is clicked
+        icon: Archive,
+        children: [
+            {
+                title: 'Upload your Project Report',
+                href: '/project/new-report',
+                icon: Folder,
+            },
+            {
+                title: 'View Reports', //dashboard of milestones with completion rate
+                href: '/project/report',
+                icon: FileText,
+            }
+        ]
+    },
 ];
 
 const footerNavItems: NavItem[] = [
