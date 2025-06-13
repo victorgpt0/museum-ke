@@ -1,5 +1,5 @@
 import { useForm } from '@inertiajs/react';
-import { FormEventHandler, useRef } from 'react';
+import { FormEventHandler, useRef, useState } from 'react';
 
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
@@ -12,44 +12,49 @@ import { AlertTriangle, Trash2 } from 'lucide-react';
 interface Props {
     itemName?: string;
     itemType?: string;
-    requirePassword?: boolean;
     deleteRoute: string;
 }
 
 export default function DeleteConfirm({
     itemName,
     itemType = 'item',
-    requirePassword = false,
     deleteRoute, } : Props) {
+
+    const [open, setOpen] = useState(false);
 
     const passwordInput = useRef<HTMLInputElement>(null);
     const { data, setData, delete: destroy, processing, reset, errors, clearErrors } = useForm({
         password: '' ,
     });
 
+
     const handleDelete: FormEventHandler = (e) => {
         e.preventDefault();
 
         destroy(deleteRoute, {
             preserveScroll: true,
-            onSuccess: () => closeModal(),
-            onError: () => {
-                if(requirePassword){
-                    passwordInput.current?.focus()
-                }
+            preserveState: true,
+            onSuccess: () => {
+                closeModal();
             },
-            onFinish: () => reset(),
+            onError: () => {
+                passwordInput.current?.focus()
+            },
+            onFinish: () => {
+                reset()
+            },
         });
     };
 
     const closeModal = () => {
         clearErrors();
         reset();
+        setOpen(false);
     };
 
 
     return (
-        <Dialog>
+        <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
                 <Button variant="destructive" className={`flex items-center cursor-pointer`}>
                     <Trash2 className="h-3 w-3" />
@@ -69,11 +74,10 @@ export default function DeleteConfirm({
                         </>
                     )}
                     This action cannot be undone and all associated data will be lost.
-                    {requirePassword && <span className="mt-2 block">Please enter your password to confirm this deletion.</span>}
+                    <span className="mt-2 block">Please enter your password to confirm this deletion.</span>
                 </DialogDescription>
                 <form className="space-y-6" onSubmit={handleDelete}>
-                    {requirePassword && (
-                        <div className="grid gap-2">
+                                            <div className="grid gap-2">
                             <Label htmlFor="password" className="sr-only">
                                 Password
                             </Label>
@@ -91,7 +95,6 @@ export default function DeleteConfirm({
 
                             <InputError message={errors.password} />
                         </div>
-                    )}
 
                     <DialogFooter className="gap-2">
                         <DialogClose asChild>
@@ -100,11 +103,9 @@ export default function DeleteConfirm({
                             </Button>
                         </DialogClose>
 
-                        { !requirePassword && (
-                            <Button variant="destructive" disabled={processing} asChild>
+                        <Button variant="destructive" disabled={processing} asChild>
                             <button type="submit">Delete {itemType}</button>
                         </Button>
-                        )}
 
                     </DialogFooter>
                 </form>

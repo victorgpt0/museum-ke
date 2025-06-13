@@ -44,7 +44,7 @@ class RoleController extends Controller implements HasMiddleware
     public function create()
     {
         return Inertia::render('roles/create', [
-            'permissions' => Permission::pluck('name')
+            'permissions' => Permission::all()->sortBy('name')->pluck('name'),
         ]);
     }
 
@@ -86,7 +86,12 @@ class RoleController extends Controller implements HasMiddleware
      */
     public function edit(string $id)
     {
-        //
+        $role = Role::find($id);
+        return Inertia::render('roles/edit', [
+            'role' => $role,
+            'role_permissions' => $role->permissions->pluck('name')->all(),
+            'permissions' => Permission::all()->sortBy('name')->pluck('name'),
+        ]);
     }
 
     /**
@@ -94,14 +99,37 @@ class RoleController extends Controller implements HasMiddleware
      */
     public function update(Request $request, string $id)
     {
-        //
+        $validator = Validator::make($request->all(), [
+            'name' => ['required', 'string', 'max:255'],
+            'permissions' => ['required', 'array']
+        ]);
+
+        if ($validator->fails()) {
+            return back()
+                ->withInput()
+                ->withErrors($validator);
+        };
+
+        $role = Role::find($id);
+        $role->name = $request->name;
+        $role->save();
+
+        $role->syncPermissions($request->permissions);
+
+        return to_route('roles.index')->with('success','Role Updated Successfully');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Request $request, string $id)
     {
-        //
+        $request->validate([
+            'password' => ['required', 'current_password']
+        ]);
+
+        Role::destroy($id);
+
+        return back()->with('success','Role Deleted Successfully');
     }
 }

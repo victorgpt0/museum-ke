@@ -150,11 +150,11 @@ class UserController extends Controller implements HasMiddleware
     public function destroy(Request $request, string $id)
     {
         $request->validate([
-            'password' => ['nullable', 'current_password']
+            'password' => ['required', 'current_password']
         ]);
 
         User::destroy($id);
 
-        return to_route('users.index')->with('success','User Deleted Successfully');
+        return back()->with('success','User Deleted Successfully');
     }
 }

@@ -15,6 +15,7 @@ import {
     SelectTrigger,
     SelectValue
 } from '@/components/ui/select';
+import { FormUI } from '@/components/ui/form';
 
 interface Props {
     roles: Array<{
@@ -51,7 +52,8 @@ export default function Create({ roles }: Props){
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={`Create User`}/>
 
-            <form onSubmit={submit} className={`p-6 space-y-6 mt-4 max-w-md mx-auto`}>
+            <FormUI>
+            <form onSubmit={submit} className={`space-y-6 mx-auto`}>
                 <div className={`grid gap-2`}>
                     <Label>Name</Label>
                     <Input
@@ -61,6 +63,7 @@ export default function Create({ roles }: Props){
                         value={data.name}
                         onChange={(e)=>setData('name', e.target.value)}
                         placeholder={`Enter User Name`}
+                        className={`max-w-md`}
                     />
                     <InputError message={errors.name} />
 
@@ -74,6 +77,7 @@ export default function Create({ roles }: Props){
                         value={data.email}
                         onChange={(e)=>setData('email', e.target.value)}
                         placeholder={`Enter Email`}
+                        className={`max-w-md`}
                     />
                     <InputError message={errors.email} />
                 </div>
@@ -84,7 +88,9 @@ export default function Create({ roles }: Props){
                         value={data.role}
                         onValueChange={(value) => setData('role', value)}
                     >
-                        <SelectTrigger>
+                        <SelectTrigger
+                            className={`max-w-md`}
+                        >
                             <SelectValue placeholder="Select a role"/>
                         </SelectTrigger>
                         <SelectContent>
@@ -108,6 +114,7 @@ export default function Create({ roles }: Props){
                         disabled={processing}
                 >CREATE</Button>
             </form>
+            </FormUI>
         </AppLayout>
     );
 }

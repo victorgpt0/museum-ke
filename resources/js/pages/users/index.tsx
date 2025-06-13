@@ -51,7 +51,7 @@ export default function Index({users}: PaginatedResults<User>){
                   from={users.from}
                   to={users.to}
                   total={users.total}
-                  requirePasswordOnDelete={true} />
+              />
           </div>
       </AppLayout>
     );

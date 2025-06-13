@@ -6,18 +6,9 @@ import { Label } from '@/components/ui/label';
 import { FormEvent } from 'react';
 import { Button } from '@/components/ui/button';
 import InputError from '@/components/input-error';
-import {
-    Select,
-    SelectContent,
-    SelectGroup,
-    SelectItem,
-    SelectLabel,
-    SelectTrigger,
-    SelectValue
-} from '@/components/ui/select';
+import { FormUI } from '@/components/ui/form';
+import { Badge } from '@/components/ui/badge';
 
-interface Props {
-}
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Roles',
@@ -34,6 +25,17 @@ export default function Create({ permissions }){
         name: '',
         permissions: [],
     });
+
+    // Group permissions by model prefix
+    const groupedPermissions = permissions.reduce((groups, permission) => {
+        const prefix = permission.split('.')[0];
+        if (!groups[prefix]) {
+            groups[prefix] = [];
+        }
+        groups[prefix].push(permission);
+        return groups;
+    }, {} as Record<string, string[]>);
+
 
     const submit = (e: FormEvent) => {
         e.preventDefault();
@@ -54,7 +56,8 @@ export default function Create({ permissions }){
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={`Create Role`}/>
 
-            <form onSubmit={submit} className={`p-6 space-y-6 mt-4 max-w-md mx-auto`}>
+            <FormUI>
+            <form onSubmit={submit} className={`space-y-6 mx-auto`}>
                 <div className={`grid gap-2`}>
                     <Label>Name</Label>
                     <Input
@@ -65,6 +68,7 @@ export default function Create({ permissions }){
                         onChange={(e)=>setData('name', e.target.value)}
                         placeholder={`Enter Role Name`}
                         required
+                        className={`max-w-md`}
                     />
                     <InputError message={errors.name} />
 
@@ -72,18 +76,33 @@ export default function Create({ permissions }){
 
                 <div className={`grid gap-2`}>
                     <Label className="block mb-2">Permissions</Label>
-                    {permissions.map((permission) => (
-                        <Label key={permission} className={`flex items-center space-x-2`}>
-                            <Input
-                                type={`checkbox`}
-                                className={`h-5 w-5`}
-                                value={permission}
-                                id={permission}
-                                onChange={(e)=> handleCheckboxChange(permission, e.target.checked)}
-                            ></Input>
-                            <span className={`text-gray-800 ml-2`}>{permission}</span>
-                        </Label>
+                    <div className={`flex flex-wrap gap-4`}>
+                    {Object.entries(groupedPermissions).map(([model,permissions]) => (
+                        <div
+                        key={model}
+                        className={"border rounded-lg p-4 bg-gray-50 min-w-40 space-y-2"}>
+                        <Badge variant={`outline`} className={`text-xs font-medium capitalize text-gray-800 mb-3`}>
+                            {model}
+                        </Badge>
+                            <div className={`grid gap-2`}>
+                                {permissions.map((permission) => (
+                                    <Label key={permission} className={`flex items-center space-x-2`}>
+                                        <Input
+                                            type={`checkbox`}
+                                            className={`h-4 w-4`}
+                                            value={permission}
+                                            id={permission}
+                                            onChange={(e)=> handleCheckboxChange(permission, e.target.checked)}
+                                        ></Input>
+                                        <span className={`text-gray-700 ml-2`}>
+                                                {permission.split('.').slice(1).join('.')}
+                                            </span>
+                                    </Label>
+                                ))}
+                            </div>
+                        </div>
                     ))}
+                    </div>
                     <InputError message={errors.permissions} />
                 </div>
 
@@ -91,6 +110,7 @@ export default function Create({ permissions }){
                         disabled={processing}
                 >CREATE</Button>
             </form>
+            </FormUI>
         </AppLayout>
     );
 }

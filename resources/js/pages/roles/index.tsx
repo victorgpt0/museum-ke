@@ -50,7 +50,7 @@ export default function Index({roles}: PaginatedResults<Role>){
                   from={roles.from}
                   to={roles.to}
                   total={roles.total}
-                  requirePasswordOnDelete={true}/>
+              />
           </div>
       </AppLayout>
     );

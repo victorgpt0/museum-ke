@@ -35,7 +35,6 @@ const Table = <T ,>({
     from,
     to,
     total,
-                        requirePasswordOnDelete = false,
                     }: TableProps<T>): JSX.Element => {
     return (
         <div className={`p-4`}>
@@ -147,7 +146,7 @@ const Table = <T ,>({
                                         </Link>
                                     )}
                                     {Can(`${resource}.delete`) && (
-                                       <DeleteConfirm itemType={type} deleteRoute={route(`${resource}.destroy`, item.id)} requirePassword={requirePasswordOnDelete}/>
+                                       <DeleteConfirm itemType={type} deleteRoute={route(`${resource}.destroy`, item.id)}/>
                                     )}
                                 </div>
                             </td>
