@@ -160,9 +160,13 @@ const Notifications: React.FC = () => {
         });
     };
 
-    const handleRedirect = (redirect:string) => {
+    const handleRedirect = (redirect:string, id, e) => {
         if (redirect) {
-            router.visit(redirect);
+            router.visit(redirect, {
+                onSuccess: () => markAsRead(id, e)
+            });
+        } else {
+            markAsRead(id, e);
         }
     }
 
@@ -204,7 +208,7 @@ const Notifications: React.FC = () => {
                             <DropdownMenuItem
                                 key={notification.id}
                                 className={`my-1 ${!notification.read ? 'bg-accent' : ''} hover:bg-accent/50 cursor-pointer transition-colors`}
-                                onClick={() => handleRedirect(notification.url)}
+                                onClick={(e) => handleRedirect(notification.url, notification.id, e)}
                             >
                                 <div className="flex w-full items-start gap-3">
                                     {/* Icon */}
@@ -258,7 +262,11 @@ const Notifications: React.FC = () => {
                     </div>
                 )}
                 <div className="border-t p-4 text-center">
-                    <button className="text-primary text-sm hover:underline">View all notifications</button>
+                    <Button
+                        variant={`ghost`}
+                        className="text-primary text-sm hover:underline"
+                        onClick={() => router.visit(route('notifications.index'))}
+                    >View all notifications</Button>
                 </div>
             </DropdownMenuContent>
         </DropdownMenu>

@@ -3,21 +3,26 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class NotificationController extends Controller
 {
     public function index(Request $request)
     {
-        $notifs = $request->user()->notifications;
-        return response()->json([
-            'notifications' => $notifs,
-            'unreadCount' => $request->user()->unreadNotifications->count(),
-//            'pagination' => [
-//                'current_page' => $notifs->currentPage(),
-//                'last_page' => $notifs->lastPage(),
-//                'per_page' => $notifs->perPage(),
-//                'total' => $notifs->total(),
-//            ]
+        $notifications = $request->user()->notifications();
+        return Inertia::render('notifications/index',[
+            'notifications_index' => $notifications->latest()->get()->map(function ($notification) {
+                return [
+                    'id' => $notification->id,
+                    'title' => $notification->data['title'] ?? 'New notification',
+                    'message' => $notification->data['message'] ?? 'New notification',
+                    'url' => $notification->data['url'] ?? null,
+                    'read' => $notification->read_at !== null,
+                    'timestamp' => $notification->created_at->diffForHumans(),
+                    'notif_type' => $notification->data['type'] ?? 'info',
+                ];
+            }),
+            'unreadCount_index' => $request->user()->unreadNotifications->count(),
         ]);
     }
 
