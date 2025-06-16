@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import AppLayout from '@/layouts/app-layout';
 import toast, { Toaster } from 'react-hot-toast';
+ import { router } from '@inertiajs/react'; // or '@inertiajs/inertia-react' depending on your setup
 
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -257,53 +258,94 @@ export default function NewProposalForm() {
     toast.success('Goal removed');
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // Validate required fields
-    const newErrors: Record<string, string> = {};
-    
-    if (!data.title.trim()) newErrors.title = 'Title is required';
-    if (!data.description.trim()) newErrors.description = 'Description is required';
-    if (!data.duration) newErrors.duration = 'Duration is required';
-    if (data.objectives.length === 0) newErrors.objectives = 'At least one objective is required';
-    if (data.teamMembers.length === 0) newErrors.teamMembers = 'At least one team member is required';
-    if (data.milestones.length === 0) newErrors.milestones = 'At least one milestone is required';
-    if (data.goals.length === 0) newErrors.goals = 'At least one goal is required';
 
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      toast.error('Please fill all required fields');
-      return;
-    }
+const handleSubmit = (e: React.FormEvent) => {
+  e.preventDefault();
 
-    setErrors({});
-    setProcessing(true);
+  console.log('Form submission started');
+  console.log('Original form data:', data);
 
-    // Simulate form submission
-    const submitPromise = new Promise((resolve, reject) => {
-      setTimeout(() => {
-        try {
-          setProcessing(false);
-          setSuccess('Proposal submitted successfully!');
-          console.log('Proposal Data:', data);
-          console.log('Documents:', selectedDocuments);
-          resolve('Success');
-        } catch (error) {
-          reject(error);
-        }
-      }, 2000);
-    });
+  if (!data.title.trim()) {
+    alert('Please enter a proposal title');
+    return;
+  }
 
-    toast.promise(
-      submitPromise,
-      {
-        loading: 'Submitting proposal...',
-        success: 'Proposal submitted successfully!',
-        error: 'Failed to submit proposal'
-      }
-    );
+  if (!data.description.trim()) {
+    alert('Please enter a description');
+    return;
+  }
+
+  // Build the additional description content
+  let additions = '';
+
+  if (data.objectives?.length > 0) {
+    const objectiveText = data.objectives
+      .map(obj => `${obj.title}: ${obj.description}`)
+      .join(', ');
+    additions += ` Objectives include ${objectiveText}.`;
+  }
+
+  if (data.milestones?.length > 0) {
+    const milestoneText = data.milestones
+      .map(m => `${m.title} (${m.duration}) - ${m.description}`)
+      .join(', ');
+    additions += ` Milestones are ${milestoneText}.`;
+  }
+
+  if (data.goals?.length > 0) {
+    const goalText = data.goals
+      .map(goal => `${goal.title}: ${goal.description}`)
+      .join(', ');
+    additions += ` Goals set are ${goalText}.`;
+  }
+
+  if (data.teamMembers?.length > 0) {
+    const teamText = data.teamMembers
+      .map(member => `${member.fullName} (${member.role}, ${member.email})`)
+      .join(', ');
+    additions += ` Team members involved are ${teamText}.`;
+  }
+
+  const fullDescription = `${data.description.trim()}${additions}`;
+
+  const formData = {
+    title: data.title.trim(),
+    description: fullDescription,
+    duration: data.duration.trim() || 'Not specified',
   };
+
+  console.log('Formatted Proposal Data:', formData);
+
+  // Send data to backend
+   router.post(
+    route('projectproposal.store'),
+    formData,
+    {
+      forceFormData: true,
+      preserveState: false,
+      preserveScroll: true,
+      onStart: () => {
+        console.log('[DEBUG] 🛫 Request started...');
+      },
+      onProgress: (event) => {
+        console.log('[DEBUG] Progress event:', event);
+      },
+      onSuccess: (page) => {
+        console.log('[✅] Request successful! Server response page:', page);
+        alert('Proposal submitted successfully!');
+      },
+      onError: (errors) => {
+        console.error('[❌] Request failed with validation/server errors:', errors);
+        alert('There was an error submitting the proposal. Check console for details.');
+      },
+      onFinish: () => {
+        console.log('[DEBUG] ✅ Request finished (success or failure)');
+      }
+    }
+  );
+};
+
+ 
 
   return (
     <AppLayout>
