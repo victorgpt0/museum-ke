@@ -8,6 +8,8 @@ use Inertia\Inertia;
 use App\Http\Controllers\ArtifactController;
 use App\Http\Controllers\ArchivesController;
 use App\Http\Controllers\DonationController;
+use App\Http\Controllers\ProjectProposalController;
+
 
 
 
@@ -90,6 +92,10 @@ Route::post('/api/ai/query', [App\Http\Controllers\AIController::class, 'query']
 Route::get('/project/new-proposal', function () {
     return Inertia::render('Project/proposal/new-proposal');
 });
+Route::post('/project/saveproposal', [ProjectProposalController::class, 'store'])->name('projectproposal.store');
+Route::get('/project/viewproposals', [ProjectProposalController::class, 'index'])->name('project.proposal.index');
+Route::post('/project/proposal/approve', [ProjectProposalController::class, 'approve']);
+Route::post('/project/proposal/reject', [ProjectProposalController::class, 'reject']);
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';

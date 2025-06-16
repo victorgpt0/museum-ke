@@ -11,9 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('projectproposal', function (Blueprint $table) {
+        Schema::create('project_proposals', function (Blueprint $table) {
             $table->id();
-            $table->timestamps();
+            $table->string('title');
+            $table->text('description'); // formatted string with milestones, goals etc
+            $table->string('duration');
+            $table->string('status')->default('pending');
+            $table->dateTime('submitted_at');
+            $table->dateTime('approved_at')->nullable();
+            $table->timestamps(); // created_at, updated_at
         });
     }
 
@@ -22,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('projectproposal');
+        Schema::dropIfExists('project_proposals');
     }
 };
