@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AcquisitionController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
@@ -32,6 +33,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/read-all', 'markAllAsRead')->name('mark-all-as-read');
         Route::delete('/{id}', 'destroy')->name('destroy');
     });
+
+    Route::resource('acquisitions', AcquisitionController::class);
 
 });
 

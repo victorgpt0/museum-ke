@@ -11,14 +11,14 @@ import {
     ChevronRight,
     MessageSquareText,
     UsersRound,
-    View, 
-    Archive, 
-    Folder, 
-    FileText, 
+    View,
+    Archive,
+    Folder,
+    FileText,
     Shield,
     Package,
     History,
-    FileCheck
+    FileCheck, FolderRoot
 } from 'lucide-react';
 import AppLogo from './app-logo';
 
@@ -99,6 +99,11 @@ const mainNavItems: ExtendedNavItem[] = [
         icon: Shield,
     },
     {
+        title: 'Acquisitions2',
+        href: '/acquisitions',
+        icon: FolderRoot,
+    },
+    {
         title: 'Archives',
         href: '/archives',  // Default URL when Archives is clicked
         icon: Archive,
@@ -116,7 +121,7 @@ const mainNavItems: ExtendedNavItem[] = [
         ]
     },
     //FOR THE PROJECTS ITS GOING TO BEE TRICKY
-    //HERES MY IDEA, Ill separate menu options into proposal which will have submenus for both HOD and Initiator but authentication filter  these options according to role. 
+    //HERES MY IDEA, Ill separate menu options into proposal which will have submenus for both HOD and Initiator but authentication filter  these options according to role.
     //Projectproposal. projectoverview
       {
         title: 'Project Proposal',
@@ -133,7 +138,7 @@ const mainNavItems: ExtendedNavItem[] = [
                 href: '/myproposal/dashboard',
                 icon: FileText,
             },
-           
+
         ]
     },
     {

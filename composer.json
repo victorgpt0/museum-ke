@@ -26,6 +26,7 @@
         "laravel/pail": "^1.2.2",
         "laravel/pint": "^1.18",
         "laravel/sail": "^1.41",
+        "laravel/telescope": "^5.9",
         "mockery/mockery": "^1.6",
         "nunomaduro/collision": "^8.6",
         "pestphp/pest": "^3.8",
@@ -66,7 +67,7 @@
         ],
         "dev": [
             "Composer\\Config::disableProcessTimeout",
-            "npx concurrently -c \"#93c5fd,#c4b5fd,#fdba74,#0c46c0\" \"php artisan serve\" \"php artisan reverb:start --debug\" \"php artisan queue:listen --tries=1\" \"npm run dev\" --names='server,reverb,queue,vite'"
+            "npx concurrently -c \"#93c5fd,#c4b5fd,#fdba74,#0c46c0\" \"php artisan serve\" \"php artisan reverb:start --debug\" \"php artisan queue:listen --tries=1\" \"php artisan schedule:work\" \"npm run dev\" --names='server,reverb,queue,schedule,vite'"
         ],
         "dev:ssr": [
             "npm run build:ssr",

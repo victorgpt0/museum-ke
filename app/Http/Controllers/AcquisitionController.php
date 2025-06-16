@@ -2,33 +2,61 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Donor;
 use App\Models\ArtifactProposal;
+use App\Models\Donor;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controllers\HasMiddleware;
+use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Inertia\Inertia;
 
-class DonationController extends Controller
+class AcquisitionController extends Controller implements HasMiddleware
 {
     /**
-     * Show the donation form
+     * Describe permissions for this Resource.
      */
-    public function create()
+    public static function middleware(): array
     {
-        return Inertia::render('curator/acquisition-portal');
+        return [
+            new Middleware('permission:acquisitions.view', only: ['index', 'show']),
+            new Middleware('permission:acquisitions.create', only: ['create', 'store']),
+            new Middleware('permission:acquisitions.edit', only: ['edit', 'update']),
+            new Middleware('permission:acquisitions.delete', only: ['destroy']),
+        ];
+    }
+    /**
+     * Display a listing of the resource.
+     */
+    public function index()
+    {
+        return Inertia::render('acquisitions/index', [
+            'acquisitions' => ArtifactProposal::with('donor')
+                ->paginate(request('perPage', 10))
+                ->withQueryString(),
+        ]);
     }
 
     /**
-     * Store a new donation proposal
+     * Show the form for creating a new resource.
+     */
+    public function create()
+    {
+        return Inertia::render('acquisitions/create');
+    }
+
+    /**
+     * Store a newly created resource in storage.
      */
     public function store(Request $request)
     {
         Log::info('Donation proposal submitted',[$request->all()]);
 
         Log::info('images',[$request->allFiles()]);
-        // Validate the request
+
         $validator = Validator::make($request->all(), [
             // Artifact information
             'title' => 'required|string|max:255',
@@ -48,12 +76,14 @@ class DonationController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return back()->withErrors($validator)->withInput();
+            return redirect()
+                ->back()
+                ->withInput()
+                ->withErrors($validator);
         }
 
         try {
             DB::beginTransaction();
-
             // Create or find donor
             $donor = $this->createOrUpdateDonor($request);
 
@@ -68,29 +98,21 @@ class DonationController extends Controller
 
             // Handle image uploads
             if ($request->hasFile('images')) {
-                foreach ($request->file('images') as $image) {
-                    $artifactProposal->addMediaFromRequest('images')
+                foreach ($request->file('images') as $index => $image) {
+                    $artifactProposal->addMediaFromRequest("images.{$index}")
                         ->toMediaCollection('artifact_images');
                 }
             }
 
             DB::commit();
 
-            return redirect()->back()->with('success', 'Your artifact donation proposal has been submitted successfully! We will review it and contact you soon.');
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Log::info('Error submitting donation proposal: ' . $e->getMessage());;
-
-            return back()->withErrors([
-                'submission' => 'There was an error submitting your proposal. Please try again.'
-            ])->withInput();
+            return to_route('acquisitions.index')->with('success','Acquisition Created Successfully');
+        } catch (\Exception $exception){
+            Log::error('Acquisition Create Error:',[$exception]);
+            return redirect()->back()->with('error','Something went wrong');
         }
     }
 
-    /**
-     * Create or update donor information
-     */
     private function createOrUpdateDonor(Request $request)
     {
         // Check if donor already exists by email
@@ -121,49 +143,34 @@ class DonationController extends Controller
     }
 
     /**
-     * Show all donation proposals (admin view)
+     * Display the specified resource.
      */
-  public function index()
-{
-    $proposals = ArtifactProposal::with(['donor', 'media'])
-        ->latest()
-        ->paginate(10);
-
-    return Inertia::render('curator/acquisition-history', [
-        'proposals' => $proposals
-    ]);
-}
-
-/**
- * Update proposal status
- */
-public function updateStatus(Request $request, ArtifactProposal $artifactProposal)
-{
-    $request->validate([
-        'status' => 'required|in:pending,approved,rejected,under_review'
-    ]);
-
-    $artifactProposal->update([
-        'proposal_status' => $request->status
-    ]);
-
-    return back()->with('success', 'Proposal status updated successfully.');
-}
-
-    /**
-     * Show a specific donation proposal
-     */
-    public function show(ArtifactProposal $artifactProposal)
+    public function show(string $id)
     {
-        $artifactProposal->load(['donor', 'media']);
-
-        return Inertia::render('curator/DonationProposalDetail', [
-            'proposal' => $artifactProposal
-        ]);
+        //
     }
 
     /**
-     * Update proposal status
+     * Show the form for editing the specified resource.
      */
+    public function edit(string $id)
+    {
+        //
+    }
 
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, string $id)
+    {
+        //
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy(string $id)
+    {
+        //
+    }
 }
