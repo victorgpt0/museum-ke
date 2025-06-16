@@ -332,7 +332,7 @@ const handleSubmit = (e: React.FormEvent) => {
       },
       onSuccess: (page) => {
         console.log('[✅] Request successful! Server response page:', page);
-        alert('Proposal submitted successfully!');
+       toast.success('Proposal has been submitted successfully');
       },
       onError: (errors) => {
         console.error('[❌] Request failed with validation/server errors:', errors);

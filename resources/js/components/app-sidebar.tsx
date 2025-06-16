@@ -66,28 +66,28 @@ const mainNavItems: ExtendedNavItem[] = [
             }
         ]
     },
-   {
-    title: 'Acquisitions',
-    href: '/curator/acquisition-history',  // Changed to lowercase and consistent path
-    icon: Package,
-    children: [
-        {
-            title: 'Acquisition History',
-            href: '/curator/acquisition-history',  // Added leading slash and made consistent
-            icon: History,
-        },
-         {
-            title: 'Acquisition Proposal',
-            href: '/curator/acquisition-portal',
-            icon: FileCheck,
-        },
-        {
-            title: 'New Proposal',
-            href: '/curator/new-proposal',
-            icon: FileCheck,
-        }
-    ]
-},
+    {
+        title: 'Acquisitions',
+        href: '/curator/acquisition-history',  // Changed to lowercase and consistent path
+        icon: Package,
+        children: [
+            {
+                title: 'Acquisition History',
+                href: '/curator/acquisition-history',  // Added leading slash and made consistent
+                icon: History,
+            },
+            {
+                title: 'Acquisition Proposal',
+                href: '/curator/acquisition-portal',
+                icon: FileCheck,
+            },
+            {
+                title: 'New Proposal',
+                href: '/curator/new-proposal',
+                icon: FileCheck,
+            }
+        ]
+    },
     {
         title: 'Users',
         href: '/users',
@@ -130,7 +130,7 @@ const mainNavItems: ExtendedNavItem[] = [
             },
             {
                 title: 'View Proposal',   //this is for HOD and initiator, filter on role
-                href: '/myproposal/dashboard',
+                href: '/project/viewproposals',
                 icon: FileText,
             },
            

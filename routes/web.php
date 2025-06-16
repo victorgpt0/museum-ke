@@ -90,6 +90,9 @@ Route::get('/project/new-proposal', function () {
     return Inertia::render('Project/proposal/new-proposal');
 });
 Route::post('/project/saveproposal', [ProjectProposalController::class, 'store'])->name('projectproposal.store');
+Route::get('/project/viewproposals', [ProjectProposalController::class, 'index'])->name('project.proposal.index');
+Route::post('/project/proposal/approve', [ProjectProposalController::class, 'approve']);
+Route::post('/project/proposal/reject', [ProjectProposalController::class, 'reject']);
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';
