@@ -49,6 +49,12 @@ const mainNavItems: ExtendedNavItem[] = [
             },
         ]
     },
+     {
+        title: 'Project Dashboard',
+        href: '/project/dashboard',
+        icon: LayoutGrid,
+       
+    },
     {
         title: 'Maps',
         href: '/map',  // This is now the default URL when clicked
@@ -141,23 +147,7 @@ const mainNavItems: ExtendedNavItem[] = [
 
         ]
     },
-    {
-        title: 'Project Milestone',
-        href: '/project/milestone',  // Default URL when Archives is clicked
-        icon: Archive,
-        children: [
-            {
-                title: 'Upload your Project Milestone',
-                href: '/project/new-milestone',
-                icon: Folder,
-            },
-            {
-                title: 'View Milestones', //dashboard of milestones with completion rate
-                href: '/project/milestone',
-                icon: FileText,
-            }
-        ]
-    },
+   
      {
         title: 'Project Report',
         href: '/project/report',  // Default URL when Archives is clicked

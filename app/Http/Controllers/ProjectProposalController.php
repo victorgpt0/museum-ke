@@ -13,41 +13,52 @@ use Inertia\Inertia;
 class ProjectProposalController extends Controller
 {
     public function store(Request $request)
-    {
-        // Validate incoming data
-        $validator = Validator::make($request->all(), [
-            'title' => 'required|string|max:255',
-            'description' => 'required|string|max:3000', // contains all details
-            'duration' => 'required|string|max:255',
+{
+    // Validate incoming data
+    $validator = Validator::make($request->all(), [
+        'title' => 'required|string|max:255',
+        'description' => 'required|string|max:3000', // contains all details
+        'duration' => 'required|string|max:255',
+        'documents.*' => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx,txt,png,jpg,jpeg,webp|max:10240', // 10MB max per file
+    ]);
+
+    if ($validator->fails()) {
+        return back()->withErrors($validator)->withInput();
+    }
+
+    try {
+        DB::beginTransaction();
+
+        // Create the project proposal and store it in a variable
+        $projectProposal = ProjectProposal::create([
+            'title' => $request->title,
+            'description' => $request->description,
+            'duration' => $request->duration,
+            'status' => 'pending',
+            'submitted_at' => Carbon::now(),
+            'approved_at' => null,
+            'user_id' => auth()->user()->id
         ]);
 
-        if ($validator->fails()) {
-            return back()->withErrors($validator)->withInput();
+        // Handle document uploads
+        if ($request->hasFile('documents')) {
+            foreach ($request->file('documents') as $index => $document) {
+                $projectProposal->addMediaFromRequest("documents.{$index}")
+                    ->toMediaCollection('project_proposal_documents');
+            }
         }
 
-        try {
-            DB::beginTransaction();
+        DB::commit();
 
-            ProjectProposal::create([
-                'title' => $request->title,
-                'description' => $request->description,
-                'duration' => $request->duration,
-                'status' => 'pending',
-                'submitted_at' => Carbon::now(),
-                'approved_at' => null,
-            ]);
-
-            DB::commit();
-
-            return redirect()->back()->with('success', 'Proposal submitted successfully!');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return back()->withErrors([
-                'error' => 'Failed to submit proposal. Please try again.',
-                'exception' => $e->getMessage(),
-            ]);
-        }
+        return redirect()->back()->with('success', 'Proposal submitted successfully!');
+    } catch (\Exception $e) {
+        DB::rollBack();
+        return back()->withErrors([
+            'error' => 'Failed to submit proposal. Please try again.',
+            'exception' => $e->getMessage(),
+        ]);
     }
+}
    public function index()
 {
     try {

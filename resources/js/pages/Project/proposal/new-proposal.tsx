@@ -48,9 +48,7 @@ interface ProposalFormData {
 }
 
 export default function NewProposalForm() {
-  const [selectedDocuments, setSelectedDocuments] = useState<File[]>([]);
-  const [documentPreviews, setDocumentPreviews] = useState<string[]>([]);
-  const [isUploadingDocs, setIsUploadingDocs] = useState(false);
+
   const [processing, setProcessing] = useState(false);
 
   // Form data state
@@ -63,7 +61,11 @@ export default function NewProposalForm() {
     milestones: [],
     goals: []
   });
+const [selectedDocuments, setSelectedDocuments] = useState<File[]>([]);
+const [documentPreviews, setDocumentPreviews] = useState<string[]>([]);
+const [isUploadingDocs, setIsUploadingDocs] = useState(false);
 
+// Sub-form states for adding new items (your existing code)
   // Sub-form states for adding new items
   const [newObjective, setNewObjective] = useState({ title: '', description: '',  });
   const [newTeamMember, setNewTeamMember] = useState({ fullName: '', email: '', role: '' });
@@ -260,91 +262,95 @@ export default function NewProposalForm() {
 
 
 const handleSubmit = (e: React.FormEvent) => {
-  e.preventDefault();
-
-  console.log('Form submission started');
-  console.log('Original form data:', data);
-
-  if (!data.title.trim()) {
-    alert('Please enter a proposal title');
-    return;
-  }
-
-  if (!data.description.trim()) {
-    alert('Please enter a description');
-    return;
-  }
-
-  // Build the additional description content
-  let additions = '';
-
-  if (data.objectives?.length > 0) {
-    const objectiveText = data.objectives
-      .map(obj => `${obj.title}: ${obj.description}`)
-      .join(', ');
-    additions += ` Objectives include ${objectiveText}.`;
-  }
-
-  if (data.milestones?.length > 0) {
-    const milestoneText = data.milestones
-      .map(m => `${m.title} (${m.duration}) - ${m.description}`)
-      .join(', ');
-    additions += ` Milestones are ${milestoneText}.`;
-  }
-
-  if (data.goals?.length > 0) {
-    const goalText = data.goals
-      .map(goal => `${goal.title}: ${goal.description}`)
-      .join(', ');
-    additions += ` Goals set are ${goalText}.`;
-  }
-
-  if (data.teamMembers?.length > 0) {
-    const teamText = data.teamMembers
-      .map(member => `${member.fullName} (${member.role}, ${member.email})`)
-      .join(', ');
-    additions += ` Team members involved are ${teamText}.`;
-  }
-
-  const fullDescription = `${data.description.trim()}${additions}`;
-
-  const formData = {
-    title: data.title.trim(),
-    description: fullDescription,
-    duration: data.duration.trim() || 'Not specified',
-  };
-
-  console.log('Formatted Proposal Data:', formData);
-
-  // Send data to backend
-   router.post(
-    route('projectproposal.store'),
-    formData,
-    {
-      forceFormData: true,
-      preserveState: false,
-      preserveScroll: true,
-      onStart: () => {
-        console.log('[DEBUG] 🛫 Request started...');
-      },
-      onProgress: (event) => {
-        console.log('[DEBUG] Progress event:', event);
-      },
-      onSuccess: (page) => {
-        console.log('[✅] Request successful! Server response page:', page);
-       toast.success('Proposal has been submitted successfully');
-      },
-      onError: (errors) => {
-        console.error('[❌] Request failed with validation/server errors:', errors);
-        alert('There was an error submitting the proposal. Check console for details.');
-      },
-      onFinish: () => {
-        console.log('[DEBUG] ✅ Request finished (success or failure)');
-      }
+    e.preventDefault();
+    
+    console.log('Form submission started');
+    console.log('Original form data:', data);
+    console.log('Selected documents:', selectedDocuments); // Log the actual File objects
+    console.log('Document previews:', documentPreviews); // Log the preview names
+    
+    if (!data.title.trim()) {
+        alert('Please enter a proposal title');
+        return;
     }
-  );
+    
+    if (!data.description.trim()) {
+        alert('Please enter a description');
+        return;
+    }
+    
+    // Build the additional description content
+    let additions = '';
+    
+    if (data.objectives?.length > 0) {
+        const objectiveText = data.objectives
+            .map(obj => `${obj.title}: ${obj.description}`)
+            .join(', ');
+        additions += ` Objectives include ${objectiveText}.`;
+    }
+    
+    if (data.milestones?.length > 0) {
+        const milestoneText = data.milestones
+            .map(m => `${m.title} (${m.duration}) - ${m.description}`)
+            .join(', ');
+        additions += ` Milestones are ${milestoneText}.`;
+    }
+    
+    if (data.goals?.length > 0) {
+        const goalText = data.goals
+            .map(goal => `${goal.title}: ${goal.description}`)
+            .join(', ');
+        additions += ` Goals set are ${goalText}.`;
+    }
+    
+    if (data.teamMembers?.length > 0) {
+        const teamText = data.teamMembers
+            .map(member => `${member.fullName} (${member.role}, ${member.email})`)
+            .join(', ');
+        additions += ` Team members involved are ${teamText}.`;
+    }
+    
+    const fullDescription = `${data.description.trim()}${additions}`;
+    
+    // Create form data object that includes documents
+    const formData = {
+        title: data.title.trim(),
+        description: fullDescription,
+        duration: data.duration.trim() || 'Not specified',
+        documents: selectedDocuments || [] // Add the uploaded documents here
+    };
+    
+    console.log('Formatted Proposal Data:', formData);
+    console.log('Documents being sent:', selectedDocuments?.map(doc => doc.name) || []); // Log document names
+    
+    // Send data to backend
+    router.post(
+        route('projectproposal.store'),
+        formData,
+        {
+            forceFormData: true, // This ensures files are handled properly
+            preserveState: false,
+            preserveScroll: true,
+            onStart: () => {
+                console.log('[DEBUG] 🛫 Request started...');
+            },
+            onProgress: (event) => {
+                console.log('[DEBUG] Progress event:', event);
+            },
+            onSuccess: (page) => {
+                console.log('[✅] Request successful! Server response page:', page);
+                toast.success('Proposal has been submitted successfully');
+            },
+            onError: (errors) => {
+                console.error('[❌] Request failed with validation/server errors:', errors);
+                alert('There was an error submitting the proposal. Check console for details.');
+            },
+            onFinish: () => {
+                console.log('[DEBUG] ✅ Request finished (success or failure)');
+            }
+        }
+    );
 };
-
  
 
   return (

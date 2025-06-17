@@ -36,6 +36,8 @@ class PermissionSeeder extends Seeder
         //Initialize super-admin
         $role = Role::create(['name' => 'SuperAdmin']);
 
+        $role->syncPermissions($permissions);
+
         $super_admin = User::factory()->create([
             'name' => 'Super Admin',
             'email' => 'superadmin@museum.ke',
