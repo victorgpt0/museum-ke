@@ -23,7 +23,7 @@ class AcquisitionController extends Controller implements HasMiddleware
     {
         return [
             new Middleware('permission:acquisitions.view', only: ['index', 'show']),
-            new Middleware('permission:acquisitions.create', only: ['create', 'store']),
+            // new Middleware('permission:acquisitions.create', only: ['create', 'store']),
             new Middleware('permission:acquisitions.edit', only: ['edit', 'update']),
             new Middleware('permission:acquisitions.delete', only: ['destroy']),
         ];
@@ -33,10 +33,12 @@ class AcquisitionController extends Controller implements HasMiddleware
      */
     public function index()
     {
+        $proposals = ArtifactProposal::with(['donor', 'media'])
+        ->latest()
+        ->paginate(10);
+
         return Inertia::render('acquisitions/index', [
-            'acquisitions' => ArtifactProposal::with('donor')
-                ->paginate(request('perPage', 10))
-                ->withQueryString(),
+            'proposals' => $proposals
         ]);
     }
 
@@ -106,7 +108,7 @@ class AcquisitionController extends Controller implements HasMiddleware
 
             DB::commit();
 
-            return to_route('acquisitions.index')->with('success','Acquisition Created Successfully');
+            return to_route('home')->with('success','Acquisition Created Successfully');
         } catch (\Exception $exception){
             Log::error('Acquisition Create Error:',[$exception]);
             return redirect()->back()->with('error','Something went wrong');

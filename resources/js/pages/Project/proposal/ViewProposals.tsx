@@ -58,7 +58,7 @@ export default function ViewProposals({ proposals }: Props) {
   const getStatusBadge = (status: string | undefined) => {
     const baseClasses = "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium";
     if (!status) return `${baseClasses} bg-gray-100 text-gray-800`;
-    
+
     switch (status) {
       case 'pending':
         return `${baseClasses} bg-yellow-100 text-yellow-800`;
@@ -144,7 +144,7 @@ export default function ViewProposals({ proposals }: Props) {
   return (
     <AppLayout>
       <Head title="Project Proposals" />
-      
+
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header */}
@@ -201,7 +201,7 @@ export default function ViewProposals({ proposals }: Props) {
                         {proposal.media.map((image, index) => (
                           <div key={image.id} className="aspect-square rounded-lg overflow-hidden">
                             <img
-                              src={image.original_url}
+                              src={`https://placehold.co/600x400?text=Proposal`}
                               alt={`${proposal.title} - Image ${index + 1}`}
                               className="w-full h-full object-cover"
                               onError={(e) => {
@@ -247,28 +247,28 @@ export default function ViewProposals({ proposals }: Props) {
 
                 {/* Action Buttons */}
                 <div className="mt-6 pt-4 border-t border-gray-100 flex justify-end space-x-3">
-                  <button 
+                  <button
                     onClick={() => handleViewDetails(proposal.id)}
                     className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     View Details
                   </button>
-                  
+
                   {proposal.status === 'pending' && (
                     <>
-                      <button 
+                      <button
                         onClick={() => handleReview(proposal.id)}
                         className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
                       >
                         Review
                       </button>
-                      <button 
+                      <button
                         onClick={() => handleApprove(proposal.id)}
                         className="px-4 py-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
                       >
                         Approve
                       </button>
-                      <button 
+                      <button
                         onClick={() => handleReject(proposal.id)}
                         className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
                       >
@@ -279,13 +279,13 @@ export default function ViewProposals({ proposals }: Props) {
 
                   {proposal.status === 'under_review' && (
                     <>
-                      <button 
+                      <button
                         onClick={() => handleApprove(proposal.id)}
                         className="px-4 py-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
                       >
                         Approve
                       </button>
-                      <button 
+                      <button
                         onClick={() => handleReject(proposal.id)}
                         className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
                       >

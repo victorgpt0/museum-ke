@@ -17,7 +17,7 @@ return new class extends Migration
     });
 
     // Step 2: Fill existing records with default user_id = 1
-    DB::table('project_proposals')->update(['user_id' => 1]);
+    \Illuminate\Support\Facades\DB::table('project_proposals')->update(['user_id' => 1]);
 
     // Step 3: Make the column NOT NULL and add foreign key
     Schema::table('project_proposals', function (Blueprint $table) {

@@ -13,9 +13,21 @@ use App\Http\Controllers\ProjectProposalController;
 
 
 
-Route::get('/', function () {
-    return Inertia::render('welcome');
-})->name('home');
+Route::middleware('guest')->group(function () {
+
+    Route::prefix('acquisitions')
+        ->controller(AcquisitionController::class)
+        ->name('acquisitions.')
+        ->group(function () {
+            Route::get('/create', 'create')->name('create');
+            Route::post('/', 'store')->name('store');
+        });
+
+    Route::get('/', function () {
+        return Inertia::render('welcome');
+    })->name('home');
+});
+
 
 Route::middleware(['auth', 'verified'])->group(function () {
 
@@ -36,9 +48,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('/{id}', 'destroy')->name('destroy');
     });
 
-    Route::resource('acquisitions', AcquisitionController::class);
+    Route::resource('acquisitions', AcquisitionController::class)->except(['create', 'store']);
 
 });
+
+//Guest Routes
 
 Route::get('/artifacts', [ArtifactController::class, 'index']);
 Route::get('/artifacts/category/{categoryId}', [ArtifactController::class, 'byCategory']);
@@ -60,10 +74,11 @@ Route::get('/map', function () {
     return Inertia::render('Map');
 })->name('map');
 
-//Acquisition
+Route::middleware('guest')->group(function () {
+    Route::get('/curator/acquisition-portal', [DonationController::class, 'create'])->name('donations.create');
+    Route::post('/curator/save', [DonationController::class, 'store'])->name('donations.store');
+});
 
-Route::get('/curator/acquisition-portal', [DonationController::class, 'create'])->name('donations.create');
-Route::post('/curator/save', [DonationController::class, 'store'])->name('donations.store');
 
     // Display all donation proposals
     Route::get('/curator/acquisition-history', [DonationController::class, 'index'])->name('admin.donations.index');

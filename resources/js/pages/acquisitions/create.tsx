@@ -141,7 +141,7 @@ export default function Create() {
     };
 
     return (
-        <AppLayout breadcrumbs={breadcrumbs}>
+        <>
             <Head title="Artifact Donation Form" />
 
             <div className="py-8">
@@ -431,6 +431,6 @@ export default function Create() {
                     </FormUI>
                 </div>
             </div>
-        </AppLayout>
+            </>
     );
 }
