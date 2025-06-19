@@ -3,11 +3,6 @@ import { Head, router } from '@inertiajs/react';
 import { PageProps } from '@/types';
 import AppLayout from '@/layouts/app-layout';
 
-interface Media {
-  id: number;
-  original_url: string;
-}
-
 interface ProjectProposal {
   id: number;
   title: string;
@@ -17,7 +12,7 @@ interface ProjectProposal {
   created_at: string;
   submitted_at?: string;
   approved_at?: string;
-  media?: Media[];
+  all_image_urls?: string[];
 }
 
 interface PaginationLink {
@@ -196,16 +191,16 @@ export default function ViewProposals({ proposals }: Props) {
                   {/* Images */}
                   <div className="lg:col-span-1">
                     <h4 className="font-medium text-gray-900 mb-2">Images</h4>
-                    {proposal.media && proposal.media.length > 0 ? (
+                    {proposal.all_image_urls && proposal.all_image_urls.length > 0 ? (
                       <div className="grid grid-cols-2 gap-2">
-                        {proposal.media.map((image, index) => (
-                          <div key={image.id} className="aspect-square rounded-lg overflow-hidden">
+                        {proposal.all_image_urls.map((image: string, index) => (
+                          <div key={index} className="aspect-square rounded-lg overflow-hidden">
                             <img
-                              src={`https://placehold.co/600x400?text=Proposal`}
+                              src={image || `https://placehold.co/600x400?text=Proposal`}
                               alt={`${proposal.title} - Image ${index + 1}`}
                               className="w-full h-full object-cover"
                               onError={(e) => {
-                                e.currentTarget.src = '/images/placeholder.jpg';
+                                e.currentTarget.src = 'https://placehold.co/600x400?text=Proposal';
                               }}
                             />
                           </div>

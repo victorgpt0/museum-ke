@@ -10,9 +10,6 @@ use App\Http\Controllers\ArchivesController;
 use App\Http\Controllers\DonationController;
 use App\Http\Controllers\ProjectProposalController;
 
-
-
-
 Route::middleware('guest')->group(function () {
 
     Route::prefix('acquisitions')

@@ -43,8 +43,17 @@ class ProjectProposalController extends Controller
         // Handle document uploads
         if ($request->hasFile('documents')) {
             foreach ($request->file('documents') as $index => $document) {
-                $projectProposal->addMediaFromRequest("documents.{$index}")
-                    ->toMediaCollection('project_proposal_documents');
+                $mime = $document->getMimeType();
+                $ext = $document->getClientOriginalExtension();
+                $imageMimeTypes = ['image/png', 'image/jpg', 'image/jpeg', 'image/webp'];
+                $imageExtensions = ['png', 'jpg', 'jpeg', 'webp'];
+                if (in_array($mime, $imageMimeTypes) || in_array(strtolower($ext), $imageExtensions)) {
+                    $projectProposal->addMediaFromRequest("documents.{$index}")
+                        ->toMediaCollection('project_proposal_images');
+                } else{
+                    $projectProposal->addMediaFromRequest("documents.{$index}")
+                        ->toMediaCollection('project_proposal_documents');
+                }
             }
         }
 
@@ -82,7 +91,7 @@ class ProjectProposalController extends Controller
             ]);
 
             $proposal = ProjectProposal::findOrFail($request->id);
-            
+
             // Update status to approved and set approved_at timestamp
             $proposal->update([
                 'status' => 'approved',
@@ -90,7 +99,7 @@ class ProjectProposalController extends Controller
             ]);
 
             return back()->with('success', 'Proposal approved successfully.');
-            
+
         } catch (\Exception $e) {
             return back()->withErrors([
                 'error' => 'Failed to approve proposal.',
@@ -107,7 +116,7 @@ class ProjectProposalController extends Controller
             ]);
 
             $proposal = ProjectProposal::findOrFail($request->id);
-            
+
             // Update status to rejected (no approved_at timestamp needed)
             $proposal->update([
                 'status' => 'rejected',
@@ -115,7 +124,7 @@ class ProjectProposalController extends Controller
             ]);
 
             return back()->with('success', 'Proposal rejected successfully.');
-            
+
         } catch (\Exception $e) {
             return back()->withErrors([
                 'error' => 'Failed to reject proposal.',
