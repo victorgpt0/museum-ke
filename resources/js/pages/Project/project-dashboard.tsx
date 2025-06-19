@@ -198,7 +198,7 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ project }) => {
               icon={Target}
               color="border-green-500"
               actionText="Add Milestones"
-              actionLink={`/projects/${project.id}/milestones`}
+              actionLink={`/projects/addmilestone`}
               isEmpty={true}
             />
             <MetricCard
