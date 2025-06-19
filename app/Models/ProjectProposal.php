@@ -31,7 +31,14 @@ class ProjectProposal extends Model implements HasMedia
         'all_image_urls',
         'thumbnail_url',
          'all_documents_urls',
-     ];
+    ];
+
+    public function project()
+{
+    return $this->hasOne(Project::class);
+}
+
+
       public function registerMediaCollections(): void
     {
         $this->addMediaCollection('project_proposal_images')
@@ -46,6 +53,11 @@ class ProjectProposal extends Model implements HasMedia
             ->height(300)
             ->sharpen(10);
     }
+    public function getImageUrlAttribute()
+    {
+        return $this->getFirstMediaUrl('project_proposal_images');
+    }
+
     public function getAllImageUrlsAttribute()
     {
         return $this->getMedia('project_proposal_images')->map(function ($media) {

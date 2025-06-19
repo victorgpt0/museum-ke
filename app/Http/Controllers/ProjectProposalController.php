@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use App\Models\ProjectProposal;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
+use App\Models\Project;
+
 use Carbon\Carbon;
 use Inertia\Inertia;
 
@@ -84,30 +86,42 @@ class ProjectProposalController extends Controller
     }
 }
  public function approve(Request $request)
-    {
-        try {
-            $request->validate([
-                'id' => 'required|integer|exists:project_proposals,id'
-            ]);
+{
+    try {
+        $request->validate([
+            'id' => 'required|integer|exists:project_proposals,id'
+        ]);
 
-            $proposal = ProjectProposal::findOrFail($request->id);
+        DB::beginTransaction();
 
-            // Update status to approved and set approved_at timestamp
-            $proposal->update([
-                'status' => 'approved',
-                'approved_at' => Carbon::now()
-            ]);
+        $proposal = ProjectProposal::findOrFail($request->id);
 
-            return back()->with('success', 'Proposal approved successfully.');
+        // Update status to approved and set approved_at timestamp
+        $proposal->update([
+            'status' => 'approved',
+            'approved_at' => Carbon::now()
+        ]);
 
-        } catch (\Exception $e) {
-            return back()->withErrors([
-                'error' => 'Failed to approve proposal.',
-                'exception' => $e->getMessage(),
-            ]);
-        }
+        // Create a new project from the approved proposal
+        Project::create([
+            'title' => $proposal->title,
+            'description' => $proposal->description,
+            'duration' => $proposal->duration,
+            'project_proposal_id' => $proposal->id,
+        ]);
+
+        DB::commit();
+
+        return back()->with('success', 'Proposal approved and project created successfully.');
+
+    } catch (\Exception $e) {
+        DB::rollBack();
+        return back()->withErrors([
+            'error' => 'Failed to approve proposal.',
+            'exception' => $e->getMessage(),
+        ]);
     }
-
+}
     public function reject(Request $request)
     {
         try {
@@ -120,7 +134,7 @@ class ProjectProposalController extends Controller
             // Update status to rejected (no approved_at timestamp needed)
             $proposal->update([
                 'status' => 'rejected',
-                'approved_at' => null // Clear approved_at if it was previously set
+                'approved_at' =>Carbon::now()
             ]);
 
             return back()->with('success', 'Proposal rejected successfully.');
