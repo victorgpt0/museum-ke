@@ -32,6 +32,11 @@ class ProjectProposal extends Model implements HasMedia
         'all_image_urls',
         'thumbnail_url'
     ];
+    public function project()
+{
+    return $this->hasOne(Project::class);
+}
+
       public function registerMediaCollections(): void
     {
         $this->addMediaCollection('project_proposal_images')

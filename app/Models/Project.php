@@ -18,12 +18,12 @@ class Project extends Model
     /**
      * The attributes that are mass assignable.
      */
-    protected $fillable = [
-        'title',
-        'description',
-        'duration',
-        'start_date',
-    ];
+        protected $fillable = [
+            'title',
+            'description',
+            'duration',
+            'start_date',
+        ];
 
     /**
      * The attributes that should be cast to native types.
@@ -49,4 +49,10 @@ class Project extends Model
     {
         return $this->start_date ? $this->start_date->format('M d, Y') : null;
     }
+   public function proposal()
+{
+    return $this->belongsTo(ProjectProposal::class, 'project_proposal_id');
+}
+
+
 }
