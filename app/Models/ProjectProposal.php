@@ -28,14 +28,16 @@ class ProjectProposal extends Model implements HasMedia
         'approved_at' => 'datetime',
     ];
      protected $appends = [
-        'image_url',
         'all_image_urls',
-        'thumbnail_url'
+        'thumbnail_url',
+         'all_documents_urls',
     ];
+
     public function project()
 {
     return $this->hasOne(Project::class);
 }
+
 
       public function registerMediaCollections(): void
     {
@@ -66,5 +68,12 @@ class ProjectProposal extends Model implements HasMedia
     public function getThumbnailUrlAttribute()
     {
         return $this->getFirstMediaUrl('project_proposal_images', 'thumb');
+    }
+
+    public function getAllDocumentsUrlsAttribute()
+    {
+        return $this->getMedia('project_proposal_documents')->map(function ($media) {
+            return $media->getUrl();
+        })->toArray();
     }
 }

@@ -13,9 +13,6 @@ use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\MilestoneController;
 
 
-
-
-
 Route::middleware('guest')->group(function () {
 
     Route::prefix('acquisitions')
