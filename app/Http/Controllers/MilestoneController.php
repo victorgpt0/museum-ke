@@ -20,7 +20,7 @@ class MilestoneController extends Controller
         // Ensure the project belongs to the authenticated user
         $this->authorize('view', $project);
 
-        return Inertia::render('/Project/Milestones/milestone-dashboard', [
+        return Inertia::render('Project/Milestones/create-milestone', [
             'project' => $project
         ]);
     }

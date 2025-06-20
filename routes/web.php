@@ -118,14 +118,9 @@ Route::post('/project/proposal/approve', [ProjectProposalController::class, 'app
 Route::post('/project/proposal/reject', [ProjectProposalController::class, 'reject']);
 
 
-Route::middleware(['auth'])->group(function () {
-    Route::get('/projects/projects/addmilestone', [MilestoneController::class, 'index'])->name('projects.milestones.index');
-    Route::get('/projects/addmilestone', [MilestoneController::class, 'create'])->name('projects.milestones.create');
-    Route::post('/projects/{project}/milestones', [MilestoneController::class, 'store'])->name('projects.milestones.store');
-    Route::get('/projects/{project}/milestones/{milestone}', [MilestoneController::class, 'show'])->name('projects.milestones.show');
-    Route::get('/projects/{project}/milestones/{milestone}/edit', [MilestoneController::class, 'edit'])->name('projects.milestones.edit');
-    Route::put('/projects/{project}/milestones/{milestone}', [MilestoneController::class, 'update'])->name('projects.milestones.update');
-    Route::delete('/projects/{project}/milestones/{milestone}', [MilestoneController::class, 'destroy'])->name('projects.milestones.destroy');
-});
+
+Route::get('/project/milestones/create', [MilestoneController::class, 'create'])->name('project.proposal.create');
+
+
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';

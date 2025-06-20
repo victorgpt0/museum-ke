@@ -138,4 +138,9 @@ class Milestone extends Model
     {
         $this->attributes['title'] = ucfirst(trim($value));
     }
+    public function goals()
+{
+    return $this->hasMany(Goals::class);
+}
+
 }

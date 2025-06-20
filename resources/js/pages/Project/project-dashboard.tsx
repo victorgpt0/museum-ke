@@ -337,7 +337,7 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ project }) => {
                 title="No Milestones Set"
                 description="Break down your project into manageable milestones"
                 actionText="Create Milestone"
-                actionLink={`/projects/${project.id}/milestones`}
+                actionLink={`/project/milestones/create`}
               />
             </div>
           </div>
