@@ -165,6 +165,7 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ project }) => {
           <div className="mb-8">
             <div className="flex items-center justify-between">
               <div>
+               
                 <h1 className="text-3xl font-bold text-gray-900">{project.title}</h1>
                 <p className="mt-2 text-gray-600">{project.description}</p>
                 <div className="mt-4 flex items-center space-x-6 text-sm text-gray-500">
@@ -192,13 +193,13 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ project }) => {
 
           {/* Metrics Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <MetricCard
+              <MetricCard
               title="Milestones"
               value="0"
               icon={Target}
               color="border-green-500"
               actionText="Add Milestones"
-              actionLink={`/projects/addmilestone`}
+              actionLink={`/projects/${project.id}/addmilestone`}
               isEmpty={true}
             />
             <MetricCard
@@ -319,27 +320,77 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ project }) => {
             </div>
 
             {/* Milestones Section */}
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-lg font-semibold text-gray-900">Milestones</h3>
-                <Link
-                  href={`/projects/${project.id}/milestones`}
-                  className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Milestone
-                </Link>
-              </div>
+           <div className="bg-white rounded-lg shadow-md p-6 max-h-100 overflow-x-auto">
+  <div className="flex justify-between items-center mb-6">
+    <h3 className="text-lg font-semibold text-gray-900">Milestones</h3>
+    <Link
+      href={`/projects/${project.id}/milestones/create`}
+      className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+    >
+      <Plus className="h-4 w-4 mr-2" />
+      Add Milestone
+    </Link>
+  </div>
 
-              {/* Empty state for milestones */}
-              <EmptyState
-                icon={Target}
-                title="No Milestones Set"
-                description="Break down your project into manageable milestones"
-                actionText="Create Milestone"
-                actionLink={`/project/milestones/create`}
-              />
+  {project.milestones.length === 0 ? (
+    <EmptyState
+      icon={Target}
+      title="No Milestones Set"
+      description="Break down your project into manageable milestones"
+      actionText="Create Milestone"
+      actionLink={`/projects/${project.id}/milestones/create`}
+    />
+  ) : (
+    <div className="space-y-4">
+      {project.milestones.map((milestone) => (
+        <div 
+          key={milestone.id} 
+          className="border border-gray-200 rounded-lg p-4 hover:shadow-sm transition-shadow"
+        >
+          <div className="flex justify-between items-start">
+            <div>
+              <h4 className="font-medium text-gray-900">{milestone.title}</h4>
+              {milestone.description && (
+                <p className="text-sm text-gray-600 mt-1">{milestone.description}</p>
+              )}
             </div>
+            {milestone.due_date && (
+              <div className="flex items-center text-sm text-gray-500">
+                <Calendar className="h-4 w-4 mr-1" />
+                {new Date(milestone.due_date).toLocaleDateString()}
+              </div>
+            )}
+          </div>
+          
+          {/* Additional milestone details */}
+          <div className="mt-3 flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              {milestone.performance_indicator && (
+                <div className="flex items-center text-sm">
+                  <Star className="h-4 w-4 text-yellow-500 mr-1" />
+                  <span>{milestone.performance_indicator}/10</span>
+                </div>
+              )}
+              {milestone.completion && (
+                <div className="flex items-center text-sm">
+                  <CheckCircle className="h-4 w-4 text-green-500 mr-1" />
+                  <span>{milestone.completion * 10}% complete</span>
+                </div>
+              )}
+            </div>
+            
+            <Link
+              href={`/projects/${project.id}/milestones/${milestone.id}`}
+              className="text-sm text-blue-600 hover:underline"
+            >
+              View Details
+            </Link>
+          </div>
+        </div>
+      ))}
+    </div>
+  )}
+</div>
           </div>
 
           {/* Goals Section */}

@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
-import { Head, useForm, router } from '@inertiajs/react';
-import { Calendar, Upload, Plus, Trash2, Save, FileText } from 'lucide-react';
+import { Head, useForm, usePage, router } from '@inertiajs/react';
+import { Calendar, Upload, Plus, Trash2, Save, FileText, Target } from 'lucide-react';
 import AppLayout from '@/layouts/app-layout';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@headlessui/react';
+
 
 interface Project {
   id: number;
@@ -10,10 +13,10 @@ interface Project {
 }
 
 interface Goal {
+  id: string;
   title: string;
   performance: string;
   description: string;
-  tempId: string;
 }
 
 interface Props {
@@ -28,11 +31,15 @@ interface Props {
 }
 
 export default function MilestoneDashboard({ project, milestone }: Props) {
-  const [goals, setGoals] = useState<Goal[]>([
-    { title: '', performance: '', description: '', tempId: Date.now().toString() }
-  ]);
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
-  const [savingGoals, setSavingGoals] = useState<Set<string>>(new Set());
+  const { flash } = usePage().props;
+
+  // New goal being built
+  const [newGoal, setNewGoal] = useState<Omit<Goal, 'id'>>({
+    title: '',
+    performance: '',
+    description: ''
+  });
 
   const { data, setData, post, processing, errors, reset } = useForm({
     title: milestone?.title || '',
@@ -40,96 +47,35 @@ export default function MilestoneDashboard({ project, milestone }: Props) {
     due_date: milestone?.due_date || '',
     performance_description: milestone?.performance_description || '',
     project_id: project.id,
-    documents: [] as File[]
+    documents: [] as File[],
+    goals: [] as Goal[] // Goals list
   });
 
-  const addGoal = () => {
-    setGoals([...goals, { 
-      title: '', 
-      performance: '', 
-      description: '', 
-      tempId: Date.now().toString() 
-    }]);
-  };
+  // Add goal to the list
+  // Add goal to the list
+const addGoal = () => {
+    // Create the new goal from the current newGoal state
+    const goalWithId: Goal = {
+        title: newGoal.title,
+        performance: newGoal.performance,
+        description: newGoal.description,
+        id: Date.now().toString()
+    };
 
-  const removeGoal = (tempId: string) => {
-    setGoals(goals.filter(goal => goal.tempId !== tempId));
-  };
-
-  const updateGoal = (tempId: string, field: keyof Omit<Goal, 'tempId'>, value: string) => {
-    setGoals(goals.map(goal => 
-      goal.tempId === tempId ? { ...goal, [field]: value } : goal
-    ));
-  };
-
-  const saveGoal = async (goal: Goal) => {
-    if (!goal.title.trim()) {
-      alert('Goal title is required');
-      return;
-    }
-
-    setSavingGoals(prev => new Set(prev).add(goal.tempId));
+    // Use the functional update form to ensure we get the latest goals
+    setData('goals', (prevGoals) => [...prevGoals, goalWithId]);
     
-    try {
-      // First save the milestone to get milestone_id if it doesn't exist
-      let milestoneId = milestone?.id;
-      
-      if (!milestoneId) {
-        // Create milestone first
-        const milestoneResponse = await fetch('/milestone/save', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
-          },
-          body: JSON.stringify({
-            title: data.title,
-            description: data.description,
-            due_date: data.due_date,
-            performance_description: data.performance_description,
-            project_id: project.id
-          })
-        });
-        
-        if (!milestoneResponse.ok) {
-          throw new Error('Failed to create milestone');
-        }
-        
-        const milestoneData = await milestoneResponse.json();
-        milestoneId = milestoneData.milestone.id;
-      }
-
-      // Save the goal
-      const goalResponse = await fetch('/goals', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
-        },
-        body: JSON.stringify({
-          title: goal.title,
-          performance: goal.performance,
-          description: goal.description,
-          milestone_id: milestoneId
-        })
-      });
-
-      if (!goalResponse.ok) {
-        throw new Error('Failed to save goal');
-      }
-
-      alert('Goal saved successfully!');
-      
-    } catch (error) {
-      console.error('Error saving goal:', error);
-      alert('Failed to save goal. Please try again.');
-    } finally {
-      setSavingGoals(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(goal.tempId);
-        return newSet;
-      });
-    }
+    // Clear the form
+    setNewGoal({
+        title: '',
+        performance: '',
+        description: ''
+    });
+    console.log(data);  
+};
+  // Remove goal from the list
+  const removeGoal = (goalId: string) => {
+    setData('goals', data.goals.filter(goal => goal.id !== goalId));
   };
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -147,35 +93,53 @@ export default function MilestoneDashboard({ project, milestone }: Props) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Format the date to YYYY-MM-DD if it exists
+    const formattedDueDate = data.due_date ? new Date(data.due_date).toISOString().split('T')[0] : '';
+    
     const formData = new FormData();
     formData.append('title', data.title);
     formData.append('description', data.description);
-    formData.append('due_date', data.due_date);
+    formData.append('due_date', formattedDueDate);
     formData.append('performance_description', data.performance_description);
     formData.append('project_id', data.project_id.toString());
     
+    // Add goals data
+    const goalsString = JSON.stringify(data.goals);
+    formData.append('goals', goalsString);
+    
     data.documents.forEach((file, index) => {
-      formData.append(`documents[${index}]`, file);
+        formData.append(`documents[${index}]`, file);
     });
 
-    router.post('/milestone/save', formData, {
-      forceFormData: true,
-      onSuccess: () => {
-        alert('Milestone saved successfully!');
-        reset();
-        setGoals([{ title: '', performance: '', description: '', tempId: Date.now().toString() }]);
-        setUploadedFiles([]);
-      },
-      onError: (errors) => {
-        console.error('Validation errors:', errors);
-      }
+    // Debugging logs
+    console.log('Goals data being sent:', data.goals);
+    console.log('Stringified goals:', goalsString);
+    for (let [key, value] of formData.entries()) {
+        console.log(key, value);
+    }
+
+    router.post(`/projects/${project.id}/milestones`, formData, {
+        forceFormData: true,
+        preserveScroll: true,
+        onSuccess: () => {
+            reset();
+            setNewGoal({ title: '', performance: '', description: '' });
+            setUploadedFiles([]);
+        },
+        onError: (errors) => {
+            console.error('Validation errors:', errors);
+        }
     });
-  };
+};
 
   return (
     <AppLayout>
       <Head title={`Milestone Dashboard - ${project.title}`} />
-      
+      {flash.success && (
+    <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+        {flash.success}
+    </div>
+)}
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Project Header */}
@@ -318,91 +282,89 @@ export default function MilestoneDashboard({ project, milestone }: Props) {
             </div>
 
             {/* Goals Section */}
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-semibold text-gray-900">Goals</h3>
-                <button
-                  type="button"
-                  onClick={addGoal}
-                  className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                >
-                  <Plus className="w-4 h-4 mr-1" />
-                  Add Goal
-                </button>
-              </div>
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Target className="h-5 w-5" />
+                  <span>Goals</span>
+                </CardTitle>
+                <CardDescription>
+                  Define the specific goals for this milestone
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="block text-sm font-medium text-gray-700">Goal Title *</label>
+                    <input
+                      type="text"
+                      value={newGoal.title}
+                      onChange={e => setNewGoal({...newGoal, title: e.target.value})}
+                      placeholder="Enter goal title"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="block text-sm font-medium text-gray-700">Performance Metric</label>
+                    <input
+                      type="text"
+                      value={newGoal.performance}
+                      onChange={e => setNewGoal({...newGoal, performance: e.target.value})}
+                      placeholder="e.g., 90% completion rate"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                </div>
+                
+                <div className="space-y-1">
+                  <label className="block text-sm font-medium text-gray-700">Goal Description</label>
+                  <textarea
+                    rows={3}
+                    value={newGoal.description}
+                    onChange={e => setNewGoal({...newGoal, description: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:  ring-blue-500 focus:border-blue-500"
+                    placeholder="Describe this goal in detail..."
+                  />
+                </div>
+                
+                <div className="flex justify-end">
+                  <button 
+                    type="button" 
+                    onClick={addGoal}
+                    className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  >
+                    <Plus className="h-4 w-4 mr-1" />
+                    Add Goal
+                  </button>
+                </div>
 
-              <div className="space-y-6">
-                {goals.map((goal, index) => (
-                  <div key={goal.tempId} className="border border-gray-200 rounded-lg p-4">
-                    <div className="flex items-center justify-between mb-4">
-                      <h4 className="text-md font-medium text-gray-800">Goal {index + 1}</h4>
-                      <div className="flex items-center space-x-2">
+                {errors.goals && <div className="text-red-500 text-sm">{errors.goals}</div>}
+
+                {/* Goals List */}
+{Array.isArray(data.goals) && data.goals.length > 0 && (
+                  <div className="space-y-2">
+                    <h4 className="font-medium text-gray-900">Added Goals:</h4>
+                    {data.goals.map((goal) => (
+                      <div key={goal.id} className="flex items-center justify-between bg-green-50 p-3 rounded">
+                        <div className="flex-1">
+                          <h5 className="font-medium">{goal.title}</h5>
+                          <p className="text-sm text-gray-600">{goal.description}</p>
+                          {goal.performance && <p className="text-xs text-gray-500">Performance Metric: {goal.performance}</p>}
+                        </div>
                         <button
                           type="button"
-                          onClick={() => saveGoal(goal)}
-                          disabled={savingGoals.has(goal.tempId)}
-                          className="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50"
+                          onClick={() => removeGoal(goal.id)}
+                          className="text-red-600 hover:text-red-800 px-2 py-1 border border-red-300 rounded"
                         >
-                          <Save className="w-4 h-4 mr-1" />
-                          {savingGoals.has(goal.tempId) ? 'Saving...' : 'Save Goal'}
+                          <Trash2 className="h-4 w-4" />
                         </button>
-                        {goals.length > 1 && (
-                          <button
-                            type="button"
-                            onClick={() => removeGoal(goal.tempId)}
-                            className="text-red-500 hover:text-red-700"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        )}
                       </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Goal Title *
-                        </label>
-                        <input
-                          type="text"
-                          value={goal.title}
-                          onChange={(e) => updateGoal(goal.tempId, 'title', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                          placeholder="Enter goal title"
-                          required
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Performance Metric
-                        </label>
-                        <input
-                          type="text"
-                          value={goal.performance}
-                          onChange={(e) => updateGoal(goal.tempId, 'performance', e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                          placeholder="e.g., 90% completion rate"
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Goal Description
-                      </label>
-                      <textarea
-                        rows={3}
-                        value={goal.description}
-                        onChange={(e) => updateGoal(goal.tempId, 'description', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        placeholder="Describe this goal in detail..."
-                      />
-                    </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            </div>
+                )}
+              </CardContent>
+            </Card>
 
             {/* Submit Button */}
             <div className="flex justify-end">
@@ -411,7 +373,7 @@ export default function MilestoneDashboard({ project, milestone }: Props) {
                 disabled={processing}
                 className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
               >
-                {processing ? 'Saving...' : 'Save Milestone'}
+                {processing ? 'Saving...' : 'Save Milestone & Goals'}
               </button>
             </div>
           </form>

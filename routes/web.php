@@ -116,7 +116,19 @@ Route::post('/project/proposal/reject', [ProjectProposalController::class, 'reje
 
 
 
+
+
+// routes/web.php
+
+// Milestone routes
 Route::get('/project/milestones/create', [MilestoneController::class, 'create'])->name('project.proposal.create');
+// Change your milestone create route to include project parameter
+Route::get('/projects/{project}/milestones/create', [MilestoneController::class, 'create'])->name('project.milestones.create');
+Route::post('/projects/{project}/milestones', [MilestoneController::class, 'store'])->name('project.milestones.store');
+Route::put('/milestones/{milestone}', [MilestoneController::class, 'update'])->name('milestones.update');
+
+// Goal routes
+Route::post('/goals', [GoalController::class, 'storeWithMilestone'])->name('goals.store');
 
 
 require __DIR__.'/settings.php';

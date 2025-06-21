@@ -19,7 +19,7 @@ public function index()
         $latestProject = Project::whereHas('proposal', function ($query) use ($userId) {
                 $query->where('user_id', $userId);
             })
-            ->with('proposal') // Optional: get related proposal info
+            ->with(['proposal','milestones']) // Optional: get related proposal info
             ->orderBy('created_at', 'desc')
             ->first();
 
