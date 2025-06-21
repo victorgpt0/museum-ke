@@ -5,9 +5,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class Goals extends Model
 {
-    protected $fillable = ['title', 'performance', 'description', 'milestone_id','performance_indicator'];
+    protected $fillable = ['title', 'performance', 'description', 'comments', 'milestone_id'];
   protected $casts = [
-        'performance_indicator' => 'integer', // Add casting
+        'performance' => 'integer', // Add casting
     ];
 
     public function milestone()
@@ -16,7 +16,7 @@ class Goals extends Model
     }
     public function setPerformanceIndicatorAttribute($value)
     {
-        $this->attributes['performance_indicator'] = $value === null ? 
+        $this->attributes['performance'] = $value === null ? 
             null : 
             max(1, min(10, (int)$value));
     }

@@ -3,7 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
@@ -17,9 +21,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * 5. Change relationship method names and related models
  * 6. Update foreign key references in relationships
  */
-class Milestone extends Model
+class Milestone extends Model implements HasMedia
 {
-    use HasFactory;
+    use HasFactory, InteractsWithMedia;
 
     /**
      * The table associated with the model.
@@ -66,6 +70,44 @@ class Milestone extends Model
     {
         return $this->belongsTo(Project::class, 'project_id');
     }
+     public function goals(): HasMany
+{
+    return $this->hasMany(Goals::class);
+}
+
+        public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('milestone_documents')
+            ->acceptsMimeTypes([
+                'application/pdf',
+                'application/msword',
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                'application/vnd.ms-excel',
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'text/plain'
+            ]);
+
+        $this->addMediaCollection('milestone_images')
+            ->acceptsMimeTypes([
+                'image/jpeg',
+                'image/jpg',
+                'image/png',
+                'image/webp'
+            ]);
+    }
+
+    /**
+     * Define media conversions (optional - for image processing)
+     */
+    public function registerMediaConversions(Media $media = null): void
+    {
+        $this->addMediaConversion('thumb')
+            ->width(300)
+            ->height(300)
+            ->sharpen(10)
+            ->performOnCollections('milestone_images');
+    }
+
 
     /**
      * ADDITIONAL RELATIONSHIP EXAMPLES FOR REUSE:
@@ -138,9 +180,6 @@ class Milestone extends Model
     {
         $this->attributes['title'] = ucfirst(trim($value));
     }
-    public function goals()
-{
-    return $this->hasMany(Goals::class);
-}
+    
 
 }

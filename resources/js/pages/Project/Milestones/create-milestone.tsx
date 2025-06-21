@@ -4,7 +4,7 @@ import { Calendar, Upload, Plus, Trash2, Save, FileText, Target } from 'lucide-r
 import AppLayout from '@/layouts/app-layout';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@headlessui/react';
-
+import toast, { Toaster } from 'react-hot-toast';
 
 interface Project {
   id: number;
@@ -15,8 +15,9 @@ interface Project {
 interface Goal {
   id: string;
   title: string;
-  performance: string;
+  performance: number | null; // 1-10 scale based on your model
   description: string;
+  comments?: string; // Optional since it exists in your model
 }
 
 interface Props {
@@ -34,102 +35,206 @@ export default function MilestoneDashboard({ project, milestone }: Props) {
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const { flash } = usePage().props;
 
-  // New goal being built
-  const [newGoal, setNewGoal] = useState<Omit<Goal, 'id'>>({
+  // New goal being built - only title and description needed
+  const [newGoal, setNewGoal] = useState({
     title: '',
-    performance: '',
     description: ''
   });
 
-  const { data, setData, post, processing, errors, reset } = useForm({
+  // In your component, update the useForm data structure:
+const { data, setData, post, processing, errors, reset } = useForm({
     title: milestone?.title || '',
     description: milestone?.description || '',
     due_date: milestone?.due_date || '',
-    performance_description: milestone?.performance_description || '',
     project_id: project.id,
     documents: [] as File[],
-    goals: [] as Goal[] // Goals list
-  });
+    goals: [] as Goal[]
+});
+
+// Remove any references to performance_description from your form
 
   // Add goal to the list
-  // Add goal to the list
-const addGoal = () => {
+  const addGoal = () => {
+    // Validate that at least title is provided
+    if (!newGoal.title.trim()) {
+          toast.success(' goal Title required');
+      return;
+    }
+
     // Create the new goal from the current newGoal state
     const goalWithId: Goal = {
-        title: newGoal.title,
-        performance: newGoal.performance,
-        description: newGoal.description,
-        id: Date.now().toString()
+      title: newGoal.title,
+      description: newGoal.description,
+      performance: null, // Set as null since it will be set later
+      id: Date.now().toString()
     };
 
-    // Use the functional update form to ensure we get the latest goals
-    setData('goals', (prevGoals) => [...prevGoals, goalWithId]);
+    // Get the current goals and add the new one
+    const updatedGoals = [...data.goals, goalWithId];
     
+    // Update the form data
+    setData('goals', updatedGoals);
+    
+    // Console log the updated goals list
+    console.log('Updated goals:', updatedGoals);
+          toast.success(' goal added ');
+
     // Clear the form
     setNewGoal({
-        title: '',
-        performance: '',
-        description: ''
+      title: '',
+      description: ''
     });
-    console.log(data);  
-};
+  };
+
   // Remove goal from the list
   const removeGoal = (goalId: string) => {
-    setData('goals', data.goals.filter(goal => goal.id !== goalId));
+    const updatedGoals = data.goals.filter(goal => goal.id !== goalId);
+    setData('goals', updatedGoals);
+          toast.error(' goal removed');
   };
+
+  // Rest of your component logic goes here...
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(event.target.files || []);
-    setUploadedFiles(prev => [...prev, ...files]);
-    setData('documents', [...data.documents, ...files]);
-  };
+  const files = Array.from(event.target.files || []);
+  
+  if (files.length === 0) return;
 
-  const removeFile = (index: number) => {
-    const newFiles = uploadedFiles.filter((_, i) => i !== index);
-    setUploadedFiles(newFiles);
-    setData('documents', newFiles);
-  };
+  // Validate file types - allow various document types
+  const allowedTypes = [
+    'application/pdf',
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/vnd.ms-excel',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'text/plain',
+    'image/jpeg',
+    'image/jpg',
+    'image/png'
+  ];
+  
+  const invalidFiles = files.filter(file => !allowedTypes.includes(file.type));
+  if (invalidFiles.length > 0) {
+    alert('Please upload only supported document types (PDF, Word, Excel, Text, or Image files).');
+    return;
+  }
 
+  // Validate file sizes (10MB max per file)
+  const oversizedFiles = files.filter(file => file.size > 10 * 1024 * 1024);
+  if (oversizedFiles.length > 0) {
+    alert('Some files are too large. Maximum file size is 10MB. Please choose smaller files.');
+    return;
+  }
+
+  // Add new files to existing uploaded files
+  const newUploadedFiles = [...uploadedFiles, ...files];
+  const newDocuments = [...data.documents, ...files];
+  
+  // Update both state and form data
+  setUploadedFiles(newUploadedFiles);
+  setData('documents', newDocuments);
+  
+  // Success feedback
+      toast.success(`${files.length} file(s) added successfully`);
+
+  // Clear the input value so the same file can be selected again if needed
+  event.target.value = '';
+};
+
+const removeFile = (index: number) => {
+  // Remove file from both uploadedFiles state and form data
+  const newUploadedFiles = uploadedFiles.filter((_, i) => i !== index);
+  const newDocuments = data.documents.filter((_, i) => i !== index);
+  
+  setUploadedFiles(newUploadedFiles);
+  setData('documents', newDocuments);
+  
+      toast.error('file removed successfully');
+};
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Format the date to YYYY-MM-DD if it exists
+    console.log('Milestone submission started');
+    console.log('Original form data:', data);
+    console.log('Uploaded files:', uploadedFiles);
+    console.log('Goals data:', data.goals);
+    
+    // Basic validation
+    if (!data.title.trim()) {
+        alert('Please enter a milestone title');
+        return;
+    }
+    
+    if (!data.description.trim()) {
+        alert('Please enter a milestone description');
+        return;
+    }
+    
+    if (!data.due_date) {
+        alert('Please select a due date');
+        return;
+    }
+    
+    // Format the date to YYYY-MM-DD
     const formattedDueDate = data.due_date ? new Date(data.due_date).toISOString().split('T')[0] : '';
     
-    const formData = new FormData();
-    formData.append('title', data.title);
-    formData.append('description', data.description);
-    formData.append('due_date', formattedDueDate);
-    formData.append('performance_description', data.performance_description);
-    formData.append('project_id', data.project_id.toString());
+    // Create the submission data object
+    const formData = {
+        title: data.title.trim(),
+        description: data.description.trim(),
+        due_date: formattedDueDate,
+        project_id: data.project_id,
+        goals: data.goals, // Send goals array directly
+        documents: data.documents || [] // Include uploaded documents
+    };
     
-    // Add goals data
-    const goalsString = JSON.stringify(data.goals);
-    formData.append('goals', goalsString);
+    console.log('Formatted Milestone Data:', formData);
+    console.log('Goals being sent:', data.goals);
+    console.log('Documents being sent:', data.documents?.map(doc => doc.name) || []);
     
-    data.documents.forEach((file, index) => {
-        formData.append(`documents[${index}]`, file);
-    });
-
-    // Debugging logs
-    console.log('Goals data being sent:', data.goals);
-    console.log('Stringified goals:', goalsString);
-    for (let [key, value] of formData.entries()) {
-        console.log(key, value);
-    }
-
-    router.post(`/projects/${project.id}/milestones`, formData, {
-        forceFormData: true,
-        preserveScroll: true,
-        onSuccess: () => {
-            reset();
-            setNewGoal({ title: '', performance: '', description: '' });
-            setUploadedFiles([]);
-        },
-        onError: (errors) => {
-            console.error('Validation errors:', errors);
+    // Send data to backend using router.post with forceFormData
+    router.post(
+        `/projects/${project.id}/savemilestones`,
+        formData,
+        {
+            forceFormData: true, // This ensures files are handled properly
+            preserveState: false,
+            preserveScroll: true,
+            onStart: () => {
+                console.log('[DEBUG] 🛫 Milestone submission started...');
+            },
+            onProgress: (event) => {
+                console.log('[DEBUG] Progress event:', event);
+            },
+            onSuccess: (page) => {
+                console.log('[✅] Milestone submission successful! Server response:', page);
+                toast.success('Milestone has been created successfully');
+                
+                // Reset form data
+                reset();
+                setNewGoal({ title: '', description: '' });
+                setUploadedFiles([]);
+            },
+            onError: (errors) => {
+                console.error('[❌] Milestone submission failed with errors:', errors);
+                
+                // Show specific error messages
+                if (errors.title) toast.error(`Title: ${errors.title}`);
+                if (errors.description) toast.error(`Description: ${errors.description}`);
+                if (errors.due_date) toast.error(`Due Date: ${errors.due_date}`);
+                if (errors.goals) toast.error(`Goals: ${errors.goals}`);
+                if (errors.documents) toast.error(`Documents: ${errors.documents}`);
+                
+                // Fallback error message
+                if (!Object.keys(errors).length) {
+                    toast.error('There was an error creating the milestone. Check console for details.');
+                }
+            },
+            onFinish: () => {
+                console.log('[DEBUG] ✅ Milestone submission finished (success or failure)');
+            }
         }
-    });
+    );
 };
 
   return (
@@ -162,7 +267,44 @@ const addGoal = () => {
               </div>
             </div>
           </div>
-
+<Toaster 
+          position="top-right"
+          toastOptions={{
+            style: {
+              borderRadius: '8px',
+              padding: '12px 16px',
+            },
+            success: {
+              style: {
+                background: '#f0fdf4',
+                color: '#166534',
+                border: '1px solid #bbf7d0',
+              },
+              iconTheme: {
+                primary: '#16a34a',
+                secondary: '#f0fdf4',
+              },
+            },
+            error: {
+              style: {
+                background: '#fef2f2',
+                color: '#991b1b',
+                border: '1px solid #fecaca',
+              },
+              iconTheme: {
+                primary: '#dc2626',
+                secondary: '#fef2f2',
+              },
+            },
+            loading: {
+              style: {
+                background: '#eff6ff',
+                color: '#1e40af',
+                border: '1px solid #bfdbfe',
+              },
+            }
+          }}
+        />
           {/* Milestone Form */}
           <form onSubmit={handleSubmit} className="space-y-8">
             <div className="bg-white rounded-lg shadow-sm p-6">
@@ -282,89 +424,77 @@ const addGoal = () => {
             </div>
 
             {/* Goals Section */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Target className="h-5 w-5" />
-                  <span>Goals</span>
-                </CardTitle>
-                <CardDescription>
-                  Define the specific goals for this milestone
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <label className="block text-sm font-medium text-gray-700">Goal Title *</label>
-                    <input
-                      type="text"
-                      value={newGoal.title}
-                      onChange={e => setNewGoal({...newGoal, title: e.target.value})}
-                      placeholder="Enter goal title"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="block text-sm font-medium text-gray-700">Performance Metric</label>
-                    <input
-                      type="text"
-                      value={newGoal.performance}
-                      onChange={e => setNewGoal({...newGoal, performance: e.target.value})}
-                      placeholder="e.g., 90% completion rate"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    />
-                  </div>
-                </div>
-                
-                <div className="space-y-1">
-                  <label className="block text-sm font-medium text-gray-700">Goal Description</label>
-                  <textarea
-                    rows={3}
-                    value={newGoal.description}
-                    onChange={e => setNewGoal({...newGoal, description: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:  ring-blue-500 focus:border-blue-500"
-                    placeholder="Describe this goal in detail..."
-                  />
-                </div>
-                
-                <div className="flex justify-end">
-                  <button 
-                    type="button" 
-                    onClick={addGoal}
-                    className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                  >
-                    <Plus className="h-4 w-4 mr-1" />
-                    Add Goal
-                  </button>
-                </div>
+           <Card>
+  <CardHeader>
+    <CardTitle className="flex items-center space-x-2">
+      <Target className="h-5 w-5" />
+      <span>Goals</span>
+    </CardTitle>
+    <CardDescription>
+      Define the specific goals for this milestone
+    </CardDescription>
+  </CardHeader>
+  <CardContent className="space-y-4">
+    <div className="space-y-4">
+      <div className="space-y-1">
+        <label className="block text-sm font-medium text-gray-700">Goal Title *</label>
+        <input
+          type="text"
+          value={newGoal.title}
+          onChange={e => setNewGoal({...newGoal, title: e.target.value})}
+          placeholder="Enter goal title"
+          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+        />
+      </div>
+      
+      <div className="space-y-1">
+        <label className="block text-sm font-medium text-gray-700">Goal Description</label>
+        <textarea
+          rows={3}
+          value={newGoal.description}
+          onChange={e => setNewGoal({...newGoal, description: e.target.value})}
+          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          placeholder="Describe this goal in detail..."
+        />
+      </div>
+    </div>
+    
+    <div className="flex justify-end">
+      <button 
+        type="button" 
+        onClick={addGoal}
+        className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+      >
+        <Plus className="h-4 w-4 mr-1" />
+        Add Goal
+      </button>
+    </div>
 
-                {errors.goals && <div className="text-red-500 text-sm">{errors.goals}</div>}
+    {errors.goals && <div className="text-red-500 text-sm">{errors.goals}</div>}
 
-                {/* Goals List */}
-{Array.isArray(data.goals) && data.goals.length > 0 && (
-                  <div className="space-y-2">
-                    <h4 className="font-medium text-gray-900">Added Goals:</h4>
-                    {data.goals.map((goal) => (
-                      <div key={goal.id} className="flex items-center justify-between bg-green-50 p-3 rounded">
-                        <div className="flex-1">
-                          <h5 className="font-medium">{goal.title}</h5>
-                          <p className="text-sm text-gray-600">{goal.description}</p>
-                          {goal.performance && <p className="text-xs text-gray-500">Performance Metric: {goal.performance}</p>}
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => removeGoal(goal.id)}
-                          className="text-red-600 hover:text-red-800 px-2 py-1 border border-red-300 rounded"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+    {/* Goals List */}
+    {Array.isArray(data.goals) && data.goals.length > 0 && (
+      <div className="space-y-2">
+        <h4 className="font-medium text-gray-900">Added Goals:</h4>
+        {data.goals.map((goal) => (
+          <div key={goal.id} className="flex items-center justify-between bg-green-50 p-3 rounded">
+            <div className="flex-1">
+              <h5 className="font-medium">{goal.title}</h5>
+              <p className="text-sm text-gray-600">{goal.description}</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => removeGoal(goal.id)}
+              className="text-red-600 hover:text-red-800 px-2 py-1 border border-red-300 rounded"
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
+          </div>
+        ))}
+      </div>
+    )}
+  </CardContent>
+</Card>
 
             {/* Submit Button */}
             <div className="flex justify-end">
