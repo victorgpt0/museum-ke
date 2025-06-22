@@ -18,7 +18,7 @@ import {
     Shield,
     Package,
     History,
-    FileCheck, FolderRoot
+    FileCheck, FolderRoot, LogsIcon
 } from 'lucide-react';
 import AppLogo from './app-logo';
 
@@ -32,6 +32,11 @@ interface ExtendedNavItem extends NavItem {
 
 // Updated main navigation items with submenus
 const mainNavItems: ExtendedNavItem[] = [
+    {
+        title: 'Artifacts',
+        href: '/artifacts',
+        icon: Archive,
+    },
     {
         title: 'Dashboard',
         href: '/dashboard',
@@ -53,7 +58,7 @@ const mainNavItems: ExtendedNavItem[] = [
         title: 'Project Dashboard',
         href: '/project/dashboard',
         icon: LayoutGrid,
-       
+
     },
     {
         title: 'Maps',
@@ -74,12 +79,12 @@ const mainNavItems: ExtendedNavItem[] = [
     },
     {
         title: 'Acquisitions',
-        href: '/curator/acquisition-history',  // Changed to lowercase and consistent path
+        href: '/curator/acquisition-history',
         icon: Package,
         children: [
             {
                 title: 'Acquisition History',
-                href: '/curator/acquisition-history',  // Added leading slash and made consistent
+                href: '/curator/acquisition-history',
                 icon: History,
             },
             {
@@ -103,6 +108,11 @@ const mainNavItems: ExtendedNavItem[] = [
         title: 'Roles',
         href: '/roles',
         icon: Shield,
+    },
+    {
+        title: 'Logs',
+        href: route('activity-logs.index'),
+        icon: LogsIcon,
     },
     {
         title: 'Acquisitions2',
@@ -147,7 +157,7 @@ const mainNavItems: ExtendedNavItem[] = [
 
         ]
     },
-   
+
      {
         title: 'Project Report',
         href: '/project/report',  // Default URL when Archives is clicked
