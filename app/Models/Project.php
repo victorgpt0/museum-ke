@@ -37,10 +37,10 @@ class Project extends Model
     /**
      * Get all milestones for this project.
      */
-    public function milestones(): HasMany
-    {
-        return $this->hasMany(Milestone::class, 'project_id');
-    }
+        public function milestones(): HasMany
+        {
+            return $this->hasMany(Milestone::class, 'project_id');
+        }
 
     /**
      * Get formatted start date

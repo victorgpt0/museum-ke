@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Head, Link, useForm } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
+import { Badge } from '@/components/ui/badge';
 
 import { 
   Calendar, 
@@ -21,7 +22,8 @@ import {
   BarChart3,
   Settings,
   ArrowRight,
-  FolderOpen
+  FolderOpen,
+  Star
 } from 'lucide-react';
 
 interface Proposal {
@@ -30,6 +32,28 @@ interface Proposal {
   description: string;
   user_id: number;
   // Add other proposal fields as needed
+}
+
+interface Milestone {
+  id: number;
+  title: string;
+  description: string;
+  due_date: string;
+  performance_indicator?: number;
+  completion?: number;
+}
+
+interface Goal {
+  id: number;
+  title: string;
+  description: string;
+  performance: number | null;
+  comments: string | null;
+  completed: boolean;
+  milestone: {
+    id: number;
+    title: string;
+  };
 }
 
 interface Project {
@@ -41,6 +65,10 @@ interface Project {
   created_at: string;
   updated_at: string;
   proposal: Proposal;
+  milestones: Milestone[];
+  goals: Goal[];
+  milestones_count: number;
+  goals_count: number;
 }
 
 interface ProjectDashboardProps {
@@ -165,6 +193,7 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ project }) => {
           <div className="mb-8">
             <div className="flex items-center justify-between">
               <div>
+               
                 <h1 className="text-3xl font-bold text-gray-900">{project.title}</h1>
                 <p className="mt-2 text-gray-600">{project.description}</p>
                 <div className="mt-4 flex items-center space-x-6 text-sm text-gray-500">
@@ -192,23 +221,23 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ project }) => {
 
           {/* Metrics Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <MetricCard
+              <MetricCard
               title="Milestones"
-              value="0"
+              value={project.milestones_count || 0}
               icon={Target}
               color="border-green-500"
               actionText="Add Milestones"
-              actionLink={`/projects/${project.id}/milestones`}
-              isEmpty={true}
+              actionLink={`/projects/${project.id}/addmilestone`}
+              isEmpty={!project.milestones_count || project.milestones_count === 0}
             />
             <MetricCard
               title="Goals"
-              value="0"
+              value={project.goals_count || 0}
               icon={BarChart3}
               color="border-blue-500"
               actionText="Set Goals"
               actionLink={`/projects/${project.id}/goals`}
-              isEmpty={true}
+              isEmpty={!project.goals_count || project.goals_count === 0}
             />
             <MetricCard
               title="Findings"
@@ -319,27 +348,77 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ project }) => {
             </div>
 
             {/* Milestones Section */}
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-lg font-semibold text-gray-900">Milestones</h3>
-                <Link
-                  href={`/projects/${project.id}/milestones`}
-                  className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Milestone
-                </Link>
-              </div>
+           <div className="bg-white rounded-lg shadow-md p-6 max-h-100 overflow-x-auto">
+  <div className="flex justify-between items-center mb-6">
+    <h3 className="text-lg font-semibold text-gray-900">Milestones</h3>
+    <Link
+      href={`/projects/${project.id}/milestones/create`}
+      className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+    >
+      <Plus className="h-4 w-4 mr-2" />
+      Add Milestone
+    </Link>
+  </div>
 
-              {/* Empty state for milestones */}
-              <EmptyState
-                icon={Target}
-                title="No Milestones Set"
-                description="Break down your project into manageable milestones"
-                actionText="Create Milestone"
-                actionLink={`/projects/${project.id}/milestones`}
-              />
+  {project.milestones.length === 0 ? (
+    <EmptyState
+      icon={Target}
+      title="No Milestones Set"
+      description="Break down your project into manageable milestones"
+      actionText="Create Milestone"
+      actionLink={`/projects/${project.id}/milestones/create`}
+    />
+  ) : (
+    <div className="space-y-4">
+      {project.milestones.map((milestone) => (
+        <div 
+          key={milestone.id} 
+          className="border border-gray-200 rounded-lg p-4 hover:shadow-sm transition-shadow"
+        >
+          <div className="flex justify-between items-start">
+            <div>
+              <h4 className="font-medium text-gray-900">{milestone.title}</h4>
+              {milestone.description && (
+                <p className="text-sm text-gray-600 mt-1">{milestone.description}</p>
+              )}
             </div>
+            {milestone.due_date && (
+              <div className="flex items-center text-sm text-gray-500">
+                <Calendar className="h-4 w-4 mr-1" />
+                {new Date(milestone.due_date).toLocaleDateString()}
+              </div>
+            )}
+          </div>
+          
+          {/* Additional milestone details */}
+          <div className="mt-3 flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              {milestone.performance_indicator && (
+                <div className="flex items-center text-sm">
+                  <Star className="h-4 w-4 text-yellow-500 mr-1" />
+                  <span>{milestone.performance_indicator}/10</span>
+                </div>
+              )}
+              {milestone.completion && (
+                <div className="flex items-center text-sm">
+                  <CheckCircle className="h-4 w-4 text-green-500 mr-1" />
+                  <span>{milestone.completion * 10}% complete</span>
+                </div>
+              )}
+            </div>
+            
+            <Link
+              href={`/projects/${project.id}/milestones/${milestone.id}`}
+              className="text-sm text-blue-600 hover:underline"
+            >
+              View Details
+            </Link>
+          </div>
+        </div>
+      ))}
+    </div>
+  )}
+</div>
           </div>
 
           {/* Goals Section */}
@@ -355,13 +434,84 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ project }) => {
               </Link>
             </div>
 
-            <EmptyState
-              icon={BarChart3}
-              title="No Goals Defined"
-              description="Set specific goals to track your project's success"
-              actionText="Define Goals"
-              actionLink={`/projects/${project.id}/goals`}
-            />
+            {(!project.goals || project.goals.length === 0) ? (
+              <EmptyState
+                icon={BarChart3}
+                title="No Goals Defined"
+                description="Set specific goals to track your project's success"
+                actionText="Define Goals"
+                actionLink={`/projects/${project.id}/goals`}
+              />
+            ) : (
+              <div className="space-y-4">
+                {project.goals
+                  .sort((a, b) => {
+                    // Sort completed goals first, then by performance (descending)
+                    if (a.completed !== b.completed) {
+                      return a.completed ? -1 : 1;
+                    }
+                    return (b.performance || 0) - (a.performance || 0);
+                  })
+                  .map((goal) => (
+                    <div 
+                      key={goal.id} 
+                      className={`border rounded-lg p-4 hover:shadow-sm transition-shadow ${
+                        goal.completed ? 'border-green-200 bg-green-50' : 'border-gray-200'
+                      }`}
+                    >
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h4 className="font-medium text-gray-900">{goal.title}</h4>
+                            {goal.completed && (
+                              <Badge variant="default" className="bg-green-600 text-white text-xs">
+                                Completed
+                              </Badge>
+                            )}
+                          </div>
+                          {goal.description && (
+                            <p className="text-sm text-gray-600 mb-2">{goal.description}</p>
+                          )}
+                          <div className="flex items-center text-sm text-gray-500">
+                            <Target className="h-4 w-4 mr-1" />
+                            <span>Milestone: {goal.milestone.title}</span>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center space-x-4">
+                          {goal.performance !== null && (
+                            <div className="flex items-center text-sm">
+                              <BarChart3 className="h-4 w-4 text-blue-500 mr-1" />
+                              <span className="font-medium">{goal.performance * 10}%</span>
+                            </div>
+                          )}
+                          {goal.completed && (
+                            <div className="flex items-center text-sm">
+                              <CheckCircle className="h-4 w-4 text-green-500 mr-1" />
+                              <span>Completed</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      
+                      {goal.comments && (
+                        <div className="mt-3 p-3 bg-gray-50 rounded-md">
+                          <p className="text-sm text-gray-700">{goal.comments}</p>
+                        </div>
+                      )}
+                      
+                      <div className="mt-3 flex justify-end">
+                        <Link
+                          href={`/projects/${project.id}/milestones/${goal.milestone.id}`}
+                          className="text-sm text-blue-600 hover:underline"
+                        >
+                          View Milestone
+                        </Link>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            )}
           </div>
 
           {/* Findings Section */}

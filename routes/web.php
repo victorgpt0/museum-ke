@@ -10,6 +10,8 @@ use App\Http\Controllers\ArchivesController;
 use App\Http\Controllers\DonationController;
 use App\Http\Controllers\ProjectProposalController;
 use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\MilestoneController;
+use App\Http\Controllers\GoalController;
 
 
 Route::middleware('guest')->group(function () {
@@ -108,6 +110,26 @@ Route::post('/project/saveproposal', [ProjectProposalController::class, 'store']
 Route::get('/project/viewproposals', [ProjectProposalController::class, 'index'])->name('project.proposal.index');
 Route::post('/project/proposal/approve', [ProjectProposalController::class, 'approve']);
 Route::post('/project/proposal/reject', [ProjectProposalController::class, 'reject']);
+
+
+
+
+
+// routes/web.php
+
+// Milestone routes
+// Change your milestone create route to include project parameter
+Route::get('/projects/{project}/milestones/create', [MilestoneController::class, 'create'])->name('project.milestones.create');
+Route::post('/projects/{project}/savemilestones', [MilestoneController::class, 'store'])->name('project.milestones.store');
+Route::put('/milestones/{milestone}', [MilestoneController::class, 'update'])->name('milestones.update');
+
+// Goal routes
+Route::post('/goals', [GoalController::class, 'storeWithMilestone'])->name('goals.store');
+Route::put('/goals/{goal:id}/save', [GoalController::class, 'update'])->name('goals.update');
+Route::get('/projects/{project}/milestones/{milestone}', [MilestoneController::class, 'show'])->name('project.milestones.show');
+Route::put('/projects/{project}/milestones/{milestone}/goals', [MilestoneController::class, 'updateGoals'])->name('project.milestones.update-goals');
+
+
 
 
 Route::get('activity-logs', [App\Http\Controllers\ActivityLogController::class, 'index'])->name('activity-logs.index');
