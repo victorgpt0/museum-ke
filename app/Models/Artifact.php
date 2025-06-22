@@ -6,11 +6,17 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
 
-class Artifact extends Model
+class Artifact extends Model implements HasMedia
 {
     use HasFactory;
     use HasHashId;
+    use InteractsWithMedia;
+    use LogsActivity;
 
     protected $table = 'artifact';
 
@@ -27,11 +33,15 @@ class Artifact extends Model
      */
     protected $fillable = [
         'title',
-        'condition',
-        'location',
-        'relation',
         'description',
         'category_id',
+        'condition',
+        'location',
+        'acquisition_date',
+        'status',
+        'donor_id',
+        'user_id',
+        'metadata',
     ];
 
     /**
@@ -41,6 +51,8 @@ class Artifact extends Model
      */
     protected $casts = [
         'condition' => 'string',
+        'acquisition_date' => 'date',
+        'metadata' => 'array',
     ];
 
     /**
@@ -94,57 +106,80 @@ class Artifact extends Model
     }
 
     /**
-     * Get the parent artifact that this artifact is related to.
+     * Get the donor that owns the artifact.
      */
-    public function relatedTo(): BelongsTo
+    public function donor(): BelongsTo
     {
-        return $this->belongsTo(Artifact::class, 'relation');
+        return $this->belongsTo(Donor::class);
     }
 
     /**
-     * Get the artifacts that are related to this artifact.
+     * Get the user that created the artifact.
      */
-    public function relatedArtifacts(): HasMany
+    public function user(): BelongsTo
     {
-        return $this->hasMany(Artifact::class, 'relation');
+        return $this->belongsTo(User::class);
     }
 
     /**
-     * Helper method to find all artifacts that are related to each other
-     * in the same group (sharing the same root relationship)
-     *
-     * @return \Illuminate\Database\Eloquent\Collection
+     * Get the tags for the artifact.
      */
-    public function getRelatedGroup()
+    public function tags()
     {
-        // If this artifact is related to another one, find the root artifact
-        if ($this->relation) {
-            $rootArtifact = $this;
+        return $this->belongsToMany(Tag::class);
+    }
 
-            // Trace back to find the root artifact
-            while ($rootArtifact->relation) {
-                $rootArtifact = $rootArtifact->relatedTo;
-            }
+    /**
+     * Get the related artifacts.
+     */
+    public function related()
+    {
+        return $this->belongsToMany(
+            Artifact::class,
+            'artifact_relations',
+            'artifact_id',
+            'related_artifact_id'
+        )->withPivot('relation_type')->withTimestamps();
+    }
 
-            // Get all artifacts related to the root
-            return Artifact::where('id', $rootArtifact->id)
-                ->orWhere('relation', $rootArtifact->id)
-                ->orWhereIn('relation', function ($query) use ($rootArtifact) {
-                    $query->select('id')
-                        ->from('artifacts')
-                        ->where('relation', $rootArtifact->id);
-                })
-                ->get();
-        }
+    /**
+     * Get the images for the artifact.
+     */
+    public function getImagesAttribute()
+    {
+        return $this->getMedia('images');
+    }
 
-        // This is already a root artifact, get all related artifacts
-        return Artifact::where('id', $this->id)
-            ->orWhere('relation', $this->id)
-            ->orWhereIn('relation', function ($query) {
-                $query->select('id')
-                    ->from('artifacts')
-                    ->where('relation', $this->id);
-            })
-            ->get();
+    /**
+     * Get the documents for the artifact.
+     */
+    public function getDocumentsAttribute()
+    {
+        return $this->getMedia('documents');
+    }
+
+    /**
+     * Register media collections.
+     */
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('images')
+            ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/jpg', 'image/webp']);
+        
+        $this->addMediaCollection('documents')
+            ->acceptsMimeTypes(['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']);
+    }
+
+    protected static string $logName = 'artifact';
+    protected static array $logAttributes = ['title', 'description', 'category_id', 'location', 'acquisition_date', 'status', 'donor_id', 'condition'];
+    protected static bool $logOnlyDirty = true;
+    protected static bool $submitEmptyLogs = false;
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['title', 'description', 'category_id', 'location', 'acquisition_date', 'status', 'donor_id', 'condition'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
     }
 }

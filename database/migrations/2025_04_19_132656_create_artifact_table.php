@@ -22,8 +22,6 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->unsignedBigInteger('category_id');
             $table->timestamps();
-            
-            // Foreign key constraints
             $table->foreign('category_id')->references('id')->on('category');
             $table->foreign('relation')->references('id')->on('artifact');
         });

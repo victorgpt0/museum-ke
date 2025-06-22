@@ -14,6 +14,10 @@ use App\Http\Controllers\ProjectController;
 
 Route::middleware('guest')->group(function () {
 
+    Route::get('/', function () {
+        return Inertia::render('welcome');
+    })->name('home');
+
     Route::prefix('acquisitions')
         ->controller(AcquisitionController::class)
         ->name('acquisitions.')
@@ -21,10 +25,6 @@ Route::middleware('guest')->group(function () {
             Route::get('/create', 'create')->name('create');
             Route::post('/', 'store')->name('store');
         });
-
-    Route::get('/', function () {
-        return Inertia::render('welcome');
-    })->name('home');
 });
 
 
@@ -48,17 +48,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     Route::resource('acquisitions', AcquisitionController::class)->except(['create', 'store']);
+    Route::resource('artifacts', \App\Http\Controllers\ArtifactController::class);
 
 });
 
 //Guest Routes
 
-Route::get('/artifacts', [ArtifactController::class, 'index']);
-Route::get('/artifacts/category/{categoryId}', [ArtifactController::class, 'byCategory']);
-Route::get('/artifacts/{id}', [ArtifactController::class, 'show']);
-
 Route::get('/dashboard/new-artifact', [ArtifactController::class, 'create'])->name('artifacts.create');
-Route::post('/artifacts', [ArtifactController::class, 'store'])->name('artifacts.store');
 
 // In your web.php routes file
 Route::get('/archives', [ArchivesController::class, 'index'])->name('archives.index');
@@ -112,6 +108,9 @@ Route::post('/project/saveproposal', [ProjectProposalController::class, 'store']
 Route::get('/project/viewproposals', [ProjectProposalController::class, 'index'])->name('project.proposal.index');
 Route::post('/project/proposal/approve', [ProjectProposalController::class, 'approve']);
 Route::post('/project/proposal/reject', [ProjectProposalController::class, 'reject']);
+
+
+Route::get('activity-logs', [App\Http\Controllers\ActivityLogController::class, 'index'])->name('activity-logs.index');
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';
