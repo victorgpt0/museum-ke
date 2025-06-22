@@ -11,6 +11,7 @@ use App\Http\Controllers\DonationController;
 use App\Http\Controllers\ProjectProposalController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\MilestoneController;
+use App\Http\Controllers\GoalController;
 
 
 Route::middleware('guest')->group(function () {
@@ -128,6 +129,7 @@ Route::put('/milestones/{milestone}', [MilestoneController::class, 'update'])->n
 
 // Goal routes
 Route::post('/goals', [GoalController::class, 'storeWithMilestone'])->name('goals.store');
+Route::put('/goals/{goal:id}/save', [GoalController::class, 'update'])->name('goals.update');
 Route::get('/projects/{project}/milestones/{milestone}', [MilestoneController::class, 'show'])->name('project.milestones.show');
 Route::put('/projects/{project}/milestones/{milestone}/goals', [MilestoneController::class, 'updateGoals'])->name('project.milestones.update-goals');
 

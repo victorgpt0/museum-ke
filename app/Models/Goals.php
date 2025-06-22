@@ -5,15 +5,18 @@ use Illuminate\Database\Eloquent\Model;
 
 class Goals extends Model
 {
-    protected $fillable = ['title', 'performance', 'description', 'comments', 'milestone_id'];
-  protected $casts = [
-        'performance' => 'integer', // Add casting
+    protected $fillable = ['title', 'performance', 'description', 'comments', 'milestone_id', 'completed'];
+    
+    protected $casts = [
+        'performance' => 'integer',
+        'completed' => 'boolean',
     ];
 
     public function milestone()
     {
         return $this->belongsTo(Milestone::class);
     }
+    
     public function setPerformanceIndicatorAttribute($value)
     {
         $this->attributes['performance'] = $value === null ? 

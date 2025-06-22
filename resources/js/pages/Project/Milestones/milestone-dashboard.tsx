@@ -28,6 +28,7 @@ interface Goal {
   performance: number | null;
   comments: string | null;
   milestone_id: number;
+  completed: boolean;
 }
 
 interface Milestone {
@@ -48,31 +49,7 @@ interface Props {
 }
 
 export default function MilestoneDashboard({ project, milestone, goals }: Props) {
-  const [editingGoals, setEditingGoals] = useState<{ [key: number]: Goal }>({});
-
-  const { data, setData, put, processing } = useForm({
-    goals: goals.reduce((acc, goal) => {
-      acc[goal.id] = {
-        performance: goal.performance || 1,
-        comments: goal.comments || ''
-      };
-      return acc;
-    }, {} as { [key: number]: { performance: number; comments: string } })
-  });
-
-  const handleGoalUpdate = (goalId: number, field: 'performance' | 'comments', value: string | number) => {
-    setData('goals', {
-      ...data.goals,
-      [goalId]: {
-        ...data.goals[goalId],
-        [field]: value
-      }
-    });
-  };
-
-  const handleSubmit = () => {
-    put(route('project.milestones.update-goals', { project: project.id, milestone: milestone.id }));
-  };
+  const [savingGoals, setSavingGoals] = useState<{ [key: number]: boolean }>({});
 
   const getPerformanceColor = (performance: number | null) => {
     if (!performance) return 'bg-gray-200';
@@ -192,7 +169,7 @@ export default function MilestoneDashboard({ project, milestone, goals }: Props)
                 <span>Goals & Performance</span>
               </CardTitle>
               <CardDescription>
-                Track and update performance for each goal
+                Track and update performance for each goal. <strong className="text-red-600">Warning: Saving a goal is irreversible.</strong>
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -204,78 +181,160 @@ export default function MilestoneDashboard({ project, milestone, goals }: Props)
               ) : (
                 <div className="space-y-6">
                   {goals.map((goal) => (
-                    <div key={goal.id} className="border rounded-lg p-6 bg-white">
-                      <div className="mb-4">
-                        <h3 className="text-lg font-semibold text-gray-900">{goal.title}</h3>
-                        <p className="text-gray-600 mt-1">{goal.description}</p>
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {/* Performance Slider */}
-                        <div className="space-y-3">
-                          <label className="block text-sm font-medium text-gray-700">
-                            Performance: {getPerformanceLabel(data.goals[goal.id]?.performance)}
-                          </label>
-                          <div className="flex items-center space-x-4">
-                            <span className="text-sm text-gray-500">0%</span>
-                            <div className="flex-1">
-                              <input
-                                type="range"
-                                min="1"
-                                max="10"
-                                value={data.goals[goal.id]?.performance || 1}
-                                onChange={(e) => handleGoalUpdate(goal.id, 'performance', parseInt(e.target.value))}
-                                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
-                                style={{
-                                  background: `linear-gradient(to right, ${getPerformanceColor(data.goals[goal.id]?.performance)} 0%, ${getPerformanceColor(data.goals[goal.id]?.performance)} ${(data.goals[goal.id]?.performance || 1) * 10}%, #e5e7eb ${(data.goals[goal.id]?.performance || 1) * 10}%, #e5e7eb 100%)`
-                                }}
-                              />
-                            </div>
-                            <span className="text-sm text-gray-500">100%</span>
-                          </div>
-                          <div className="flex justify-between text-xs text-gray-400">
-                            <span>Poor</span>
-                            <span>Average</span>
-                            <span>Excellent</span>
-                          </div>
-                        </div>
-
-                        {/* Comments */}
-                        <div className="space-y-3">
-                          <label className="block text-sm font-medium text-gray-700">
-                            Comments
-                          </label>
-                          <textarea
-                            rows={4}
-                            value={data.goals[goal.id]?.comments || ''}
-                            onChange={(e) => handleGoalUpdate(goal.id, 'comments', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                            placeholder="Add comments about this goal's progress..."
-                          />
-                        </div>
-                      </div>
-                    </div>
+                    <GoalCard 
+                      key={goal.id} 
+                      goal={goal} 
+                      isSaving={savingGoals[goal.id] || false}
+                      setSaving={setSavingGoals}
+                      getPerformanceColor={getPerformanceColor}
+                      getPerformanceLabel={getPerformanceLabel}
+                    />
                   ))}
                 </div>
               )}
             </CardContent>
           </Card>
-
-          {/* Save Button */}
-          {goals.length > 0 && (
-            <div className="mt-8 flex justify-end">
-              <Button
-                onClick={handleSubmit}
-                disabled={processing}
-                className="flex items-center space-x-2"
-              >
-                <Save className="h-4 w-4" />
-                <span>{processing ? 'Saving...' : 'Save Changes'}</span>
-              </Button>
-            </div>
-          )}
         </div>
       </div>
     </AppLayout>
+  );
+}
+
+// Separate component for individual goal cards
+function GoalCard({ 
+  goal, 
+  isSaving, 
+  setSaving,
+  getPerformanceColor, 
+  getPerformanceLabel 
+}: {
+  goal: Goal;
+  isSaving: boolean;
+  setSaving: React.Dispatch<React.SetStateAction<{ [key: number]: boolean }>>;
+  getPerformanceColor: (performance: number | null) => string;
+  getPerformanceLabel: (performance: number | null) => string;
+}) {
+  const { data, setData, put, processing } = useForm({
+    performance: goal.performance || 1,
+    comments: goal.comments || ''
+  });
+
+  const handlePerformanceChange = (value: number) => {
+    if (!goal.completed) {
+      setData('performance', value);
+    }
+  };
+
+  const handleCommentsChange = (value: string) => {
+    if (!goal.completed) {
+      setData('comments', value);
+    }
+  };
+
+  const handleSave = () => {
+    if (goal.completed) return;
+    setSaving(prev => ({ ...prev, [goal.id]: true }));
+    put(route('goals.update', { goal: goal.id }), {
+      onSuccess: () => {
+        setSaving(prev => ({ ...prev, [goal.id]: false }));
+        window.location.reload();
+      },
+      onError: () => {
+        setSaving(prev => ({ ...prev, [goal.id]: false }));
+      }
+    });
+  };
+
+  return (
+    <div className={`border rounded-lg p-6 ${goal.completed ? 'bg-green-50' : 'bg-white'}`}>
+      {/* Completed Tag - Display above the goal card */}
+      {goal.completed && (
+        <div className="mb-4 flex justify-center">
+          <Badge variant="default" className="bg-green-600 text-white px-4 py-2 text-sm font-medium">
+            ✓ Goal Completed
+          </Badge>
+        </div>
+      )}
+      
+      <div className="mb-4">
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-semibold text-gray-900">
+            {goal.title}
+          </h3>
+        </div>
+        <p className="text-gray-600 mt-1">{goal.description}</p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Performance Slider */}
+        <div className="space-y-3">
+          <label className="block text-sm font-medium text-gray-700">
+            Performance: {getPerformanceLabel(data.performance)}
+          </label>
+          <div className="flex items-center space-x-4">
+            <span className="text-sm text-gray-500">0%</span>
+            <div className="flex-1">
+              <input
+                type="range"
+                min="1"
+                max="10"
+                value={data.performance}
+                onChange={(e) => handlePerformanceChange(parseInt(e.target.value))}
+                disabled={goal.completed}
+                className={`w-full h-2 rounded-lg appearance-none cursor-pointer slider ${
+                  goal.completed ? 'bg-gray-300 cursor-not-allowed' : 'bg-gray-200'
+                }`}
+                style={{
+                  background: goal.completed 
+                    ? '#d1d5db' 
+                    : `linear-gradient(to right, ${getPerformanceColor(data.performance)} 0%, ${getPerformanceColor(data.performance)} ${data.performance * 10}%, #e5e7eb ${data.performance * 10}%, #e5e7eb 100%)`
+                }}
+              />
+            </div>
+            <span className="text-sm text-gray-500">100%</span>
+          </div>
+          <div className="flex justify-between text-xs text-gray-400">
+            <span>Poor</span>
+            <span>Average</span>
+            <span>Excellent</span>
+          </div>
+        </div>
+
+        {/* Comments */}
+        <div className="space-y-3">
+          <label className="block text-sm font-medium text-gray-700">
+            Comments
+          </label>
+          <textarea
+            rows={4}
+            value={data.comments}
+            onChange={(e) => handleCommentsChange(e.target.value)}
+            disabled={goal.completed}
+            className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:border-blue-500 ${
+              goal.completed 
+                ? 'bg-gray-100 border-gray-300 cursor-not-allowed' 
+                : 'border-gray-300 focus:ring-blue-500'
+            }`}
+            placeholder={goal.completed ? "Goal has been completed - no further changes allowed" : "Add comments about this goal's progress..."}
+          />
+        </div>
+      </div>
+
+      {/* Individual Save Button */}
+      <div className="mt-4 flex justify-end">
+        <Button
+          onClick={handleSave}
+          disabled={goal.completed || isSaving || processing}
+          className={`flex items-center space-x-2 ${goal.completed ? 'bg-gray-300 text-gray-500 cursor-not-allowed border border-gray-300' : ''}`}
+        >
+          <Save className="h-4 w-4" />
+          <span>
+            {goal.completed
+              ? 'Goal Completed'
+              : (isSaving || processing ? 'Saving...' : 'Complete Goal (Irreversible)')}
+          </span>
+        </Button>
+      </div>
+    </div>
   );
 }
