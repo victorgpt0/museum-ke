@@ -353,7 +353,7 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ project }) => {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
             {/* Team Members Section */}
-            <div id="team-section" className="bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6">
+            <div id="team-section" className="bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6 max-h-100 overflow-y-auto">
               <div className="flex justify-between items-center mb-6">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Team Members</h3>
                 <Link
