@@ -12,6 +12,11 @@ use App\Http\Controllers\ProjectProposalController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\MilestoneController;
 use App\Http\Controllers\GoalController;
+use App\Http\Controllers\FindingController;
+use App\Http\Controllers\TeamMembersController;
+ 
+
+
 
 
 Route::middleware('guest')->group(function () {
@@ -114,6 +119,11 @@ Route::post('/project/saveproposal', [ProjectProposalController::class, 'store']
 Route::get('/project/viewproposals', [ProjectProposalController::class, 'index'])->name('project.proposal.index');
 Route::post('/project/proposal/approve', [ProjectProposalController::class, 'approve']);
 Route::post('/project/proposal/reject', [ProjectProposalController::class, 'reject']);
+
+Route::get('/projects/{project}/findings/create', [FindingController::class, 'create'])->name('findings.create');
+Route::post('/projects/{project}/findings', [FindingController::class, 'store'])->name('findings.store');
+Route::post('/projects/{project}/team-members', [TeamMembersController::class, 'store'])->name('findings.create');
+Route::get('/projects/{project}/team-members/create', [TeamMembersController::class, 'create'])->name('findings.create');
 
 
 

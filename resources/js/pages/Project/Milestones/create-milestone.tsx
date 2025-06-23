@@ -241,18 +241,18 @@ const removeFile = (index: number) => {
     <AppLayout>
       <Head title={`Milestone Dashboard - ${project.title}`} />
       {flash.success && (
-    <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+    <div className="bg-green-100 dark:bg-green-900/20 border border-green-400 dark:border-green-700 text-green-700 dark:text-green-300 px-4 py-3 rounded mb-4">
         {flash.success}
     </div>
 )}
-      <div className="min-h-screen bg-gray-50 py-8">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Project Header */}
-          <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-8">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">{project.title}</h1>
-                <p className="text-sm text-gray-600 mt-1">
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{project.title}</h1>
+                <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
                   Started: {new Date(project.start_date).toLocaleDateString('en-US', { 
                     year: 'numeric', 
                     month: 'long', 
@@ -261,7 +261,7 @@ const removeFile = (index: number) => {
                 </p>
               </div>
               <div className="text-right">
-                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300">
                   Active Project
                 </span>
               </div>
@@ -307,12 +307,12 @@ const removeFile = (index: number) => {
         />
           {/* Milestone Form */}
           <form onSubmit={handleSubmit} className="space-y-8">
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-6">Milestone Details</h2>
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">Milestone Details</h2>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Milestone Name *
                   </label>
                   <input
@@ -320,15 +320,15 @@ const removeFile = (index: number) => {
                     id="title"
                     value={data.title}
                     onChange={(e) => setData('title', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     placeholder="Enter milestone name"
                     required
                   />
-                  {errors.title && <p className="mt-1 text-sm text-red-600">{errors.title}</p>}
+                  {errors.title && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.title}</p>}
                 </div>
 
                 <div>
-                  <label htmlFor="due_date" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="due_date" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Due Date *
                   </label>
                   <div className="relative">
@@ -337,17 +337,17 @@ const removeFile = (index: number) => {
                       id="due_date"
                       value={data.due_date}
                       onChange={(e) => setData('due_date', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 pr-10"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 pr-10"
                       required
                     />
-                    <Calendar className="absolute right-3 top-2.5 h-5 w-5 text-gray-400" />
+                    <Calendar className="absolute right-3 top-2.5 h-5 w-5 text-gray-400 dark:text-gray-500" />
                   </div>
-                  {errors.due_date && <p className="mt-1 text-sm text-red-600">{errors.due_date}</p>}
+                  {errors.due_date && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.due_date}</p>}
                 </div>
               </div>
 
               <div className="mt-6">
-                <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Description
                 </label>
                 <textarea
@@ -355,14 +355,14 @@ const removeFile = (index: number) => {
                   rows={4}
                   value={data.description}
                   onChange={(e) => setData('description', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Describe this milestone..."
                 />
-                {errors.description && <p className="mt-1 text-sm text-red-600">{errors.description}</p>}
+                {errors.description && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.description}</p>}
               </div>
 
               <div className="mt-6">
-                <label htmlFor="performance_description" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="performance_description" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Performance Description
                 </label>
                 <textarea
@@ -370,25 +370,25 @@ const removeFile = (index: number) => {
                   rows={3}
                   value={data.performance_description}
                   onChange={(e) => setData('performance_description', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Describe expected performance outcomes..."
                 />
-                {errors.performance_description && <p className="mt-1 text-sm text-red-600">{errors.performance_description}</p>}
+                {errors.performance_description && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.performance_description}</p>}
               </div>
             </div>
 
             {/* File Upload Section */}
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Documents & Images</h3>
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Documents & Images</h3>
               
               <div className="mb-4">
-                <label className="flex items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
+                <label className="flex items-center justify-center w-full h-32 border-2 border-gray-300 dark:border-gray-600 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600">
                   <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                    <Upload className="w-8 h-8 mb-3 text-gray-400" />
-                    <p className="mb-2 text-sm text-gray-500">
+                    <Upload className="w-8 h-8 mb-3 text-gray-400 dark:text-gray-500" />
+                    <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
                       <span className="font-semibold">Click to upload</span> or drag and drop
                     </p>
-                    <p className="text-xs text-gray-500">PNG, JPG, PDF, DOC up to 10MB</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">PNG, JPG, PDF, DOC up to 10MB</p>
                   </div>
                   <input
                     type="file"
@@ -402,18 +402,18 @@ const removeFile = (index: number) => {
 
               {uploadedFiles.length > 0 && (
                 <div className="space-y-2">
-                  <h4 className="text-sm font-medium text-gray-700">Uploaded Files:</h4>
+                  <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">Uploaded Files:</h4>
                   {uploadedFiles.map((file, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-md">
+                    <div key={index} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-md">
                       <div className="flex items-center">
-                        <FileText className="w-5 h-5 text-gray-400 mr-2" />
-                        <span className="text-sm text-gray-700">{file.name}</span>
-                        <span className="text-xs text-gray-500 ml-2">({(file.size / 1024).toFixed(1)} KB)</span>
+                        <FileText className="w-5 h-5 text-gray-400 dark:text-gray-500 mr-2" />
+                        <span className="text-sm text-gray-700 dark:text-gray-300">{file.name}</span>
+                        <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">({(file.size / 1024).toFixed(1)} KB)</span>
                       </div>
                       <button
                         type="button"
                         onClick={() => removeFile(index)}
-                        className="text-red-500 hover:text-red-700"
+                        className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -424,36 +424,36 @@ const removeFile = (index: number) => {
             </div>
 
             {/* Goals Section */}
-           <Card>
+           <Card className="border border-gray-200 dark:border-gray-700">
   <CardHeader>
-    <CardTitle className="flex items-center space-x-2">
+    <CardTitle className="flex items-center space-x-2 text-gray-900 dark:text-white">
       <Target className="h-5 w-5" />
       <span>Goals</span>
     </CardTitle>
-    <CardDescription>
+    <CardDescription className="text-gray-600 dark:text-gray-300">
       Define the specific goals for this milestone
     </CardDescription>
   </CardHeader>
   <CardContent className="space-y-4">
     <div className="space-y-4">
       <div className="space-y-1">
-        <label className="block text-sm font-medium text-gray-700">Goal Title *</label>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Goal Title *</label>
         <input
           type="text"
           value={newGoal.title}
           onChange={e => setNewGoal({...newGoal, title: e.target.value})}
           placeholder="Enter goal title"
-          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
         />
       </div>
       
       <div className="space-y-1">
-        <label className="block text-sm font-medium text-gray-700">Goal Description</label>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Goal Description</label>
         <textarea
           rows={3}
           value={newGoal.description}
           onChange={e => setNewGoal({...newGoal, description: e.target.value})}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           placeholder="Describe this goal in detail..."
         />
       </div>
@@ -463,29 +463,29 @@ const removeFile = (index: number) => {
       <button 
         type="button" 
         onClick={addGoal}
-        className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+        className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-blue-600 dark:bg-blue-700 hover:bg-blue-700 dark:hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
       >
         <Plus className="h-4 w-4 mr-1" />
         Add Goal
       </button>
     </div>
 
-    {errors.goals && <div className="text-red-500 text-sm">{errors.goals}</div>}
+    {errors.goals && <div className="text-red-500 dark:text-red-400 text-sm">{errors.goals}</div>}
 
     {/* Goals List */}
     {Array.isArray(data.goals) && data.goals.length > 0 && (
       <div className="space-y-2">
-        <h4 className="font-medium text-gray-900">Added Goals:</h4>
+        <h4 className="font-medium text-gray-900 dark:text-white">Added Goals:</h4>
         {data.goals.map((goal) => (
-          <div key={goal.id} className="flex items-center justify-between bg-green-50 p-3 rounded">
+          <div key={goal.id} className="flex items-center justify-between bg-green-50 dark:bg-green-900/20 p-3 rounded border border-green-200 dark:border-green-700">
             <div className="flex-1">
-              <h5 className="font-medium">{goal.title}</h5>
-              <p className="text-sm text-gray-600">{goal.description}</p>
+              <h5 className="font-medium text-gray-900 dark:text-white">{goal.title}</h5>
+              <p className="text-sm text-gray-600 dark:text-gray-300">{goal.description}</p>
             </div>
             <button
               type="button"
               onClick={() => removeGoal(goal.id)}
-              className="text-red-600 hover:text-red-800 px-2 py-1 border border-red-300 rounded"
+              className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 px-2 py-1 border border-red-300 dark:border-red-600 rounded"
             >
               <Trash2 className="h-4 w-4" />
             </button>
@@ -501,7 +501,7 @@ const removeFile = (index: number) => {
               <button
                 type="submit"
                 disabled={processing}
-                className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+                className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 dark:bg-blue-700 hover:bg-blue-700 dark:hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
               >
                 {processing ? 'Saving...' : 'Save Milestone & Goals'}
               </button>

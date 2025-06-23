@@ -59,7 +59,7 @@ export default function MilestoneDashboard({ project, milestone, goals }: Props)
   };
 
   const getPerformanceLabel = (performance: number | null) => {
-    if (!performance) return 'Not Set';
+    if (performance === null) return 'Not Set';
     return `${performance * 10}%`;
   };
 
@@ -85,7 +85,7 @@ export default function MilestoneDashboard({ project, milestone, goals }: Props)
     <AppLayout>
       <Head title={`${milestone.title} - ${project.title}`} />
       
-      <div className="min-h-screen bg-gray-50 py-8">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header */}
           <div className="mb-8">
@@ -95,14 +95,14 @@ export default function MilestoneDashboard({ project, milestone, goals }: Props)
                   variant="outline"
                   size="sm"
                   onClick={() => window.history.back()}
-                  className="flex items-center space-x-2"
+                  className="flex items-center space-x-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
                 >
                   <ArrowLeft className="h-4 w-4" />
                   <span>Back</span>
                 </Button>
                 <div>
-                  <h1 className="text-3xl font-bold text-gray-900">{milestone.title}</h1>
-                  <p className="text-lg text-gray-600">{project.title}</p>
+                  <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{milestone.title}</h1>
+                  <p className="text-lg text-gray-600 dark:text-gray-300">{project.title}</p>
                 </div>
               </div>
               <div className="flex items-center space-x-2">
@@ -116,65 +116,65 @@ export default function MilestoneDashboard({ project, milestone, goals }: Props)
 
           {/* Milestone Overview */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-            <Card className="lg:col-span-2">
+            <Card className="lg:col-span-2 border border-gray-200 dark:border-gray-700">
               <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
+                <CardTitle className="flex items-center space-x-2 text-gray-900 dark:text-white">
                   <FileText className="h-5 w-5" />
                   <span>Milestone Details</span>
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <h3 className="font-medium text-gray-900">Description</h3>
-                  <p className="text-gray-600 mt-1">{milestone.description}</p>
+                  <h3 className="font-medium text-gray-900 dark:text-white">Description</h3>
+                  <p className="text-gray-600 dark:text-gray-300 mt-1">{milestone.description}</p>
                 </div>
                 {milestone.performance_description && (
                   <div>
-                    <h3 className="font-medium text-gray-900">Performance Description</h3>
-                    <p className="text-gray-600 mt-1">{milestone.performance_description}</p>
+                    <h3 className="font-medium text-gray-900 dark:text-white">Performance Description</h3>
+                    <p className="text-gray-600 dark:text-gray-300 mt-1">{milestone.performance_description}</p>
                   </div>
                 )}
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="border border-gray-200 dark:border-gray-700">
               <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
+                <CardTitle className="flex items-center space-x-2 text-gray-900 dark:text-white">
                   <Calendar className="h-5 w-5" />
                   <span>Timeline</span>
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 <div>
-                  <p className="text-sm text-gray-500">Due Date</p>
-                  <p className="font-medium">{formatDate(milestone.due_date)}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Due Date</p>
+                  <p className="font-medium text-gray-900 dark:text-white">{formatDate(milestone.due_date)}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Created</p>
-                  <p className="font-medium">{formatDate(milestone.created_at)}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Created</p>
+                  <p className="font-medium text-gray-900 dark:text-white">{formatDate(milestone.created_at)}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Last Updated</p>
-                  <p className="font-medium">{formatDate(milestone.updated_at)}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Last Updated</p>
+                  <p className="font-medium text-gray-900 dark:text-white">{formatDate(milestone.updated_at)}</p>
                 </div>
               </CardContent>
             </Card>
           </div>
 
           {/* Goals Section */}
-          <Card>
+          <Card className="border border-gray-200 dark:border-gray-700">
             <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
+              <CardTitle className="flex items-center space-x-2 text-gray-900 dark:text-white">
                 <Target className="h-5 w-5" />
                 <span>Goals & Performance</span>
               </CardTitle>
-              <CardDescription>
-                Track and update performance for each goal. <strong className="text-red-600">Warning: Saving a goal is irreversible.</strong>
+              <CardDescription className="text-gray-600 dark:text-gray-300">
+                Track and update performance for each goal. <strong className="text-red-600 dark:text-red-400">Warning: Saving a goal is irreversible.</strong>
               </CardDescription>
             </CardHeader>
             <CardContent>
               {goals.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
+                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                   <Target className="h-12 w-12 mx-auto mb-4 opacity-50" />
                   <p>No goals have been set for this milestone.</p>
                 </div>
@@ -186,7 +186,6 @@ export default function MilestoneDashboard({ project, milestone, goals }: Props)
                       goal={goal} 
                       isSaving={savingGoals[goal.id] || false}
                       setSaving={setSavingGoals}
-                      getPerformanceColor={getPerformanceColor}
                       getPerformanceLabel={getPerformanceLabel}
                     />
                   ))}
@@ -205,17 +204,15 @@ function GoalCard({
   goal, 
   isSaving, 
   setSaving,
-  getPerformanceColor, 
   getPerformanceLabel 
 }: {
   goal: Goal;
   isSaving: boolean;
   setSaving: React.Dispatch<React.SetStateAction<{ [key: number]: boolean }>>;
-  getPerformanceColor: (performance: number | null) => string;
   getPerformanceLabel: (performance: number | null) => string;
 }) {
   const { data, setData, put, processing } = useForm({
-    performance: goal.performance || 1,
+    performance: goal.performance ?? 0,
     comments: goal.comments || ''
   });
 
@@ -246,7 +243,11 @@ function GoalCard({
   };
 
   return (
-    <div className={`border rounded-lg p-6 ${goal.completed ? 'bg-green-50' : 'bg-white'}`}>
+    <div className={`border rounded-lg p-6 ${
+      goal.completed 
+        ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-700' 
+        : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600'
+    }`}>
       {/* Completed Tag - Display above the goal card */}
       {goal.completed && (
         <div className="mb-4 flex justify-center">
@@ -258,42 +259,44 @@ function GoalCard({
       
       <div className="mb-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-gray-900">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
             {goal.title}
           </h3>
         </div>
-        <p className="text-gray-600 mt-1">{goal.description}</p>
+        <p className="text-gray-600 dark:text-gray-300 mt-1">{goal.description}</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Performance Slider */}
         <div className="space-y-3">
-          <label className="block text-sm font-medium text-gray-700">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
             Performance: {getPerformanceLabel(data.performance)}
           </label>
           <div className="flex items-center space-x-4">
-            <span className="text-sm text-gray-500">0%</span>
+            <span className="text-sm text-gray-500 dark:text-gray-400">0%</span>
             <div className="flex-1">
               <input
                 type="range"
-                min="1"
+                min="0"
                 max="10"
                 value={data.performance}
                 onChange={(e) => handlePerformanceChange(parseInt(e.target.value))}
                 disabled={goal.completed}
                 className={`w-full h-2 rounded-lg appearance-none cursor-pointer slider ${
-                  goal.completed ? 'bg-gray-300 cursor-not-allowed' : 'bg-gray-200'
+                  goal.completed 
+                    ? 'bg-gray-300 dark:bg-gray-600 cursor-not-allowed' 
+                    : 'bg-gray-200 dark:bg-gray-700'
                 }`}
-                style={{
-                  background: goal.completed 
-                    ? '#d1d5db' 
-                    : `linear-gradient(to right, ${getPerformanceColor(data.performance)} 0%, ${getPerformanceColor(data.performance)} ${data.performance * 10}%, #e5e7eb ${data.performance * 10}%, #e5e7eb 100%)`
-                }}
+                style={!goal.completed ? {
+                  backgroundImage: `linear-gradient(to right, #3b82f6, #3b82f6)`,
+                  backgroundRepeat: 'no-repeat',
+                  backgroundSize: `${data.performance * 10}% 100%`,
+                } : {}}
               />
             </div>
-            <span className="text-sm text-gray-500">100%</span>
+            <span className="text-sm text-gray-500 dark:text-gray-400">100%</span>
           </div>
-          <div className="flex justify-between text-xs text-gray-400">
+          <div className="flex justify-between text-xs text-gray-400 dark:text-gray-500">
             <span>Poor</span>
             <span>Average</span>
             <span>Excellent</span>
@@ -302,7 +305,7 @@ function GoalCard({
 
         {/* Comments */}
         <div className="space-y-3">
-          <label className="block text-sm font-medium text-gray-700">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
             Comments
           </label>
           <textarea
@@ -310,10 +313,10 @@ function GoalCard({
             value={data.comments}
             onChange={(e) => handleCommentsChange(e.target.value)}
             disabled={goal.completed}
-            className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:border-blue-500 ${
+            className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:border-blue-500 dark:focus:border-blue-400 ${
               goal.completed 
-                ? 'bg-gray-100 border-gray-300 cursor-not-allowed' 
-                : 'border-gray-300 focus:ring-blue-500'
+                ? 'bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 cursor-not-allowed text-gray-500 dark:text-gray-400' 
+                : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-blue-500 dark:focus:ring-blue-400'
             }`}
             placeholder={goal.completed ? "Goal has been completed - no further changes allowed" : "Add comments about this goal's progress..."}
           />
@@ -325,7 +328,11 @@ function GoalCard({
         <Button
           onClick={handleSave}
           disabled={goal.completed || isSaving || processing}
-          className={`flex items-center space-x-2 ${goal.completed ? 'bg-gray-300 text-gray-500 cursor-not-allowed border border-gray-300' : ''}`}
+          className={`flex items-center space-x-2 ${
+            goal.completed 
+              ? 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed border border-gray-300 dark:border-gray-600' 
+              : 'bg-blue-600 dark:bg-blue-700 hover:bg-blue-700 dark:hover:bg-blue-600 text-white'
+          }`}
         >
           <Save className="h-4 w-4" />
           <span>

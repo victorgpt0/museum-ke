@@ -41,6 +41,15 @@ class Project extends Model
         {
             return $this->hasMany(Milestone::class, 'project_id');
         }
+        public function findings(): HasMany
+        {
+            return $this->hasMany(Finding::class, 'project_id');
+        }
+        public function teamMembers(): HasMany
+        {
+            return $this->hasMany(TeamMember::class, 'project_id');
+        }
+        
 
     /**
      * Get formatted start date
