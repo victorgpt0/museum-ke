@@ -26,16 +26,6 @@ interface DonationFormData {
 }
 
 export default function Create() {
-    const breadcrumbs : BreadcrumbItem[] = [
-        {
-            title: 'Acquisitions',
-            href: route('acquisitions.index')
-        },
-        {
-            title: 'Create',
-            href: route('acquisitions.create')
-        }
-    ];
 
     const [selectedImages, setSelectedImages] = useState<File[]>([]);
     const [imagePreviews, setImagePreviews] = useState<string[]>([]);

@@ -73,7 +73,7 @@ export default function DeleteConfirm({
                             You are about to permanently delete this <strong>{itemType}</strong>.
                         </>
                     )}
-                    This action cannot be undone and all associated data will be lost.
+                    <> This action cannot be undone and all associated data will be lost.</>
                     <span className="mt-2 block">Please enter your password to confirm this deletion.</span>
                 </DialogDescription>
                 <form className="space-y-6" onSubmit={handleDelete}>

@@ -30,6 +30,7 @@ class RoleController extends Controller implements HasMiddleware
         return Inertia::render('roles/index',[
             'roles' => Role::query()
                 ->with('permissions')
+            ->whereIn('user_id', [auth()->user()->id])
                 ->when(request('search'), fn ($query, $search) =>
                 $query->where('name', 'like', "%{$search}%")
                 )
@@ -54,7 +55,7 @@ class RoleController extends Controller implements HasMiddleware
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'name' => ['required', 'string', 'max:255'],
+            'name' => ['required', 'string', 'max:255', 'unique:roles'],
             'permissions' => ['required', 'array']
         ]);
 
@@ -65,7 +66,8 @@ class RoleController extends Controller implements HasMiddleware
         };
 
         $role = Role::create([
-            'name' => $request->name
+            'name' => $request->name,
+            'user_id' => auth()->user()->id
         ]);
 
         $role->syncPermissions($request->permissions);
