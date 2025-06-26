@@ -57,6 +57,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('acquisitions', AcquisitionController::class)->except(['create', 'store']);
     Route::resource('artifacts', \App\Http\Controllers\ArtifactController::class);
 
+    // Approve and reject artifact proposals
+    Route::post('/acquisition/{artifactProposal}/approve', [AcquisitionController::class, 'approve'])->name('acquisition.approve');
+    Route::post('/acquisition/{artifactProposal}/reject', [AcquisitionController::class, 'reject'])->name('acquisition.reject');
+
 });
 
 //Guest Routes
