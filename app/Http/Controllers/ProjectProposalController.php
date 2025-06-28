@@ -106,6 +106,7 @@ class ProjectProposalController extends Controller
         Project::create([
             'title' => $proposal->title,
             'description' => $proposal->description,
+            'start_date' => Carbon::now(),
             'duration' => $proposal->duration,
             'project_proposal_id' => $proposal->id,
         ]);

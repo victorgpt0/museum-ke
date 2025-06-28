@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import AppLayout from '@/layouts/app-layout';
 import toast, { Toaster } from 'react-hot-toast';
- import { router } from '@inertiajs/react'; // or '@inertiajs/inertia-react' depending on your setup
+import { router } from '@inertiajs/react'; // or '@inertiajs/inertia-react' depending on your setup
 
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -34,7 +34,6 @@ interface Objective {
   id: string;
   title: string;
   description: string;
-
 }
 
 interface ProposalFormData {
@@ -340,6 +339,14 @@ const handleSubmit = (e: React.FormEvent) => {
             onSuccess: (page) => {
                 console.log('[✅] Request successful! Server response page:', page);
                 toast.success('Proposal has been submitted successfully');
+                
+                // Redirect after 3 seconds to allow user to see the success message
+                setTimeout(() => {
+                    router.visit(route('projectproposal.index'), {
+                        preserveState: false,
+                        preserveScroll: false,
+                    });
+                }, 3000);
             },
             onError: (errors) => {
                 console.error('[❌] Request failed with validation/server errors:', errors);
@@ -355,7 +362,7 @@ const handleSubmit = (e: React.FormEvent) => {
 
   return (
     <AppLayout>
-      <div className="min-h-screen bg-gray-50 py-8">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
         {/* Toast Notifications */}
         <Toaster 
           position="top-right"
@@ -398,65 +405,65 @@ const handleSubmit = (e: React.FormEvent) => {
         
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-8 text-center">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
               New Proposal Form
             </h1>
-            <p className="text-gray-600">
+            <p className="text-gray-600 dark:text-gray-300">
               Submit your project proposal with detailed information
             </p>
           </div>
 
           {/* Success Message */}
           {success && (
-            <div className="mb-6 border border-green-200 bg-green-50 p-4 rounded-md flex items-center space-x-2">
-              <CheckCircle className="h-4 w-4 text-green-600 flex-shrink-0" />
-              <p className="text-green-800">{success}</p>
+            <div className="mb-6 border border-green-200 dark:border-green-700 bg-green-50 dark:bg-green-900/20 p-4 rounded-md flex items-center space-x-2">
+              <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400 flex-shrink-0" />
+              <p className="text-green-800 dark:text-green-200">{success}</p>
             </div>
           )}
 
           <div className="space-y-8">
             {/* Basic Information */}
-            <Card>
+            <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
               <CardHeader>
-                <CardTitle>Basic Information</CardTitle>
-                <CardDescription>
+                <CardTitle className="text-gray-900 dark:text-white">Basic Information</CardTitle>
+                <CardDescription className="text-gray-600 dark:text-gray-300">
                   Provide the fundamental details of your proposal
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-1">
-                  <Label htmlFor="title">Title *</Label>
+                  <Label htmlFor="title" className="text-gray-700 dark:text-gray-300">Title *</Label>
                   <Input
                     id="title"
                     value={data.title}
                     onChange={e => setData(prev => ({ ...prev, title: e.target.value }))}
                     placeholder="Enter your proposal title"
-                    className={errors.title ? 'border-red-500' : ''}
+                    className={`${errors.title ? 'border-red-500' : ''} bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400`}
                   />
                   {errors.title && <div className="text-red-500 text-sm">{errors.title}</div>}
                 </div>
 
                 <div className="space-y-1">
-                  <Label htmlFor="description">Description *</Label>
+                  <Label htmlFor="description" className="text-gray-700 dark:text-gray-300">Description *</Label>
                   <Textarea
                     id="description"
                     value={data.description}
                     onChange={e => setData(prev => ({ ...prev, description: e.target.value }))}
                     placeholder="Provide a detailed description of your proposal"
                     rows={4}
-                    className={errors.description ? 'border-red-500' : ''}
+                    className={`${errors.description ? 'border-red-500' : ''} bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400`}
                   />
                   {errors.description && <div className="text-red-500 text-sm">{errors.description}</div>}
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-1">
-                    <Label htmlFor="duration">Duration *</Label>
+                    <Label htmlFor="duration" className="text-gray-700 dark:text-gray-300">Duration *</Label>
                     <select
                       id="duration"
                       value={data.duration}
                       onChange={e => setData(prev => ({ ...prev, duration: e.target.value }))}
-                      className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.duration ? 'border-red-500' : 'border-gray-300'}`}
+                      className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white ${errors.duration ? 'border-red-500' : ''}`}
                     >
                       {durationOptions.map(option => (
                         <option key={option.value} value={option.value}>
@@ -468,17 +475,17 @@ const handleSubmit = (e: React.FormEvent) => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label>Documents</Label>
-                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
+                    <Label className="text-gray-700 dark:text-gray-300">Documents</Label>
+                    <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4 bg-gray-50 dark:bg-gray-700">
                       <div className="text-center">
-                        <Upload className="mx-auto h-8 w-8 text-gray-400" />
+                        <Upload className="mx-auto h-8 w-8 text-gray-400 dark:text-gray-500" />
                         <div className="mt-2">
                           <Label 
                             htmlFor="documents" 
                             className={`cursor-pointer px-3 py-1 rounded-md text-sm inline-block transition-colors ${
                               isUploadingDocs 
-                                ? 'bg-gray-400 text-white cursor-not-allowed' 
-                                : 'bg-blue-600 text-white hover:bg-blue-700'
+                                ? 'bg-gray-400 dark:bg-gray-600 text-white cursor-not-allowed' 
+                                : 'bg-blue-600 dark:bg-blue-700 text-white hover:bg-blue-700 dark:hover:bg-blue-600'
                             }`}
                           >
                             {isUploadingDocs ? 'Uploading...' : 'Choose Files'}
@@ -493,7 +500,7 @@ const handleSubmit = (e: React.FormEvent) => {
                             disabled={isUploadingDocs}
                           />
                         </div>
-                        <p className="mt-1 text-xs text-gray-500">
+                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                           PDF, Word, Excel, Text, Images (Max 10MB each)
                         </p>
                       </div>
@@ -503,12 +510,12 @@ const handleSubmit = (e: React.FormEvent) => {
                     {documentPreviews.length > 0 && (
                       <div className="space-y-2">
                         {documentPreviews.map((fileName, index) => (
-                          <div key={index} className="flex items-center justify-between bg-gray-100 p-2 rounded">
-                            <span className="text-sm truncate">{fileName}</span>
+                          <div key={index} className="flex items-center justify-between bg-gray-100 dark:bg-gray-600 p-2 rounded">
+                            <span className="text-sm truncate text-gray-900 dark:text-white">{fileName}</span>
                             <button
                               type="button"
                               onClick={() => removeDocument(index)}
-                              className="text-red-500 hover:text-red-700"
+                              className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
                             >
                               <X size={16} />
                             </button>
@@ -522,39 +529,41 @@ const handleSubmit = (e: React.FormEvent) => {
             </Card>
 
             {/* Objectives */}
-            <Card>
+            <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
               <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
+                <CardTitle className="flex items-center space-x-2 text-gray-900 dark:text-white">
                   <Target className="h-5 w-5" />
                   <span>Objectives</span>
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-gray-600 dark:text-gray-300">
                   Define the specific objectives of your proposal
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-1">
-                    <Label>Title</Label>
+                    <Label className="text-gray-700 dark:text-gray-300">Title</Label>
                     <Input
                       value={newObjective.title}
                       onChange={e => setNewObjective(prev => ({ ...prev, title: e.target.value }))}
                       placeholder="Objective title"
+                      className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
                     />
                   </div>
                   <div className="space-y-1">
-                    <Label>Description</Label>
+                    <Label className="text-gray-700 dark:text-gray-300">Description</Label>
                     <Input
                       value={newObjective.description}
                       onChange={e => setNewObjective(prev => ({ ...prev, description: e.target.value }))}
                       placeholder="Brief description"
+                      className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
                     />
                   </div>
                   
                 </div>
                 
                 <div className="flex justify-end">
-                  <Button type="button" onClick={addObjective} size="sm">
+                  <Button type="button" onClick={addObjective} size="sm" className="bg-blue-600 dark:bg-blue-700 text-white hover:bg-blue-700 dark:hover:bg-blue-600">
                     <Plus className="h-4 w-4 mr-1" />
                     Add Objective
                   </Button>
@@ -565,20 +574,19 @@ const handleSubmit = (e: React.FormEvent) => {
                 {/* Objectives List */}
                 {data.objectives.length > 0 && (
                   <div className="space-y-2">
-                    <h4 className="font-medium text-gray-900">Added Objectives:</h4>
+                    <h4 className="font-medium text-gray-900 dark:text-white">Added Objectives:</h4>
                     {data.objectives.map((objective) => (
-                      <div key={objective.id} className="flex items-center justify-between bg-blue-50 p-3 rounded">
+                      <div key={objective.id} className="flex items-center justify-between bg-blue-50 dark:bg-blue-900/20 p-3 rounded border border-blue-200 dark:border-blue-700">
                         <div className="flex-1">
-                          <h5 className="font-medium">{objective.title}</h5>
-                          <p className="text-sm text-gray-600">{objective.description}</p>
-                          {objective.context && <p className="text-xs text-gray-500">Context: {objective.context}</p>}
+                          <h5 className="font-medium text-gray-900 dark:text-white">{objective.title}</h5>
+                          <p className="text-sm text-gray-600 dark:text-gray-300">{objective.description}</p>
                         </div>
                         <Button
                           type="button"
                           variant="outline"
                           size="sm"
                           onClick={() => removeObjective(objective.id)}
-                          className="text-red-600 hover:text-red-800"
+                          className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 border-gray-300 dark:border-gray-600"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -590,47 +598,50 @@ const handleSubmit = (e: React.FormEvent) => {
             </Card>
 
             {/* Team Members */}
-            <Card>
+            <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
               <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
+                <CardTitle className="flex items-center space-x-2 text-gray-900 dark:text-white">
                   <User className="h-5 w-5" />
                   <span>Team Members</span>
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-gray-600 dark:text-gray-300">
                   Add the team members who will work on this proposal
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="space-y-1">
-                    <Label>Full Name</Label>
+                    <Label className="text-gray-700 dark:text-gray-300">Full Name</Label>
                     <Input
                       value={newTeamMember.fullName}
                       onChange={e => setNewTeamMember(prev => ({ ...prev, fullName: e.target.value }))}
                       placeholder="Enter full name"
+                      className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
                     />
                   </div>
                   <div className="space-y-1">
-                    <Label>Email</Label>
+                    <Label className="text-gray-700 dark:text-gray-300">Email</Label>
                     <Input
                       type="email"
                       value={newTeamMember.email}
                       onChange={e => setNewTeamMember(prev => ({ ...prev, email: e.target.value }))}
                       placeholder="Enter email address"
+                      className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
                     />
                   </div>
                   <div className="space-y-1">
-                    <Label>Role</Label>
+                    <Label className="text-gray-700 dark:text-gray-300">Role</Label>
                     <Input
                       value={newTeamMember.role}
                       onChange={e => setNewTeamMember(prev => ({ ...prev, role: e.target.value }))}
                       placeholder="Enter role/position"
+                      className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
                     />
                   </div>
                 </div>
                 
                 <div className="flex justify-end">
-                  <Button type="button" onClick={addTeamMember} size="sm">
+                  <Button type="button" onClick={addTeamMember} size="sm" className="bg-blue-600 dark:bg-blue-700 text-white hover:bg-blue-700 dark:hover:bg-blue-600">
                     <Plus className="h-4 w-4 mr-1" />
                     Add Team Member
                   </Button>
@@ -641,19 +652,19 @@ const handleSubmit = (e: React.FormEvent) => {
                 {/* Team Members List */}
                 {data.teamMembers.length > 0 && (
                   <div className="space-y-2">
-                    <h4 className="font-medium text-gray-900">Team Members:</h4>
+                    <h4 className="font-medium text-gray-900 dark:text-white">Team Members:</h4>
                     {data.teamMembers.map((member) => (
-                      <div key={member.id} className="flex items-center justify-between bg-green-50 p-3 rounded">
+                      <div key={member.id} className="flex items-center justify-between bg-green-50 dark:bg-green-900/20 p-3 rounded border border-green-200 dark:border-green-700">
                         <div className="flex-1">
-                          <h5 className="font-medium">{member.fullName}</h5>
-                          <p className="text-sm text-gray-600">{member.email} • {member.role}</p>
+                          <h5 className="font-medium text-gray-900 dark:text-white">{member.fullName}</h5>
+                          <p className="text-sm text-gray-600 dark:text-gray-300">{member.email} • {member.role}</p>
                         </div>
                         <Button
                           type="button"
                           variant="outline"
                           size="sm"
                           onClick={() => removeTeamMember(member.id)}
-                          className="text-red-600 hover:text-red-800"
+                          className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 border-gray-300 dark:border-gray-600"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -665,46 +676,49 @@ const handleSubmit = (e: React.FormEvent) => {
             </Card>
 
             {/* Milestones */}
-            <Card>
+            <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
               <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
+                <CardTitle className="flex items-center space-x-2 text-gray-900 dark:text-white">
                   <Flag className="h-5 w-5" />
                   <span>Milestones</span>
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-gray-600 dark:text-gray-300">
                   Define key milestones for your proposal
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="space-y-1">
-                    <Label>Title</Label>
+                    <Label className="text-gray-700 dark:text-gray-300">Title</Label>
                     <Input
                       value={newMilestone.title}
                       onChange={e => setNewMilestone(prev => ({ ...prev, title: e.target.value }))}
                       placeholder="Milestone title"
+                      className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
                     />
                   </div>
                   <div className="space-y-1">
-                    <Label>Duration</Label>
+                    <Label className="text-gray-700 dark:text-gray-300">Duration</Label>
                     <Input
                       value={newMilestone.duration}
                       onChange={e => setNewMilestone(prev => ({ ...prev, duration: e.target.value }))}
                       placeholder="e.g., 2 weeks, 1 month"
+                      className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
                     />
                   </div>
                   <div className="space-y-1">
-                    <Label>Description</Label>
+                    <Label className="text-gray-700 dark:text-gray-300">Description</Label>
                     <Input
                       value={newMilestone.description}
                       onChange={e => setNewMilestone(prev => ({ ...prev, description: e.target.value }))}
                       placeholder="Brief description"
+                      className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
                     />
                   </div>
                 </div>
                 
                 <div className="flex justify-end">
-                  <Button type="button" onClick={addMilestone} size="sm">
+                  <Button type="button" onClick={addMilestone} size="sm" className="bg-blue-600 dark:bg-blue-700 text-white hover:bg-blue-700 dark:hover:bg-blue-600">
                     <Plus className="h-4 w-4 mr-1" />
                     Add Milestone
                   </Button>
@@ -715,20 +729,20 @@ const handleSubmit = (e: React.FormEvent) => {
                 {/* Milestones List */}
                 {data.milestones.length > 0 && (
                   <div className="space-y-2">
-                    <h4 className="font-medium text-gray-900">Milestones:</h4>
+                    <h4 className="font-medium text-gray-900 dark:text-white">Milestones:</h4>
                     {data.milestones.map((milestone) => (
-                      <div key={milestone.id} className="flex items-center justify-between bg-yellow-50 p-3 rounded">
+                      <div key={milestone.id} className="flex items-center justify-between bg-yellow-50 dark:bg-yellow-900/20 p-3 rounded border border-yellow-200 dark:border-yellow-700">
                         <div className="flex-1">
-                          <h5 className="font-medium">{milestone.title}</h5>
-                          <p className="text-sm text-gray-600">{milestone.description}</p>
-                          <p className="text-xs text-gray-500">Duration: {milestone.duration}</p>
+                          <h5 className="font-medium text-gray-900 dark:text-white">{milestone.title}</h5>
+                          <p className="text-sm text-gray-600 dark:text-gray-300">{milestone.description}</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">Duration: {milestone.duration}</p>
                         </div>
                         <Button
                           type="button"
                           variant="outline"
                           size="sm"
                           onClick={() => removeMilestone(milestone.id)}
-                          className="text-red-600 hover:text-red-800"
+                          className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 border-gray-300 dark:border-gray-600"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -740,38 +754,40 @@ const handleSubmit = (e: React.FormEvent) => {
             </Card>
 
             {/* Goals */}
-            <Card>
+            <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
               <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
+                <CardTitle className="flex items-center space-x-2 text-gray-900 dark:text-white">
                   <Target className="h-5 w-5" />
                   <span>Goals</span>
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-gray-600 dark:text-gray-300">
                   Define the main goals of your proposal
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-1">
-                    <Label>Title</Label>
+                    <Label className="text-gray-700 dark:text-gray-300">Title</Label>
                     <Input
                       value={newGoal.title}
                       onChange={e => setNewGoal(prev => ({ ...prev, title: e.target.value }))}
                       placeholder="Goal title"
+                      className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
                     />
                   </div>
                   <div className="space-y-1">
-                    <Label>Description</Label>
+                    <Label className="text-gray-700 dark:text-gray-300">Description</Label>
                     <Input
                       value={newGoal.description}
                       onChange={e => setNewGoal(prev => ({ ...prev, description: e.target.value }))}
                       placeholder="Goal description"
+                      className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
                     />
                   </div>
                 </div>
                 
                 <div className="flex justify-end">
-                  <Button type="button" onClick={addGoal} size="sm">
+                  <Button type="button" onClick={addGoal} size="sm" className="bg-blue-600 dark:bg-blue-700 text-white hover:bg-blue-700 dark:hover:bg-blue-600">
                     <Plus className="h-4 w-4 mr-1" />
                     Add Goal
                   </Button>
@@ -782,19 +798,19 @@ const handleSubmit = (e: React.FormEvent) => {
                 {/* Goals List */}
                 {data.goals.length > 0 && (
                   <div className="space-y-2">
-                    <h4 className="font-medium text-gray-900">Goals:</h4>
+                    <h4 className="font-medium text-gray-900 dark:text-white">Goals:</h4>
                     {data.goals.map((goal) => (
-                      <div key={goal.id} className="flex items-center justify-between bg-purple-50 p-3 rounded">
+                      <div key={goal.id} className="flex items-center justify-between bg-purple-50 dark:bg-purple-900/20 p-3 rounded border border-purple-200 dark:border-purple-700">
                         <div className="flex-1">
-                          <h5 className="font-medium">{goal.title}</h5>
-                          <p className="text-sm text-gray-600">{goal.description}</p>
+                          <h5 className="font-medium text-gray-900 dark:text-white">{goal.title}</h5>
+                          <p className="text-sm text-gray-600 dark:text-gray-300">{goal.description}</p>
                         </div>
                         <Button
                           type="button"
                           variant="outline"
                           size="sm"
                           onClick={() => removeGoal(goal.id)}
-                          className="text-red-600 hover:text-red-800"
+                          className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 border-gray-300 dark:border-gray-600"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -806,13 +822,14 @@ const handleSubmit = (e: React.FormEvent) => {
             </Card>
 
             {/* Submit Buttons */}
-            <Card>
+            <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
               <CardFooter className="flex justify-end space-x-4">
                 <Button 
                   variant="outline" 
                   type="button" 
                   onClick={() => window.history.back()}
                   disabled={processing}
+                  className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
                 >
                   Cancel
                 </Button>
@@ -820,7 +837,7 @@ const handleSubmit = (e: React.FormEvent) => {
                   type="submit" 
                   onClick={handleSubmit}
                   disabled={processing}
-                  className="bg-blue-600 text-white hover:bg-blue-700"
+                  className="bg-blue-600 dark:bg-blue-700 text-white hover:bg-blue-700 dark:hover:bg-blue-600"
                 >
                   {processing ? 'Submitting...' : 'Submit Proposal'}
                 </Button>

@@ -114,7 +114,7 @@ Route::get('/project/dashboard', [ProjectController::class, 'index'])->name('pro
 
 Route::get('/project/new-proposal', function () {
     return Inertia::render('Project/proposal/new-proposal');
-});
+})->name('projectproposal.new');
 Route::post('/project/saveproposal', [ProjectProposalController::class, 'store'])->name('projectproposal.store');
 Route::get('/project/viewproposals', [ProjectProposalController::class, 'index'])->name('project.proposal.index');
 Route::post('/project/proposal/approve', [ProjectProposalController::class, 'approve']);
@@ -133,9 +133,9 @@ Route::get('/projects/{project}/team-members/create', [TeamMembersController::cl
 
 // Milestone routes
 // Change your milestone create route to include project parameter
-Route::get('/projects/{project}/milestones/create', [MilestoneController::class, 'create'])->name('project.milestones.create');
 Route::post('/projects/{project}/savemilestones', [MilestoneController::class, 'store'])->name('project.milestones.store');
 Route::put('/milestones/{milestone}', [MilestoneController::class, 'update'])->name('milestones.update');
+Route::get('/projects/{project}/milestones/create', [MilestoneController::class, 'create'])->name('project.milestones.create');
 
 // Goal routes
 Route::post('/goals', [GoalController::class, 'storeWithMilestone'])->name('goals.store');
