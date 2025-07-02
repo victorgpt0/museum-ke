@@ -5,7 +5,7 @@ import Can from '@/lib/can';
 import { Input } from '@/components/ui/input';
 import { PaginationLink } from '@/types';
 import Pagination from '@/components/pagination';
-import { EditIcon, EyeIcon, PlusIcon, SearchIcon } from 'lucide-react';
+import { EditIcon, EyeIcon, File, PlusIcon, SearchIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface Column<T> {
@@ -42,6 +42,34 @@ const Table = <T ,>({
         <div className={`p-4`}>
             <div className="border-sidebar-border/70 dark:border-sidebar-border relative flex-1 overflow-hidden rounded-xl border p-3">
 
+                {total === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
+                        <div className="mb-6 p-4 rounded-full bg-gray-100 dark:bg-gray-800">
+                            <File className="w-12 h-12 text-gray-400 dark:text-gray-500" />
+                        </div>
+
+                        <div className="mb-8 space-y-2">
+                            <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+                                No {resource} found
+                            </h3>
+                            <p className="text-gray-500 dark:text-gray-400 max-w-md">
+                                Get started by creating your first {resource.toLowerCase()} item.
+                            </p>
+                        </div>
+
+                        {Can(`${resource}.create`) && (
+                            <Link
+                                href={`/${resource}/create`}
+                                className="inline-flex items-center px-6 py-3 text-sm capitalize font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:ring-4 focus:ring-blue-200 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 transition-all duration-200 shadow-sm hover:shadow-md"
+                                preserveScroll
+                            >
+                                <PlusIcon className="w-4 h-4 mr-2" />
+                                Create New {resource}
+                            </Link>
+                        )}
+                    </div>
+                ) : (
+                    <>
                 <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
                     {/* Create Button - Left aligned on all screens */}
                     <div className="flex justify-start">
@@ -162,7 +190,10 @@ const Table = <T ,>({
             </table>
         </div>
                 <Pagination links={paginationLinks} from={from} to={to} total={total}/>
+        </>
+            )}
         </div>
+
         </div>
     );
 };
