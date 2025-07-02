@@ -16,7 +16,7 @@ class Artifact extends Model implements HasMedia
     use HasFactory;
     use HasHashId;
     use InteractsWithMedia;
-    use LogsActivity;
+//    use LogsActivity;
 
     protected $table = 'artifact';
 
@@ -38,8 +38,8 @@ class Artifact extends Model implements HasMedia
         'condition',
         'location',
         'acquisition_date',
-        'status',
-        'donor_id',
+//        'status',
+//        'donor_id',
         'user_id',
         'metadata',
     ];
@@ -126,7 +126,12 @@ class Artifact extends Model implements HasMedia
      */
     public function tags()
     {
-        return $this->belongsToMany(Tag::class);
+        return $this->belongsToMany(
+            Tag::class,
+            'artifact_tag',
+            'artifact_id',
+            'tag_id'
+        )->withTimestamps();
     }
 
     /**
@@ -165,21 +170,21 @@ class Artifact extends Model implements HasMedia
     {
         $this->addMediaCollection('images')
             ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/jpg', 'image/webp']);
-        
+
         $this->addMediaCollection('documents')
             ->acceptsMimeTypes(['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']);
     }
 
-    protected static string $logName = 'artifact';
-    protected static array $logAttributes = ['title', 'description', 'category_id', 'location', 'acquisition_date', 'status', 'donor_id', 'condition'];
-    protected static bool $logOnlyDirty = true;
-    protected static bool $submitEmptyLogs = false;
-
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults()
-            ->logOnly(['title', 'description', 'category_id', 'location', 'acquisition_date', 'status', 'donor_id', 'condition'])
-            ->logOnlyDirty()
-            ->dontSubmitEmptyLogs();
-    }
+//    protected static string $logName = 'artifact';
+//    protected static array $logAttributes = ['title', 'description', 'category_id', 'location', 'acquisition_date', 'status', 'donor_id', 'condition'];
+//    protected static bool $logOnlyDirty = true;
+//    protected static bool $submitEmptyLogs = false;
+//
+//    public function getActivitylogOptions(): LogOptions
+//    {
+//        return LogOptions::defaults()
+//            ->logOnly(['title', 'description', 'category_id', 'location', 'acquisition_date', 'status', 'donor_id', 'condition'])
+//            ->logOnlyDirty()
+//            ->dontSubmitEmptyLogs();
+//    }
 }

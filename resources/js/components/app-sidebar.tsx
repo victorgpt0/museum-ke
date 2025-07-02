@@ -23,6 +23,7 @@ import {
 import AppLogo from './app-logo';
 
 import { useState, useEffect } from 'react';
+import { cn } from '@/lib/utils';
 
 // Extend NavItem type to include children for submenus
 interface ExtendedNavItem extends NavItem {
@@ -210,6 +211,8 @@ function NavMainWithDropdowns({ items }: { items: ExtendedNavItem[] }) {
         // External links will navigate normally
     };
 
+    const currentPath = window.location.pathname;
+
     return (
         <SidebarMenu>
             {items.map((item) => (
@@ -224,7 +227,7 @@ function NavMainWithDropdowns({ items }: { items: ExtendedNavItem[] }) {
                                 {expandedItems[item.title] ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
                             </div>
                         ) : (
-                            <SidebarMenuButton asChild>
+                            <SidebarMenuButton asChild className={`${currentPath === item.href ? 'bg-muted' : ''}`}>
                                 <Link href={item.href} onClick={(e) => handleClick(e, item.href)}>
                                     {item.icon && <item.icon className="mr-2" size={18} />}
                                     <span>{item.title}</span>
@@ -238,7 +241,7 @@ function NavMainWithDropdowns({ items }: { items: ExtendedNavItem[] }) {
                         <div className="pl-6">
                             {item.children.map((child) => (
                                 <SidebarMenuItem key={child.title}>
-                                    <SidebarMenuButton asChild>
+                                    <SidebarMenuButton asChild className={`${currentPath === child.href ? 'bg-muted' : ''}`}>
                                         <Link href={child.href} onClick={(e) => handleClick(e, child.href)}>
                                             {child.icon && <child.icon className="mr-2" size={16} />}
                                             <span>{child.title}</span>

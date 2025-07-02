@@ -73,7 +73,12 @@ class ArtifactController extends Controller
     {
         try {
             $validated = $request->validated();
-            $validated['user_id'] = auth()->id(); // Assign current user
+            $validated['user_id'] = auth()->id();
+
+            // Remove file fields so they're not passed to the DB
+            unset($validated['images'], $validated['documents']);
+
+//            dd($validated);
 
             $artifact = Artifact::create($validated);
 
@@ -97,7 +102,7 @@ class ArtifactController extends Controller
 
             return redirect()->route('artifacts.index')->with('success', 'Artifact created successfully.');
         } catch (\Exception $e) {
-            return back()->withErrors(['error' => 'Failed to create artifact: ' . $e->getMessage()]);
+            return back()->with('error' ,'Failed to create artifact: ' . $e->getMessage());
         }
     }
 

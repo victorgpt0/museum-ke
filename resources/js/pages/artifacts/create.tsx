@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useForm, Link, usePage } from '@inertiajs/react';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -10,11 +10,32 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import InputError from '@/components/input-error';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
+import { Upload, X } from 'lucide-react';
+import FileUpload from '@/components/ui/file-upload';
+
+type ArtifactFormData = {
+  title: string;
+  description: string;
+  category_id: string;
+  condition: string;
+  location: string;
+  acquisition_date: string;
+  status: string;
+  donor_id: string;
+  images: File[];
+  documents: File[];
+  tags: string[];
+};
 
 export default function ArtifactCreate() {
   const { categories, donors, tags } = usePage().props as any;
   const imagesRef = useRef<HTMLInputElement>(null);
+  const [selectedImages, setSelectedImages] = useState<File[]>([]);
+  const [selectedDocuments, setSelectedDocuments] = useState<File[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const documentsRef = useRef<HTMLInputElement>(null);
+  const [uploadedMediaIds, setUploadedMediaIds] = useState<string[]>([]);
+  const [isUploadingImages, setIsUploadingImages] = useState(false);
 
   const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -27,7 +48,7 @@ export default function ArtifactCreate() {
     }
   ];
 
-  const { data, setData, post, processing, errors } = useForm({
+  const { data, setData, post, processing, errors } = useForm<ArtifactFormData>({
     title: '',
     description: '',
     category_id: '',
@@ -41,18 +62,71 @@ export default function ArtifactCreate() {
     tags: [],
   });
 
+  // Clean up object URLs on component unmount
+  useEffect(() => {
+    return () => {
+      imagePreviews.forEach(url => URL.revokeObjectURL(url));
+    };
+  }, [imagePreviews]);
+
+  // Sync selected files with form data
+  React.useEffect(() => {
+    setData('images', selectedImages);
+  }, [selectedImages]);
+  React.useEffect(() => {
+    setData('documents', selectedDocuments);
+  }, [selectedDocuments]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setData(e.target.name, e.target.value);
+    setData(e.target.name as keyof ArtifactFormData, e.target.value);
   };
 
-  const handleSelectChange = (name: string, value: string) => {
+  const handleSelectChange = (name: keyof ArtifactFormData, value: string) => {
     setData(name, value);
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
-      setData(e.target.name, Array.from(e.target.files));
+      setData((prevData) => ({
+        ...prevData,
+        [e.target.name]: e.target.files ? [...e.target.files] : [],
+      }));
     }
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+
+    if (files.length === 0) return;
+
+    // Create preview URLs
+    const previews = files.map(file => URL.createObjectURL(file));
+
+    const newPreviews = [...imagePreviews, ...previews];
+
+    if (e.target.files) {
+      setData((prevData) => ({
+        ...prevData,
+        [e.target.name]: e.target.files ? [...e.target.files] : [],
+      }));
+    }
+
+    setImagePreviews(newPreviews);
+  };
+
+  const removeImage = (index: number) => {
+    // Revoke the object URL to prevent memory leaks
+    URL.revokeObjectURL(imagePreviews[index]);
+
+    const newImages = selectedImages.filter((_, i) => i !== index);
+    const newPreviews = imagePreviews.filter((_, i) => i !== index);
+    const newMediaIds = uploadedMediaIds.filter((_, i) => i !== index);
+
+    setSelectedImages(newImages);
+    setImagePreviews(newPreviews);
+    setUploadedMediaIds(newMediaIds);
+
+    setData('images', newImages);
   };
 
   const handleTagChange = (tagId: string, checked: boolean) => {
@@ -66,8 +140,12 @@ export default function ArtifactCreate() {
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    console.log(data);
+
     post(route('artifacts.store'), {
       forceFormData: true,
+      preserveScroll: true,
     });
   };
 
@@ -215,37 +293,30 @@ export default function ArtifactCreate() {
 
               {/* File Uploads */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <Label htmlFor="images">Images</Label>
-                  <Input
-                    ref={imagesRef}
-                    id="images"
-                    type="file"
-                    name="images"
-                    multiple
-                    accept="image/*"
-                    onChange={handleFileChange}
-                    className="mt-1"
-                  />
-                  <InputError message={errors.images} className="mt-1" />
-                  <p className="text-sm text-gray-500 mt-1">Accepted formats: JPG, JPEG, PNG, WebP (max 10MB each)</p>
-                </div>
-
-                <div>
-                  <Label htmlFor="documents">Documents</Label>
-                  <Input
-                    ref={documentsRef}
-                    id="documents"
-                    type="file"
-                    name="documents"
-                    multiple
-                    accept=".pdf,.docx"
-                    onChange={handleFileChange}
-                    className="mt-1"
-                  />
-                  <InputError message={errors.documents} className="mt-1" />
-                  <p className="text-sm text-gray-500 mt-1">Accepted formats: PDF, DOCX (max 10MB each)</p>
-                </div>
+                <FileUpload
+                  label="Artifact Images"
+                  name="images"
+                  accept="image/jpeg,image/jpg,image/png,image/webp"
+                  multiple
+                  maxFiles={10}
+                  maxSizeMB={5}
+                  value={selectedImages}
+                  onFilesChange={setSelectedImages}
+                  error={errors.images}
+                  previewType="image"
+                />
+                <FileUpload
+                  label="Artifact Documents"
+                  name="documents"
+                  accept=".pdf,.docx"
+                  multiple
+                  maxFiles={10}
+                  maxSizeMB={10}
+                  value={selectedDocuments}
+                  onFilesChange={setSelectedDocuments}
+                  error={errors.documents}
+                  previewType="document"
+                />
               </div>
 
               {/* Form Actions */}
