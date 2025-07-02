@@ -280,35 +280,30 @@ const handleSubmit = (e: React.FormEvent) => {
     
     // Build the additional description content
     let additions = '';
-    
     if (data.objectives?.length > 0) {
         const objectiveText = data.objectives
-            .map(obj => `${obj.title}: ${obj.description}`)
-            .join(', ');
-        additions += ` Objectives include ${objectiveText}.`;
+            .map(obj => `- ${obj.title}: ${obj.description}`)
+            .join('\n');
+        additions += `\n\nObjectives:\n${objectiveText}`;
     }
-    
     if (data.milestones?.length > 0) {
         const milestoneText = data.milestones
-            .map(m => `${m.title} (${m.duration}) - ${m.description}`)
-            .join(', ');
-        additions += ` Milestones are ${milestoneText}.`;
+            .map(m => `- ${m.title} (${m.duration}): ${m.description}`)
+            .join('\n');
+        additions += `\n\nMilestones:\n${milestoneText}`;
     }
-    
     if (data.goals?.length > 0) {
         const goalText = data.goals
-            .map(goal => `${goal.title}: ${goal.description}`)
-            .join(', ');
-        additions += ` Goals set are ${goalText}.`;
+            .map(goal => `- ${goal.title}: ${goal.description}`)
+            .join('\n');
+        additions += `\n\nGoals:\n${goalText}`;
     }
-    
     if (data.teamMembers?.length > 0) {
         const teamText = data.teamMembers
-            .map(member => `${member.fullName} (${member.role}, ${member.email})`)
-            .join(', ');
-        additions += ` Team members involved are ${teamText}.`;
+            .map(member => `- ${member.fullName} (${member.role}, ${member.email})`)
+            .join('\n');
+        additions += `\n\nTeam Members:\n${teamText}`;
     }
-    
     const fullDescription = `${data.description.trim()}${additions}`;
     
     // Create form data object that includes documents

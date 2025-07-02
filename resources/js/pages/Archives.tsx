@@ -1,378 +1,270 @@
-import React, { useRef, useState } from 'react';
-import { Head, Link, useForm } from '@inertiajs/react';
-import { Upload, FileText, ArrowLeft, Save, X } from 'lucide-react';
+import React, { useState } from 'react';
+import { Head, Link, router } from '@inertiajs/react';
+import { Search, Filter, Plus, Eye, Edit, Trash2, FileText, Calendar } from 'lucide-react';
 import AppLayout from '@/layouts/app-layout';
 
-interface Category {
+interface Archive {
     id: number;
-    name: string;
-}
-
-interface Props {
-    categories: Category[];
-}
-
-interface FormData {
     title: string;
     author: string;
     category: string;
-    document: File | null;
+    created_at: string;
+    updated_at: string;
 }
 
-function NewArchive({ categories }: Props) {
-    const fileInputRef = useRef<HTMLInputElement>(null);
-    const [dragActive, setDragActive] = useState(false);
-    const [selectedFileName, setSelectedFileName] = useState<string>('');
+interface Props {
+    archives: {
+        data: Archive[];
+        current_page: number;
+        last_page: number;
+        per_page: number;
+        total: number;
+        links: any[];
+    };
+    filters: {
+        category?: string;
+        search?: string;
+        author?: string;
+    };
+}
 
-    const { data, setData, post, processing, errors, progress } = useForm<FormData>({
-        title: '',
-        author: '',
-        category: '',
-        document: null,
-    });
+export default function Archives({ archives, filters }: Props) {
+    const [searchTerm, setSearchTerm] = useState(filters.search || '');
+    const [selectedCategory, setSelectedCategory] = useState(filters.category || '');
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        post('/archives', {
-            forceFormData: true,
+    const handleSearch = () => {
+        router.get('/archives', {
+            search: searchTerm,
+            category: selectedCategory,
+        }, {
+            preserveState: true,
+            preserveScroll: true,
         });
     };
 
-    const handleFileSelect = (file: File) => {
-        setData('document', file);
-        setSelectedFileName(file.name);
-        
-        // Auto-fill title if it's empty
-        if (!data.title) {
-            const nameWithoutExtension = file.name.replace(/\.[^/.]+$/, '');
-            setData('title', nameWithoutExtension);
+    const handleCategoryFilter = (category: string) => {
+        setSelectedCategory(category);
+        router.get('/archives', {
+            search: searchTerm,
+            category: category,
+        }, {
+            preserveState: true,
+            preserveScroll: true,
+        });
+    };
+
+    const handleDelete = (id: number) => {
+        if (confirm('Are you sure you want to delete this archive?')) {
+            router.delete(`/archives/${id}`);
         }
     };
 
-    const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            handleFileSelect(file);
-        }
-    };
-
-    const handleDrag = (e: React.DragEvent) => {
-        e.preventDefault();
-        e.stopPropagation();
-        if (e.type === 'dragenter' || e.type === 'dragover') {
-            setDragActive(true);
-        } else if (e.type === 'dragleave') {
-            setDragActive(false);
-        }
-    };
-
-    const handleDrop = (e: React.DragEvent) => {
-        e.preventDefault();
-        e.stopPropagation();
-        setDragActive(false);
-
-        const files = e.dataTransfer.files;
-        if (files?.[0]) {
-            handleFileSelect(files[0]);
-        }
-    };
-
-    const openFileExplorer = () => {
-        fileInputRef.current?.click();
-    };
-
-    const removeFile = () => {
-        setData('document', null);
-        setSelectedFileName('');
-        if (fileInputRef.current) {
-            fileInputRef.current.value = '';
-        }
-    };
-
-    const getFileSize = (bytes: number): string => {
-        if (bytes === 0) return '0 Bytes';
-        const k = 1024;
-        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-        const i = Math.floor(Math.log(bytes) / Math.log(k));
-        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-    };
-
-    const getFileIcon = (fileName: string) => {
-        const extension = fileName.split('.').pop()?.toLowerCase();
-        switch (extension) {
-            case 'pdf':
-                return '📄';
-            case 'doc':
-            case 'docx':
-                return '📝';
-            case 'xls':
-            case 'xlsx':
-                return '📊';
-            case 'ppt':
-            case 'pptx':
-                return '📈';
-            case 'txt':
-                return '📋';
+    const getCategoryBadge = (category: string) => {
+        const baseClasses = "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium";
+        switch (category) {
+            case 'research':
+                return `${baseClasses} bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300`;
+            case 'context':
+                return `${baseClasses} bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300`;
             default:
-                return '📎';
+                return `${baseClasses} bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300`;
         }
+    };
+
+    const formatDate = (dateString: string) => {
+        return new Date(dateString).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+        });
     };
 
     return (
-        <>
-            <Head title="New Archive" />
+        <AppLayout>
+            <Head title="Archives" />
             
             <div className="py-8">
-                <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     {/* Header */}
                     <div className="mb-8">
-                        <div className="flex items-center gap-4 mb-4">
-                            <Link
-                                href="/archives"
-                                className="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-                            >
-                                <ArrowLeft className="w-5 h-5" />
-                            </Link>
+                        <div className="flex items-center justify-between">
                             <div>
-                                <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Add New Archive</h1>
-                                <p className="mt-1 text-gray-600 dark:text-gray-400">
-                                    Upload a new document to your archive collection
+                                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Archives</h1>
+                                <p className="mt-2 text-gray-600 dark:text-gray-300">
+                                    Manage and browse your archive collection
                                 </p>
                             </div>
+                            <Link
+                                href="/archives/new-file"
+                                className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+                            >
+                                <Plus className="w-4 h-4 mr-2" />
+                                Add Archive
+                            </Link>
                         </div>
                     </div>
 
-                    {/* Form */}
-                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-                        <form onSubmit={handleSubmit} className="p-6 space-y-6">
-                            {/* File Upload Section */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    Document *
-                                </label>
-                                
-                                <input
-                                    ref={fileInputRef}
-                                    type="file"
-                                    onChange={handleFileInputChange}
-                                    accept=".pdf,.doc,.docx,.txt,.xlsx,.xls,.ppt,.pptx"
-                                    className="hidden"
-                                />
-
-                                {!data.document ? (
-                                    <div
-                                        className={`relative border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
-                                            dragActive
-                                                ? 'border-blue-400 bg-blue-50 dark:bg-blue-900/20'
-                                                : errors.document
-                                                ? 'border-red-300 dark:border-red-600 bg-red-50 dark:bg-red-900/20'
-                                                : 'border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500'
-                                        }`}
-                                        onDragEnter={handleDrag}
-                                        onDragLeave={handleDrag}
-                                        onDragOver={handleDrag}
-                                        onDrop={handleDrop}
-                                    >
-                                        <Upload className="w-12 h-12 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
-                                        <div className="space-y-2">
-                                            <p className="text-lg font-medium text-gray-900 dark:text-gray-100">
-                                                Choose a file or drag it here
-                                            </p>
-                                            <p className="text-sm text-gray-600 dark:text-gray-400">
-                                                Supports PDF, DOC, DOCX, TXT, XLS, XLSX, PPT, PPTX
-                                            </p>
-                                            <p className="text-xs text-gray-500 dark:text-gray-500">
-                                                Maximum file size: 10MB
-                                            </p>
-                                        </div>
-                                        <button
-                                            type="button"
-                                            onClick={openFileExplorer}
-                                            className="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors"
-                                        >
-                                            Browse Files
-                                        </button>
-                                    </div>
-                                ) : (
-                                    <div className="border rounded-lg p-4 bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-600">
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex items-center gap-3">
-                                                <span className="text-2xl">
-                                                    {getFileIcon(selectedFileName)}
-                                                </span>
-                                                <div>
-                                                    <p className="font-medium text-gray-900 dark:text-gray-100">
-                                                        {selectedFileName}
-                                                    </p>
-                                                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                                                        {getFileSize(data.document.size)}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                            <button
-                                                type="button"
-                                                onClick={removeFile}
-                                                className="p-2 text-gray-400 dark:text-gray-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                                            >
-                                                <X className="w-4 h-4" />
-                                            </button>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {errors.document && (
-                                    <p className="mt-2 text-sm text-red-600 dark:text-red-400">{errors.document}</p>
-                                )}
-                            </div>
-
-                            {/* Title Field */}
-                            <div>
-                                <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    Title *
-                                </label>
-                                <input
-                                    type="text"
-                                    id="title"
-                                    value={data.title}
-                                    onChange={(e) => setData('title', e.target.value)}
-                                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 ${
-                                        errors.title 
-                                            ? 'border-red-300 dark:border-red-600' 
-                                            : 'border-gray-300 dark:border-gray-600'
-                                    }`}
-                                    placeholder="Enter document title"
-                                />
-                                {errors.title && (
-                                    <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.title}</p>
-                                )}
-                            </div>
-
-                            {/* Author Field */}
-                            <div>
-                                <label htmlFor="author" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    Author *
-                                </label>
-                                <input
-                                    type="text"
-                                    id="author"
-                                    value={data.author}
-                                    onChange={(e) => setData('author', e.target.value)}
-                                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 ${
-                                        errors.author 
-                                            ? 'border-red-300 dark:border-red-600' 
-                                            : 'border-gray-300 dark:border-gray-600'
-                                    }`}
-                                    placeholder="Enter author name"
-                                />
-                                {errors.author && (
-                                    <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.author}</p>
-                                )}
-                            </div>
-
-                            {/* Category Field */}
-                            <div>
-                                <label htmlFor="category" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    Category *
-                                </label>
-                                <select
-                                    id="category"
-                                    value={data.category}
-                                    onChange={(e) => setData('category', e.target.value)}
-                                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 ${
-                                        errors.category 
-                                            ? 'border-red-300 dark:border-red-600' 
-                                            : 'border-gray-300 dark:border-gray-600'
-                                    }`}
-                                >
-                                    <option value="" className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">
-                                        Select a category
-                                    </option>
-                                    {categories.map((category) => (
-                                        <option 
-                                            key={category.id} 
-                                            value={category.name}
-                                            className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-                                        >
-                                            {category.name}
-                                        </option>
-                                    ))}
-                                </select>
-                                {errors.category && (
-                                    <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.category}</p>
-                                )}
-                            </div>
-
-                            {/* Upload Progress */}
-                            {progress && (
-                                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                                    <div className="flex items-center gap-3">
-                                        <div className="flex-1">
-                                            <div className="flex justify-between text-sm text-blue-900 mb-1">
-                                                <span>Uploading...</span>
-                                                <span>{progress.percentage}%</span>
-                                            </div>
-                                            <div className="w-full bg-blue-200 rounded-full h-2">
-                                                <div
-                                                    className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                                                    style={{ width: `${progress.percentage}%` }}
-                                                ></div>
-                                            </div>
-                                        </div>
-                                    </div>
+                    {/* Filters */}
+                    <div className="mb-6 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+                        <div className="flex flex-col sm:flex-row gap-4">
+                            {/* Search */}
+                            <div className="flex-1">
+                                <div className="relative">
+                                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                                    <input
+                                        type="text"
+                                        placeholder="Search archives..."
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                        onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                                        className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                                    />
                                 </div>
-                            )}
+                            </div>
 
-                            {/* Form Actions */}
-                            <div className="flex items-center justify-between pt-6 border-t border-gray-200 dark:border-gray-600">
-                                <Link
-                                    href="/archives"
-                                    className="px-6 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 font-medium transition-colors"
-                                >
-                                    Cancel
-                                </Link>
+                            {/* Category Filter */}
+                            <div className="flex gap-2">
                                 <button
-                                    type="submit"
-                                    disabled={processing}
-                                    className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white px-6 py-2 rounded-lg font-medium transition-colors flex items-center gap-2"
+                                    onClick={() => handleCategoryFilter('')}
+                                    className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                                        selectedCategory === ''
+                                            ? 'bg-blue-600 text-white'
+                                            : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                                    }`}
                                 >
-                                    {processing ? (
-                                        <>
-                                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                                            Saving...
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Save className="w-4 h-4" />
-                                            Save Archive
-                                        </>
-                                    )}
+                                    All
+                                </button>
+                                <button
+                                    onClick={() => handleCategoryFilter('research')}
+                                    className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                                        selectedCategory === 'research'
+                                            ? 'bg-blue-600 text-white'
+                                            : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                                    }`}
+                                >
+                                    Research
+                                </button>
+                                <button
+                                    onClick={() => handleCategoryFilter('context')}
+                                    className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                                        selectedCategory === 'context'
+                                            ? 'bg-blue-600 text-white'
+                                            : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                                    }`}
+                                >
+                                    Context
                                 </button>
                             </div>
-                        </form>
-                    </div>
-
-                    {/* Help Text */}
-                    <div className="mt-6 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-                        <div className="flex gap-3">
-                            <FileText className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
-                            <div>
-                                <h3 className="font-medium text-blue-900 dark:text-blue-100 mb-1">Tips for uploading archives</h3>
-                                <ul className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
-                                    <li>• Use descriptive titles to make documents easy to find</li>
-                                    <li>• Choose the appropriate category for better organization</li>
-                                    <li>• Supported formats: PDF, Word, Excel, PowerPoint, and Text files</li>
-                                    <li>• Maximum file size is 10MB per document</li>
-                                </ul>
-                            </div>
                         </div>
                     </div>
+
+                    {/* Archives Grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {archives.data.map((archive) => (
+                            <div key={archive.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-shadow">
+                                <div className="flex items-start justify-between mb-4">
+                                    <div className="flex-1">
+                                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 line-clamp-2">
+                                            {archive.title}
+                                        </h3>
+                                        <span className={getCategoryBadge(archive.category)}>
+                                            {archive.category.charAt(0).toUpperCase() + archive.category.slice(1)}
+                                        </span>
+                                    </div>
+                                    <FileText className="w-6 h-6 text-gray-400 dark:text-gray-500 flex-shrink-0 ml-2" />
+                                </div>
+
+                                <div className="space-y-2 mb-4">
+                                    <p className="text-sm text-gray-600 dark:text-gray-300">
+                                        <span className="font-medium">Author:</span> {archive.author}
+                                    </p>
+                                    <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center">
+                                        <Calendar className="w-4 h-4 mr-1" />
+                                        {formatDate(archive.created_at)}
+                                    </p>
+                                </div>
+
+                                <div className="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-gray-700">
+                                    <div className="flex space-x-2">
+                                        <Link
+                                            href={`/archives/${archive.id}`}
+                                            className="p-2 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                                            title="View"
+                                        >
+                                            <Eye className="w-4 h-4" />
+                                        </Link>
+                                        <Link
+                                            href={`/archives/${archive.id}/edit`}
+                                            className="p-2 text-gray-400 hover:text-green-600 dark:hover:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors"
+                                            title="Edit"
+                                        >
+                                            <Edit className="w-4 h-4" />
+                                        </Link>
+                                    </div>
+                                    <button
+                                        onClick={() => handleDelete(archive.id)}
+                                        className="p-2 text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                                        title="Delete"
+                                    >
+                                        <Trash2 className="w-4 h-4" />
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Empty State */}
+                    {archives.data.length === 0 && (
+                        <div className="text-center py-12">
+                            <FileText className="w-12 h-12 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
+                            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No archives found</h3>
+                            <p className="text-gray-600 dark:text-gray-300 mb-4">
+                                {searchTerm || selectedCategory 
+                                    ? 'Try adjusting your search or filter criteria.'
+                                    : 'Get started by adding your first archive.'
+                                }
+                            </p>
+                            {!searchTerm && !selectedCategory && (
+                                <Link
+                                    href="/archives/new-file"
+                                    className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+                                >
+                                    <Plus className="w-4 h-4 mr-2" />
+                                    Add Archive
+                                </Link>
+                            )}
+                        </div>
+                    )}
+
+                    {/* Pagination */}
+                    {archives.last_page > 1 && (
+                        <div className="mt-8 flex items-center justify-between">
+                            <div className="text-sm text-gray-700 dark:text-gray-300">
+                                Showing {((archives.current_page - 1) * archives.per_page) + 1} to{' '}
+                                {Math.min(archives.current_page * archives.per_page, archives.total)} of{' '}
+                                {archives.total} results
+                            </div>
+                            <div className="flex space-x-2">
+                                {archives.links.map((link, index) => (
+                                    <button
+                                        key={index}
+                                        onClick={() => link.url && router.visit(link.url)}
+                                        disabled={!link.url}
+                                        className={`px-3 py-2 text-sm font-medium rounded-lg ${
+                                            link.active
+                                                ? 'bg-blue-600 text-white'
+                                                : link.url
+                                                ? 'text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
+                                                : 'text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-gray-700 cursor-not-allowed'
+                                        }`}
+                                        dangerouslySetInnerHTML={{ __html: link.label }}
+                                    />
+                                ))}
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
-        </>
+        </AppLayout>
     );
-}
-
-// Wrap the component with your layout
-NewArchive.layout = (page: React.ReactElement) => <AppLayout>{page}</AppLayout>;
-
-export default NewArchive;
+} 

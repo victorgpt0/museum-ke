@@ -73,8 +73,12 @@ class ProjectProposalController extends Controller
    public function index()
 {
     try {
-        $proposals = ProjectProposal::orderBy('submitted_at', 'desc')->paginate(10); // optional: use paginate
-
+        $proposals = ProjectProposal::with('user')->orderBy('submitted_at', 'desc')->paginate(10); // eager load user
+        // Transform proposals to include user name
+        $proposals->getCollection()->transform(function ($proposal) {
+            $proposal->user_name = $proposal->user ? $proposal->user->name : 'Unknown';
+            return $proposal;
+        });
         return Inertia::render('Project/proposal/ViewProposals', [
             'proposals' => $proposals
         ]);
@@ -146,5 +150,16 @@ class ProjectProposalController extends Controller
                 'exception' => $e->getMessage(),
             ]);
         }
+    }
+
+    public function show($id)
+    {
+        $proposal = ProjectProposal::with('user')->findOrFail($id);
+        $proposal->user_name = $proposal->user ? $proposal->user->name : 'Unknown';
+        $proposal->all_documents_urls = $proposal->all_documents_urls;
+        $proposal->all_image_urls = $proposal->all_image_urls;
+        return Inertia::render('Project/proposal/proposal', [
+            'proposal' => $proposal
+        ]);
     }
 }

@@ -4,10 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
 
-class Archives extends Model
+class Archives extends Model implements HasMedia
 {
-    use HasFactory;
+    use HasFactory, InteractsWithMedia;
 
     /**
      * The table associated with the model.
@@ -33,7 +35,6 @@ class Archives extends Model
     protected $fillable = [
         'title',
         'author',
-        'documentpath',
         'category',
     ];
 
@@ -57,9 +58,6 @@ class Archives extends Model
         return [
             self::CATEGORY_RESEARCH => 'Research',
             self::CATEGORY_CONTEXT => 'Context',
-            self::CATEGORY_DOCUMENTATION => 'Documentation',
-            self::CATEGORY_HISTORICAL => 'Historical',
-            self::CATEGORY_CULTURAL => 'Cultural',
         ];
     }
 
@@ -137,5 +135,23 @@ class Archives extends Model
     public function getFileName(): string
     {
         return pathinfo($this->documentpath, PATHINFO_BASENAME);
+    }
+
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('documents')
+            ->acceptsMimeTypes(['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/vnd.ms-powerpoint', 'application/vnd.openxmlformats-officedocument.presentationml.presentation']);
+        $this->addMediaCollection('images')
+            ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/jpg', 'image/webp']);
+    }
+
+    public function getDocumentsAttribute()
+    {
+        return $this->getMedia('documents');
+    }
+
+    public function getImagesAttribute()
+    {
+        return $this->getMedia('images');
     }
 }

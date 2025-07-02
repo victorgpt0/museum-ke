@@ -3,23 +3,16 @@ import { Head, Link, useForm } from '@inertiajs/react';
 import { Upload, FileText, ArrowLeft, Save, X } from 'lucide-react';
 import AppLayout from '@/layouts/app-layout';
 
-interface Category {
-    id: number;
-    name: string;
-}
-
-interface Props {
-    categories: Category[];
-}
-
 interface FormData {
     title: string;
     author: string;
     category: string;
     document: File | null;
+    image: File | null;
+    [key: string]: string | File | null;
 }
 
-function NewArchive({ categories }: Props) {
+function NewArchive() {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [dragActive, setDragActive] = useState(false);
     const [selectedFileName, setSelectedFileName] = useState<string>('');
@@ -29,6 +22,7 @@ function NewArchive({ categories }: Props) {
         author: '',
         category: '',
         document: null,
+        image: null,
     });
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -52,7 +46,11 @@ function NewArchive({ categories }: Props) {
     const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
-            handleFileSelect(file);
+            if (e.target.name === 'document') {
+                handleFileSelect(file);
+            } else if (e.target.name === 'image') {
+                setData('image', file);
+            }
         }
     };
 
@@ -154,6 +152,7 @@ function NewArchive({ categories }: Props) {
                                 <input
                                     ref={fileInputRef}
                                     type="file"
+                                    name="document"
                                     onChange={handleFileInputChange}
                                     accept=".pdf,.doc,.docx,.txt,.xlsx,.xls,.ppt,.pptx"
                                     className="hidden"
@@ -225,6 +224,23 @@ function NewArchive({ categories }: Props) {
                                 )}
                             </div>
 
+                            {/* Image Upload Section */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    Image (optional)
+                                </label>
+                                <input
+                                    type="file"
+                                    name="image"
+                                    accept="image/jpeg,image/png,image/jpg,image/webp"
+                                    onChange={handleFileInputChange}
+                                    className="block w-full text-sm text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer bg-white dark:bg-gray-800 focus:outline-none"
+                                />
+                                {errors.image && (
+                                    <p className="mt-2 text-sm text-red-600 dark:text-red-400">{errors.image}</p>
+                                )}
+                            </div>
+
                             {/* Title Field */}
                             <div>
                                 <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -287,15 +303,8 @@ function NewArchive({ categories }: Props) {
                                     <option value="" className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">
                                         Select a category
                                     </option>
-                                    {categories.map((category) => (
-                                        <option 
-                                            key={category.id} 
-                                            value={category.name}
-                                            className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-                                        >
-                                            {category.name}
-                                        </option>
-                                    ))}
+                                    <option value="research">Research</option>
+                                    <option value="context">Context</option>
                                 </select>
                                 {errors.category && (
                                     <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.category}</p>
