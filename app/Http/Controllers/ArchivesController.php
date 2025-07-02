@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class ArchivesController extends Controller
 {
@@ -51,11 +52,7 @@ class ArchivesController extends Controller
      */
     public function create()
     {
-        $categories = Category::all();
-        
-        return Inertia::render('NewArchive', [
-            'categories' => $categories
-        ]);
+        return Inertia::render('NewArchive');
     }
 
     /**
@@ -66,20 +63,25 @@ class ArchivesController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'author' => 'required|string|max:255',
-            'category' => 'required|string|max:255',
-            'document' => 'required|file|mimes:pdf,doc,docx,txt,xlsx,xls,ppt,pptx|max:10240', // 10MB max
+            'category' => ['required', 'string', Rule::in(['research', 'context'])],
+            'document' => 'nullable|file|mimes:pdf,doc,docx,txt,xlsx,xls,ppt,pptx|max:10240',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
         ]);
 
-        // Store the uploaded file
-        $documentPath = $request->file('document')->store('archives', 'public');
-
-        // Create the archive record
-        Archives::create([
+        $archive = Archives::create([
             'title' => $validated['title'],
             'author' => $validated['author'],
             'category' => $validated['category'],
-            'documentpath' => $documentPath,
         ]);
+
+        // Attach document if uploaded
+        if ($request->hasFile('document')) {
+            $archive->addMediaFromRequest('document')->toMediaCollection('documents');
+        }
+        // Attach image if uploaded
+        if ($request->hasFile('image')) {
+            $archive->addMediaFromRequest('image')->toMediaCollection('images');
+        }
 
         return redirect()->route('archives.index')
                         ->with('success', 'Archive created successfully!');
@@ -90,9 +92,24 @@ class ArchivesController extends Controller
      */
     public function show(Archives $archive)
     {
+        $documentUrls = $archive->getMedia('documents')->map(function ($media) {
+            return [
+                'url' => $media->getUrl(),
+                'name' => $media->name,
+                'file_name' => $media->file_name,
+            ];
+        });
+        $imageUrls = $archive->getMedia('images')->map(function ($media) {
+            return [
+                'url' => $media->getUrl(),
+                'name' => $media->name,
+                'file_name' => $media->file_name,
+            ];
+        });
         return Inertia::render('Archive/Show', [
             'archive' => $archive,
-            'documentUrl' => Storage::url($archive->documentpath),
+            'documentUrls' => $documentUrls,
+            'imageUrls' => $imageUrls,
         ]);
     }
 

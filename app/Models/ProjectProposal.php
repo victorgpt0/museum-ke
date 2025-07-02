@@ -34,12 +34,16 @@ class ProjectProposal extends Model implements HasMedia
     ];
 
     public function project()
-{
-    return $this->hasOne(Project::class);
-}
+    {
+        return $this->hasOne(Project::class);
+    }
 
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 
-      public function registerMediaCollections(): void
+    public function registerMediaCollections(): void
     {
         $this->addMediaCollection('project_proposal_images')
             ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/jpg', 'image/webp']);

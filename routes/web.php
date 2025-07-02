@@ -70,6 +70,7 @@ Route::get('/dashboard/new-artifact', [ArtifactController::class, 'create'])->na
 // In your web.php routes file
 Route::get('/archives', [ArchivesController::class, 'index'])->name('archives.index');
 Route::get('/archives/new-file', [ArchivesController::class, 'create'])->name('archives.create');
+Route::post('/archives', [ArchivesController::class, 'store'])->name('archives.store');
 // Existing routes...
 Route::get('/archives/{archive}', [ArchivesController::class, 'show'])->name('archives.show');
 Route::get('/archives/{archive}/edit', [ArchivesController::class, 'edit'])->name('archives.edit');
@@ -150,6 +151,8 @@ Route::put('/projects/{project}/milestones/{milestone}/goals', [MilestoneControl
 Route::get('activity-logs', [App\Http\Controllers\ActivityLogController::class, 'index'])->name('activity-logs.index');
 
 Route::post('/project/{id}/complete', [ProjectController::class, 'markComplete'])->middleware(['auth'])->name('project.complete');
+
+Route::get('/proposals/{id}', [App\Http\Controllers\ProjectProposalController::class, 'show'])->name('proposals.show');
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';

@@ -13,6 +13,7 @@ interface ProjectProposal {
   submitted_at?: string;
   approved_at?: string;
   all_image_urls?: string[];
+  user_name?: string;
 }
 
 interface PaginationLink {
@@ -86,12 +87,12 @@ export default function ViewProposals({ proposals }: Props) {
 
   // Handle approve proposal
   const handleApprove = (proposalId: number) => {
-    router.post(`/project/proposal/approve`, {
-      id: proposalId
+    router.patch('/curator/acquisition-history/status', {
+      artifact_proposal_id: proposalId,
+      status: 'approved',
     }, {
       preserveScroll: true,
       onSuccess: () => {
-        // Refresh the page data
         router.reload({ only: ['proposals'] });
       },
       onError: (errors) => {
@@ -181,6 +182,7 @@ export default function ViewProposals({ proposals }: Props) {
                     <span className={getStatusBadge(proposal.status)}>
                       {formatStatusText(proposal.status)}
                     </span>
+                    <div className="text-sm text-gray-500 mt-1">Uploaded by: <span className="font-medium text-gray-700">{proposal.user_name || 'Unknown'}</span></div>
                   </div>
                   <div className="text-right text-sm text-gray-500">
                     Submitted: {formatDate(proposal.submitted_at || proposal.created_at)}
