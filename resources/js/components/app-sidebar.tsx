@@ -57,7 +57,7 @@ const mainNavItems: ExtendedNavItem[] = [
     },
      {
         title: 'Project Dashboard',
-        href: '/project/dashboard',
+        href: '/project/all-projects',
         icon: LayoutGrid,
 
     },
@@ -198,8 +198,7 @@ function NavMainWithDropdowns({ items }: { items: ExtendedNavItem[] }) {
     };
 
     // Handle link clicks for menu items that should stay in the app layout
-    const handleClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
-        // Check if this is an internal route that should use Inertia
+    const handleClick = (e: React.MouseEvent<Element>, href: string) => {
         if (href.startsWith('/')) {
             e.preventDefault();
             router.visit(href, {
@@ -208,7 +207,6 @@ function NavMainWithDropdowns({ items }: { items: ExtendedNavItem[] }) {
                 replace: true
             });
         }
-        // External links will navigate normally
     };
 
     const currentPath = window.location.pathname;

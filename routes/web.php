@@ -110,7 +110,8 @@ Route::post('/api/ai/query', [App\Http\Controllers\AIController::class, 'query']
 
 //------PROJECT-------->
 //proposals
-Route::get('/project/dashboard', [ProjectController::class, 'index'])->name('project.index');
+Route::get('/project/all-projects', [ProjectController::class, 'showAll'])->name('project.all');
+Route::get('/project/dashboard/{id}', [ProjectController::class, 'show'])->name('project.show');
 
 Route::get('/project/new-proposal', function () {
     return Inertia::render('Project/proposal/new-proposal');
@@ -147,6 +148,8 @@ Route::put('/projects/{project}/milestones/{milestone}/goals', [MilestoneControl
 
 
 Route::get('activity-logs', [App\Http\Controllers\ActivityLogController::class, 'index'])->name('activity-logs.index');
+
+Route::post('/project/{id}/complete', [ProjectController::class, 'markComplete'])->middleware(['auth'])->name('project.complete');
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';

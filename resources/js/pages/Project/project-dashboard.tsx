@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link, useForm, router } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
 import { Badge } from '@/components/ui/badge';
 import toast, { Toaster } from 'react-hot-toast';
@@ -76,6 +76,7 @@ interface Project {
   findings_count?: number;
   team_members_count: number;
   team_members: any[]; // Assuming team_members are of type any[]
+  completed: boolean;
 }
 
 interface ProjectDashboardProps {
@@ -94,6 +95,7 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ project }) => {
 
   const handleAddMember = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!project) return;
     try {
       const response = await fetch(`/projects/${project.id}/team-members`, {
         method: 'POST',
@@ -123,6 +125,20 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ project }) => {
     } catch (err) {
       toast.error('An error occurred while saving the team member.');
     }
+  };
+
+  // Handler for marking project as complete
+  const handleMarkComplete = () => {
+    if (!project) return;
+    router.post(`/project/${project.id}/complete`, {}, {
+      onSuccess: () => {
+        toast.success('Project marked as complete!');
+        setTimeout(() => window.location.reload(), 1000);
+      },
+      onError: () => {
+        toast.error('Failed to mark project as complete.');
+      }
+    });
   };
 
   const MetricCard = ({ 
@@ -359,6 +375,9 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ project }) => {
                 <Link
                   href={`/projects/${project.id}/team-members/create`}
                   className="flex items-center px-4 py-2 bg-blue-600 dark:bg-blue-700 text-white rounded-md hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors"
+                  style={project.completed ? { pointerEvents: 'none', opacity: 0.5 } : {}}
+                  tabIndex={project.completed ? -1 : 0}
+                  aria-disabled={project.completed}
                 >
                   <Plus className="h-4 w-4 mr-2" />
                   Add Member
@@ -402,6 +421,9 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ project }) => {
     <Link
       href={`/projects/${project.id}/milestones/create`}
       className="flex items-center px-4 py-2 bg-blue-600 dark:bg-blue-700 text-white rounded-md hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors"
+      style={project.completed ? { pointerEvents: 'none', opacity: 0.5 } : {}}
+      tabIndex={project.completed ? -1 : 0}
+      aria-disabled={project.completed}
     >
       <Plus className="h-4 w-4 mr-2" />
       Add Milestone
@@ -458,6 +480,9 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ project }) => {
             <Link
               href={`/projects/${project.id}/milestones/${milestone.id}`}
               className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+              style={project.completed ? { pointerEvents: 'none', opacity: 0.5 } : {}}
+              tabIndex={project.completed ? -1 : 0}
+              aria-disabled={project.completed}
             >
               View Details
             </Link>
@@ -476,6 +501,9 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ project }) => {
               <Link
                 href={`/projects/${project.id}/goals`}
                 className="flex items-center px-4 py-2 bg-blue-600 dark:bg-blue-700 text-white rounded-md hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors"
+                style={project.completed ? { pointerEvents: 'none', opacity: 0.5 } : {}}
+                tabIndex={project.completed ? -1 : 0}
+                aria-disabled={project.completed}
               >
                 <Plus className="h-4 w-4 mr-2" />
                 Add Goal
@@ -552,6 +580,9 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ project }) => {
                         <Link
                           href={`/projects/${project.id}/milestones/${goal.milestone.id}`}
                           className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+                          style={project.completed ? { pointerEvents: 'none', opacity: 0.5 } : {}}
+                          tabIndex={project.completed ? -1 : 0}
+                          aria-disabled={project.completed}
                         >
                           View Milestone
                         </Link>
@@ -569,6 +600,9 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ project }) => {
               <Link
                 href={`/projects/${project.id}/findings/create`}
                 className="flex items-center px-4 py-2 bg-blue-600 dark:bg-blue-700 text-white rounded-md hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors"
+                style={project.completed ? { pointerEvents: 'none', opacity: 0.5 } : {}}
+                tabIndex={project.completed ? -1 : 0}
+                aria-disabled={project.completed}
               >
                 <Plus className="h-4 w-4 mr-2" />
                 Add Finding
@@ -686,6 +720,21 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ project }) => {
           </div>
         </div>
       </div>
+
+      {/* Mark Project as Complete Button */}
+      {!project.completed && (
+        <button
+          onClick={handleMarkComplete}
+          className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors mr-2"
+          type="button"
+        >
+          <CheckCircle className="h-4 w-4 mr-2" />
+          Mark Project as Complete
+        </button>
+      )}
+      {project.completed && (
+        <Badge variant="secondary" className="ml-2">Completed</Badge>
+      )}
     </AppLayout>
   );
 };
