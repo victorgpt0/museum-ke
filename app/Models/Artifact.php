@@ -55,6 +55,10 @@ class Artifact extends Model implements HasMedia
         'metadata' => 'array',
     ];
 
+    protected $appends = [
+        'thumbnail_url',
+    ];
+
     /**
      * Check if the artifact is in good condition
      *
@@ -161,6 +165,11 @@ class Artifact extends Model implements HasMedia
     public function getDocumentsAttribute()
     {
         return $this->getMedia('documents');
+    }
+
+    public function getThumbnailUrlAttribute()
+    {
+        return $this->getFirstMediaUrl('images', 'thumb');
     }
 
     /**

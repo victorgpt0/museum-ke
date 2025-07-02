@@ -30,7 +30,7 @@ export default function Index() {
       render: (thumbnail_url: string) => (
         <div className="w-16 h-16 overflow-hidden rounded-lg">
           <img
-            src={thumbnail_url || 'https://placehold.co/600x400?text=Artifact'}
+            src={thumbnail_url || 'https://placehold.co/200x200?text=IMG'}
             alt={'Artifact thumbnail'}
             className="w-full h-full object-cover"
             onError={(e) => {
@@ -255,7 +255,7 @@ export default function Index() {
                 <Card key={artifact.id} className="overflow-hidden">
                   <div className="aspect-square overflow-hidden">
                     <img
-                      src="https://placehold.co/400x400?text=Artifact"
+                      src="https://placehold.co/400x400?text=IMG"
                       alt="Artifact Thumbnail"
                       className="w-full h-full object-cover hover:scale-105 transition-transform"
                     />

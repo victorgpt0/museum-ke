@@ -1,7 +1,7 @@
 import { NavFooter } from '@/components/nav-footer';
 import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
-import { NavGroup, type NavItem } from '@/types';
+import { type NavItem } from '@/types';
 import { Link, router } from '@inertiajs/react';
 import {
     LayoutGrid,
@@ -21,14 +21,15 @@ import {
     FileCheck, FolderRoot, LogsIcon
 } from 'lucide-react';
 import AppLogo from './app-logo';
+import Can from '@/lib/can';
 
 import { useState, useEffect } from 'react';
-import { cn } from '@/lib/utils';
 
 // Extend NavItem type to include children for submenus
 interface ExtendedNavItem extends NavItem {
     children?: NavItem[];
     expanded?: boolean;
+    permission?: string;
 }
 
 // Updated main navigation items with submenus
@@ -37,21 +38,25 @@ const mainNavItems: ExtendedNavItem[] = [
         title: 'Artifacts',
         href: '/artifacts',
         icon: Archive,
+        permission: 'artifacts.view',
     },
     {
         title: 'Dashboard',
         href: '/dashboard',
         icon: LayoutGrid,
+        permission: 'dashboard.view',
         children: [
              {
                 title: 'full dashboard',
                 href: '/dashboard',
                 icon: View,
+                permission: 'dashboard.view',
             },
             {
                 title: 'New Artifact',
                 href: '/dashboard/new-artifact',
                 icon: Plus,
+                permission: 'artifacts.create',
             },
         ]
     },
@@ -59,22 +64,25 @@ const mainNavItems: ExtendedNavItem[] = [
         title: 'Project Dashboard',
         href: '/project/all-projects',
         icon: LayoutGrid,
-
+        permission: 'projects.view',
     },
     {
         title: 'Maps',
-        href: '/map',  // This is now the default URL when clicked
+        href: '/map',
         icon: Map,
+        permission: 'maps.view',
         children: [
             {
                 title: 'Full Map',
                 href: '/map',
                 icon: Map,
+                permission: 'maps.view',
             },
             {
                 title: 'Museums Map',
                 href: '/map/museums',
                 icon: Map,
+                permission: 'maps.view',
             }
         ]
     },
@@ -82,21 +90,25 @@ const mainNavItems: ExtendedNavItem[] = [
         title: 'Acquisitions',
         href: '/curator/acquisition-history',
         icon: Package,
+        permission: 'acquisitions.view',
         children: [
             {
                 title: 'Acquisition History',
                 href: '/curator/acquisition-history',
                 icon: History,
+                permission: 'acquisitions.view',
             },
             {
                 title: 'Acquisition Proposal',
                 href: '/curator/acquisition-portal',
                 icon: FileCheck,
+                permission: 'acquisitions.create',
             },
             {
                 title: 'New Proposal',
                 href: '/curator/new-proposal',
                 icon: FileCheck,
+                permission: 'acquisitions.create',
             }
         ]
     },
@@ -104,75 +116,83 @@ const mainNavItems: ExtendedNavItem[] = [
         title: 'Users',
         href: '/users',
         icon: UsersRound,
+        permission: 'users.view',
     },
     {
         title: 'Roles',
         href: '/roles',
         icon: Shield,
+        permission: 'roles.view',
     },
     {
         title: 'Logs',
         href: route('activity-logs.index'),
         icon: LogsIcon,
+        permission: 'logs.view',
     },
     {
         title: 'Acquisitions2',
         href: '/acquisitions',
         icon: FolderRoot,
+        permission: 'acquisitions.view',
     },
     {
         title: 'Archives',
-        href: '/archives',  // Default URL when Archives is clicked
+        href: '/archives',
         icon: Archive,
+        permission: 'archives.view',
         children: [
             {
                 title: 'View Archives',
                 href: '/archives',
                 icon: Folder,
+                permission: 'archives.view',
             },
             {
                 title: 'New File',
                 href: '/archives/new-file',
                 icon: FileText,
+                permission: 'archives.create',
             }
         ]
     },
-    //FOR THE PROJECTS ITS GOING TO BEE TRICKY
-    //HERES MY IDEA, Ill separate menu options into proposal which will have submenus for both HOD and Initiator but authentication filter  these options according to role.
-    //Projectproposal. projectoverview
-      {
+    {
         title: 'Project Proposal',
-        href: '/myproposal/dashboard',  // Default URL when Archives is clicked
+        href: '/myproposal/dashboard',
         icon: Archive,
+        permission: 'proposals.view',
         children: [
             {
                 title: 'Make a project Proposal',
                 href: '/project/new-proposal',
                 icon: FileCheck,
+                permission: 'proposals.create',
             },
             {
-                title: 'View Proposal',   //this is for HOD and initiator, filter on role
+                title: 'View Proposal',
                 href: '/project/viewproposals',
                 icon: FileText,
+                permission: 'proposals.view',
             },
-
         ]
     },
-
-     {
+    {
         title: 'Project Report',
-        href: '/project/report',  // Default URL when Archives is clicked
+        href: '/project/report',
         icon: Archive,
+        permission: 'reports.view',
         children: [
             {
                 title: 'Upload your Project Report',
                 href: '/project/new-report',
                 icon: Folder,
+                permission: 'reports.create',
             },
             {
-                title: 'View Reports', //dashboard of milestones with completion rate
+                title: 'View Reports',
                 href: '/project/report',
                 icon: FileText,
+                permission: 'reports.view',
             }
         ]
     },
@@ -211,12 +231,21 @@ function NavMainWithDropdowns({ items }: { items: ExtendedNavItem[] }) {
 
     const currentPath = window.location.pathname;
 
+    // Filter items by permission
+    const filteredItems = items.filter(item => !item.permission || Can(item.permission)).map(item => {
+        let children = item.children;
+        if (children) {
+            children = children.filter(child => !child.permission || Can(child.permission));
+        }
+        return { ...item, children };
+    });
+
     return (
         <SidebarMenu>
-            {items.map((item) => (
+            {filteredItems.map((item) => (
                 <div key={item.title}>
                     <SidebarMenuItem>
-                        {item.children ? (
+                        {item.children && item.children.length > 0 ? (
                             <div className="flex items-center justify-between w-full cursor-pointer" onClick={() => toggleExpand(item.title)}>
                                 <SidebarMenuButton>
                                     {item.icon && <item.icon className="mr-2" size={18} />}
@@ -235,7 +264,7 @@ function NavMainWithDropdowns({ items }: { items: ExtendedNavItem[] }) {
                     </SidebarMenuItem>
 
                     {/* Submenu Items */}
-                    {item.children && expandedItems[item.title] && (
+                    {item.children && expandedItems[item.title] && item.children.length > 0 && (
                         <div className="pl-6">
                             {item.children.map((child) => (
                                 <SidebarMenuItem key={child.title}>

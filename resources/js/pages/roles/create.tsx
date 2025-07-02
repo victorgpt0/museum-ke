@@ -87,16 +87,16 @@ export default function Create({ permissions }){
                             <div className={`grid gap-2`}>
                                 {permissions.map((permission) => (
                                     <Label key={permission} className={`flex items-center space-x-2`}>
-                                        <Input
+                                        <input
                                             type={`checkbox`}
                                             className={`h-4 w-4`}
                                             value={permission}
                                             id={permission}
                                             onChange={(e)=> handleCheckboxChange(permission, e.target.checked)}
-                                        ></Input>
+                                        ></input>
                                         <span className={`text-gray-700 ml-2`}>
                                                 {permission.split('.').slice(1).join('.')}
-                                            </span>
+                                        </span>
                                     </Label>
                                 ))}
                             </div>

@@ -85,49 +85,49 @@ export default function ArtifactCreate() {
     setData(name, value);
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      setData((prevData) => ({
-        ...prevData,
-        [e.target.name]: e.target.files ? [...e.target.files] : [],
-      }));
-    }
-  };
-
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-
-    if (files.length === 0) return;
-
-    // Create preview URLs
-    const previews = files.map(file => URL.createObjectURL(file));
-
-    const newPreviews = [...imagePreviews, ...previews];
-
-    if (e.target.files) {
-      setData((prevData) => ({
-        ...prevData,
-        [e.target.name]: e.target.files ? [...e.target.files] : [],
-      }));
-    }
-
-    setImagePreviews(newPreviews);
-  };
-
-  const removeImage = (index: number) => {
-    // Revoke the object URL to prevent memory leaks
-    URL.revokeObjectURL(imagePreviews[index]);
-
-    const newImages = selectedImages.filter((_, i) => i !== index);
-    const newPreviews = imagePreviews.filter((_, i) => i !== index);
-    const newMediaIds = uploadedMediaIds.filter((_, i) => i !== index);
-
-    setSelectedImages(newImages);
-    setImagePreviews(newPreviews);
-    setUploadedMediaIds(newMediaIds);
-
-    setData('images', newImages);
-  };
+  // const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   if (e.target.files) {
+  //     setData((prevData) => ({
+  //       ...prevData,
+  //       [e.target.name]: e.target.files ? [...e.target.files] : [],
+  //     }));
+  //   }
+  // };
+  //
+  // const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   const files = Array.from(e.target.files || []);
+  //
+  //   if (files.length === 0) return;
+  //
+  //   // Create preview URLs
+  //   const previews = files.map(file => URL.createObjectURL(file));
+  //
+  //   const newPreviews = [...imagePreviews, ...previews];
+  //
+  //   if (e.target.files) {
+  //     setData((prevData) => ({
+  //       ...prevData,
+  //       [e.target.name]: e.target.files ? [...e.target.files] : [],
+  //     }));
+  //   }
+  //
+  //   setImagePreviews(newPreviews);
+  // };
+  //
+  // const removeImage = (index: number) => {
+  //   // Revoke the object URL to prevent memory leaks
+  //   URL.revokeObjectURL(imagePreviews[index]);
+  //
+  //   const newImages = selectedImages.filter((_, i) => i !== index);
+  //   const newPreviews = imagePreviews.filter((_, i) => i !== index);
+  //   const newMediaIds = uploadedMediaIds.filter((_, i) => i !== index);
+  //
+  //   setSelectedImages(newImages);
+  //   setImagePreviews(newPreviews);
+  //   setUploadedMediaIds(newMediaIds);
+  //
+  //   setData('images', newImages);
+  // };
 
   const handleTagChange = (tagId: string, checked: boolean) => {
     const currentTags = data.tags || [];

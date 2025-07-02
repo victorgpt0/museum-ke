@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { useForm, Link, usePage } from '@inertiajs/react';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -12,11 +12,14 @@ import InputError from '@/components/input-error';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { X } from 'lucide-react';
+import FileUpload from '@/components/ui/file-upload';
 
-export default function ArtifactEdit() {
+export default function Edit() {
   const { artifact, categories, donors, images, documents, tags } = usePage().props as any;
   const imagesRef = useRef<HTMLInputElement>(null);
   const documentsRef = useRef<HTMLInputElement>(null);
+  const [selectedImages, setSelectedImages] = useState<File[]>([]);
+  const [selectedDocuments, setSelectedDocuments] = useState<File[]>([]);
 
   const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -221,98 +224,92 @@ export default function ArtifactEdit() {
               </div>
 
               {/* File Uploads */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <Label htmlFor="images">Add More Images</Label>
-                  <Input
-                    ref={imagesRef}
-                    id="images"
-                    type="file"
-                    name="images"
-                    multiple
-                    accept="image/*"
-                    onChange={handleFileChange}
-                    className="mt-1"
-                  />
-                  <InputError message={errors.images} className="mt-1" />
-                  <p className="text-sm text-gray-500 mt-1">Accepted formats: JPG, JPEG, PNG, WebP (max 10MB each)</p>
-
-                  {/* Existing Images */}
-                  {images.length > 0 && (
-                    <div className="mt-4">
-                      <Label>Current Images</Label>
-                      <div className="flex gap-2 mt-2 flex-wrap">
-                        {images.map((img: any) => (
-                          <div key={img.id} className="relative">
-                            <img
-                              src={img.original_url}
-                              alt=""
-                              className="w-16 h-16 object-cover rounded border"
-                            />
-                            <button
-                              type="button"
-                              className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600"
-                              onClick={() => {
-                                // TODO: Implement image deletion
-                                console.log('Delete image:', img.id);
-                              }}
-                            >
-                              <X className="w-3 h-3" />
-                            </button>
-                          </div>
-                        ))}
-                      </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                    <FileUpload
+                        label="Add More Images"
+                        name="images"
+                        accept="image/jpeg,image/jpg,image/png,image/webp"
+                        multiple
+                        maxFiles={10}
+                        maxSizeMB={5}
+                        value={selectedImages}
+                        onFilesChange={setSelectedImages}
+                        error={errors.images}
+                        previewType="image"
+                    />
+                    {/* Existing Images */}
+                    {images.length > 0 && (
+                        <div className="mt-4">
+                            <Label>Current Images</Label>
+                            <div className="flex gap-2 mt-2 flex-wrap">
+                                {images.map((img: any) => (
+                                    <div key={img.id} className="relative">
+                                        <img
+                                            src={img.original_url}
+                                            alt=""
+                                            className="w-16 h-16 object-cover rounded border"
+                                        />
+                                        <button
+                                            type="button"
+                                            className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600"
+                                            onClick={() => {
+                                                // TODO: Implement image deletion
+                                                console.log('Delete image:', img.id);
+                                            }}
+                                        >
+                                            <X className="w-3 h-3" />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
                     </div>
-                  )}
-                </div>
-
-                <div>
-                  <Label htmlFor="documents">Add More Documents</Label>
-                  <Input
-                    ref={documentsRef}
-                    id="documents"
-                    type="file"
-                    name="documents"
-                    multiple
-                    accept=".pdf,.docx"
-                    onChange={handleFileChange}
-                    className="mt-1"
-                  />
-                  <InputError message={errors.documents} className="mt-1" />
-                  <p className="text-sm text-gray-500 mt-1">Accepted formats: PDF, DOCX (max 10MB each)</p>
-
-                  {/* Existing Documents */}
-                  {documents.length > 0 && (
-                    <div className="mt-4">
-                      <Label>Current Documents</Label>
-                      <ul className="mt-2 space-y-1">
-                        {documents.map((doc: any) => (
-                          <li key={doc.id} className="flex items-center justify-between text-sm">
-                            <a
-                              href={doc.original_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-blue-600 hover:underline"
-                            >
-                              {doc.file_name}
-                            </a>
-                            <button
-                              type="button"
-                              className="text-red-500 hover:text-red-700"
-                              onClick={() => {
-                                // TODO: Implement document deletion
-                                console.log('Delete document:', doc.id);
-                              }}
-                            >
-                              <X className="w-4 h-4" />
-                            </button>
-                          </li>
-                        ))}
-                      </ul>
+                    <div>
+                    <FileUpload
+                        label="Add More Documents"
+                        name="documents"
+                        accept=".pdf,.docx"
+                        multiple
+                        maxFiles={10}
+                        maxSizeMB={10}
+                        value={selectedDocuments}
+                        onFilesChange={setSelectedDocuments}
+                        error={errors.documents}
+                        previewType="document"
+                    />
+                    {documents.length > 0 && (
+                        <div className="mt-4">
+                            <Label>Current Documents</Label>
+                            <ul className="mt-2 space-y-1">
+                                {documents.map((doc: any) => (
+                                    <li key={doc.id} className="flex items-center justify-between text-sm">
+                                        <a
+                                            href={doc.original_url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="text-blue-600 hover:underline"
+                                        >
+                                            {doc.file_name}
+                                        </a>
+                                        <button
+                                            type="button"
+                                            className="text-red-500 hover:text-red-700"
+                                            onClick={() => {
+                                                // TODO: Implement document deletion
+                                                console.log('Delete document:', doc.id);
+                                            }}
+                                        >
+                                            <X className="w-4 h-4" />
+                                        </button>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
                     </div>
-                  )}
                 </div>
-              </div>
 
               {/* Form Actions */}
               <div className="flex gap-3 pt-4 border-t">
