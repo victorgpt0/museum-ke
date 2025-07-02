@@ -57,6 +57,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('acquisitions', AcquisitionController::class)->except(['create', 'store']);
     Route::resource('artifacts', \App\Http\Controllers\ArtifactController::class);
 
+    // Approve and reject artifact proposals
+    Route::post('/acquisition/{artifactProposal}/approve', [AcquisitionController::class, 'approve'])->name('acquisition.approve');
+    Route::post('/acquisition/{artifactProposal}/reject', [AcquisitionController::class, 'reject'])->name('acquisition.reject');
+
 });
 
 //Guest Routes
@@ -106,11 +110,12 @@ Route::post('/api/ai/query', [App\Http\Controllers\AIController::class, 'query']
 
 //------PROJECT-------->
 //proposals
-Route::get('/project/dashboard', [ProjectController::class, 'index'])->name('project.index');
+Route::get('/project/all-projects', [ProjectController::class, 'showAll'])->name('project.all');
+Route::get('/project/dashboard/{id}', [ProjectController::class, 'show'])->name('project.show');
 
 Route::get('/project/new-proposal', function () {
     return Inertia::render('Project/proposal/new-proposal');
-});
+})->name('projectproposal.new');
 Route::post('/project/saveproposal', [ProjectProposalController::class, 'store'])->name('projectproposal.store');
 Route::get('/project/viewproposals', [ProjectProposalController::class, 'index'])->name('project.proposal.index');
 Route::post('/project/proposal/approve', [ProjectProposalController::class, 'approve']);
@@ -129,9 +134,9 @@ Route::get('/projects/{project}/team-members/create', [TeamMembersController::cl
 
 // Milestone routes
 // Change your milestone create route to include project parameter
-Route::get('/projects/{project}/milestones/create', [MilestoneController::class, 'create'])->name('project.milestones.create');
 Route::post('/projects/{project}/savemilestones', [MilestoneController::class, 'store'])->name('project.milestones.store');
 Route::put('/milestones/{milestone}', [MilestoneController::class, 'update'])->name('milestones.update');
+Route::get('/projects/{project}/milestones/create', [MilestoneController::class, 'create'])->name('project.milestones.create');
 
 // Goal routes
 Route::post('/goals', [GoalController::class, 'storeWithMilestone'])->name('goals.store');
@@ -143,6 +148,8 @@ Route::put('/projects/{project}/milestones/{milestone}/goals', [MilestoneControl
 
 
 Route::get('activity-logs', [App\Http\Controllers\ActivityLogController::class, 'index'])->name('activity-logs.index');
+
+Route::post('/project/{id}/complete', [ProjectController::class, 'markComplete'])->middleware(['auth'])->name('project.complete');
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';

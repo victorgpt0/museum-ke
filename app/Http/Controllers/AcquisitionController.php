@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Inertia\Inertia;
+use Carbon\Carbon;
 
 class AcquisitionController extends Controller implements HasMiddleware
 {
@@ -24,7 +25,7 @@ class AcquisitionController extends Controller implements HasMiddleware
         return [
             new Middleware('permission:acquisitions.view', only: ['index', 'show']),
             // new Middleware('permission:acquisitions.create', only: ['create', 'store']),
-            new Middleware('permission:acquisitions.edit', only: ['edit', 'update']),
+            new Middleware('permission:acquisitions.edit', only: ['edit', 'update', 'approve', 'reject']),
             new Middleware('permission:acquisitions.delete', only: ['destroy']),
         ];
     }
@@ -174,5 +175,52 @@ class AcquisitionController extends Controller implements HasMiddleware
     public function destroy(string $id)
     {
         //
+    }
+
+    /**
+     * Approve an artifact proposal
+     */
+    public function approve(ArtifactProposal $artifactProposal)
+    {
+        try {
+            DB::beginTransaction();
+
+            // Update status to approved
+            $artifactProposal->update([
+                'proposal_status' => 'approved'
+            ]);
+
+            DB::commit();
+
+            return back()->with('success', 'Artifact proposal approved successfully.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->withErrors([
+                'error' => 'Failed to approve proposal.',
+                'exception' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
+     * Reject an artifact proposal
+     */
+    public function reject(ArtifactProposal $artifactProposal)
+    {
+        try {
+            // Update status to rejected
+            $artifactProposal->update([
+                'proposal_status' => 'rejected'
+            ]);
+
+            return back()->with('success', 'Artifact proposal rejected successfully.');
+
+        } catch (\Exception $e) {
+            return back()->withErrors([
+                'error' => 'Failed to reject proposal.',
+                'exception' => $e->getMessage(),
+            ]);
+        }
     }
 }

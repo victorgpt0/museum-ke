@@ -6,6 +6,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Upload, X, CheckCircle, AlertCircle } from 'lucide-react';
+import toast, { Toaster } from 'react-hot-toast';
+import AppLogo from '@/components/app-logo';
 
 interface DonationFormData {
     title: string;
@@ -18,24 +20,26 @@ interface DonationFormData {
     next_of_kin_email: string;
     next_of_kin_phone: string;
     images: File[];
+    [key: string]: any;
 }
 
 interface PageProps {
-    errors: Record<string, string>;
-    flash: {
+    errors?: Record<string, string>;
+    flash?: {
         success?: string;
         error?: string;
     };
+    [key: string]: any;
 }
 
 export default function DonationForm() {
-    const { errors, flash } = usePage<PageProps>().props;
+    const { errors, flash } = (usePage().props as any) as PageProps;
     const [selectedImages, setSelectedImages] = useState<File[]>([]);
     const [imagePreviews, setImagePreviews] = useState<string[]>([]);
     const [uploadedMediaIds, setUploadedMediaIds] = useState<string[]>([]);
     const [isUploadingImages, setIsUploadingImages] = useState(false);
 
-    const { data, setData, post, processing, reset } = useForm<DonationFormData>({
+    const { data, setData, post, processing, reset } = useForm({
         title: '',
         description: '',
         source: '',
@@ -56,13 +60,26 @@ export default function DonationForm() {
 
     // Reset form on successful submission
     useEffect(() => {
-        if (flash.success) {
+        if (flash?.success) {
             reset();
             setSelectedImages([]);
             setImagePreviews([]);
             setUploadedMediaIds([]);
         }
-    }, [flash.success, reset]);
+    }, [flash?.success, reset]);
+
+    // Show toast notifications on success or error
+    useEffect(() => {
+        if (flash?.success) {
+            toast.success(flash.success);
+        }
+        if (flash?.error) {
+            toast.error(flash.error);
+        }
+        if (errors?.submission) {
+            toast.error(errors.submission);
+        }
+    }, [flash?.success, flash?.error, errors]);
 
     const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = Array.from(e.target.files || []);
@@ -217,18 +234,26 @@ export default function DonationForm() {
 
             // Use Inertia's post method with FormData
             post(route('donations.store'), {
-                data: formData,
+                ...formData,
                 forceFormData: true,
-                preserveState: false,
+                preserveState: true,
                 preserveScroll: true,
                 onStart: () => {
                     console.log('Request started');
                 },
-                onSuccess: (page) => {
+                onSuccess: (page: any) => {
                     console.log('Request successful:', page);
+                    setTimeout(() => {
+                        toast.success('Donation submitted successfully');
+                        // If Inertia provides a redirect URL, use it; otherwise reload
+                    
+                    }, 3000);
                 },
-                onError: (errors) => {
+                onError: (errors: any) => {
                     console.error('Request failed with errors:', errors);
+                    setTimeout(() => {
+                        // Optionally, you can reload or stay on the page
+                    }, 3000);
                 },
                 onFinish: () => {
                     console.log('Request finished');
@@ -296,8 +321,26 @@ export default function DonationForm() {
     return (
         <>
             <Head title="Artifact Donation Form" />
+            
 
-            <div className="min-h-screen bg-gray-50 py-8">
+            {/* Left Logo Bar */}
+            <div className="fixed top-0 left-0 h-full w-16 flex flex-col items-center justify-center bg-white dark:bg-gray-900 shadow-lg z-40">
+                <a href="#logo-section" className="flex items-center justify-center w-full h-16">
+                    <AppLogo />
+                </a>
+            </div>
+
+            {/* Right Navigation Bar */}
+            <div className="fixed top-0 right-0 h-full w-24 flex flex-col items-center justify-center bg-white dark:bg-gray-900 shadow-lg z-40">
+                <nav className="flex flex-col gap-6 mt-24">
+                    <a href="#about-section" className="px-4 py-2 rounded-md text-center font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">About</a>
+                    <a href="#art-culture-section" className="px-4 py-2 rounded-md text-center font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">Art & Culture</a>
+                </nav>
+            </div>
+            
+
+            {/* Main Content (with padding to avoid nav bars) */}
+            <div className="min-h-screen bg-gray-50 py-8 pl-20 pr-28 transition-all">
                 <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="mb-8 text-center">
                         <h1 className="text-3xl font-bold text-gray-900 mb-2">
@@ -307,7 +350,7 @@ export default function DonationForm() {
                             Thank you for your interest in donating to Nairobi National Museum
                         </p>
                     </div>
-
+                   
                     {/* Debug Information - Remove in production */}
                     {process.env.NODE_ENV === 'development' && (
                         <div className="mb-6 border border-blue-200 bg-blue-50 p-4 rounded-md">
@@ -318,26 +361,6 @@ export default function DonationForm() {
                             <p className="text-blue-700">Flash: {JSON.stringify(flash)}</p>
                             <p className="text-blue-700">Selected Images: {selectedImages.length}</p>
                             <p className="text-blue-700">Uploaded Media IDs: {uploadedMediaIds.length}</p>
-                        </div>
-                    )}
-
-                    {/* Success Message */}
-                    {flash.success && (
-                        <div className="mb-6 border border-green-200 bg-green-50 p-4 rounded-md flex items-center space-x-2">
-                            <CheckCircle className="h-4 w-4 text-green-600 flex-shrink-0" />
-                            <p className="text-green-800">
-                                {flash.success}
-                            </p>
-                        </div>
-                    )}
-
-                    {/* Error Message */}
-                    {(flash.error || errors.submission) && (
-                        <div className="mb-6 border border-red-200 bg-red-50 p-4 rounded-md flex items-center space-x-2">
-                            <AlertCircle className="h-4 w-4 text-red-600 flex-shrink-0" />
-                            <p className="text-red-800">
-                                {flash.error || errors.submission}
-                            </p>
                         </div>
                     )}
 
@@ -359,9 +382,9 @@ export default function DonationForm() {
                                         onChange={e => setData('title', e.target.value)}
                                         placeholder="Enter the name or title of the artifact"
                                         required
-                                        className={errors.title ? 'border-red-500' : ''}
+                                        className={errors?.title ? 'border-red-500' : ''}
                                     />
-                                    {errors.title && <div className="text-red-500 text-sm">{errors.title}</div>}
+                                    {errors?.title && <div className="text-red-500 text-sm">{errors.title}</div>}
                                 </div>
 
                                 <div className="space-y-1">
@@ -373,9 +396,9 @@ export default function DonationForm() {
                                         placeholder="Describe the artifact, its history, significance, and any other relevant details"
                                         rows={4}
                                         required
-                                        className={errors.description ? 'border-red-500' : ''}
+                                        className={errors?.description ? 'border-red-500' : ''}
                                     />
-                                    {errors.description && <div className="text-red-500 text-sm">{errors.description}</div>}
+                                    {errors?.description && <div className="text-red-500 text-sm">{errors.description}</div>}
                                 </div>
 
                                 <div className="space-y-1">
@@ -386,9 +409,9 @@ export default function DonationForm() {
                                         onChange={e => setData('source', e.target.value)}
                                         placeholder="Where did this artifact originate from? (e.g., Family collection, specific location, etc.)"
                                         required
-                                        className={errors.source ? 'border-red-500' : ''}
+                                        className={errors?.source ? 'border-red-500' : ''}
                                     />
-                                    {errors.source && <div className="text-red-500 text-sm">{errors.source}</div>}
+                                    {errors?.source && <div className="text-red-500 text-sm">{errors.source}</div>}
                                 </div>
 
                                 {/* Image Upload Section */}
@@ -423,7 +446,7 @@ export default function DonationForm() {
                                             </p>
                                         </div>
                                     </div>
-                                    {errors.images && <div className="text-red-500 text-sm">{errors.images}</div>}
+                                    {errors?.images && <div className="text-red-500 text-sm">{errors.images}</div>}
 
                                     {/* Image Previews */}
                                     {imagePreviews.length > 0 && (
@@ -473,9 +496,9 @@ export default function DonationForm() {
                                         onChange={e => setData('donor_full_name', e.target.value)}
                                         placeholder="Enter your full name"
                                         required
-                                        className={errors.donor_full_name ? 'border-red-500' : ''}
+                                        className={errors?.donor_full_name ? 'border-red-500' : ''}
                                     />
-                                    {errors.donor_full_name && <div className="text-red-500 text-sm">{errors.donor_full_name}</div>}
+                                    {errors?.donor_full_name && <div className="text-red-500 text-sm">{errors.donor_full_name}</div>}
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -488,9 +511,9 @@ export default function DonationForm() {
                                             onChange={e => setData('donor_email', e.target.value)}
                                             placeholder="your.email@example.com"
                                             required
-                                            className={errors.donor_email ? 'border-red-500' : ''}
+                                            className={errors?.donor_email ? 'border-red-500' : ''}
                                         />
-                                        {errors.donor_email && <div className="text-red-500 text-sm">{errors.donor_email}</div>}
+                                        {errors?.donor_email && <div className="text-red-500 text-sm">{errors.donor_email}</div>}
                                     </div>
 
                                     <div className="space-y-1">
@@ -502,9 +525,9 @@ export default function DonationForm() {
                                             onChange={e => setData('donor_phone', e.target.value)}
                                             placeholder="+254 xxx xxx xxx"
                                             required
-                                            className={errors.donor_phone ? 'border-red-500' : ''}
+                                            className={errors?.donor_phone ? 'border-red-500' : ''}
                                         />
-                                        {errors.donor_phone && <div className="text-red-500 text-sm">{errors.donor_phone}</div>}
+                                        {errors?.donor_phone && <div className="text-red-500 text-sm">{errors.donor_phone}</div>}
                                     </div>
                                 </div>
                             </CardContent>
@@ -526,9 +549,9 @@ export default function DonationForm() {
                                         value={data.next_of_kin_name}
                                         onChange={e => setData('next_of_kin_name', e.target.value)}
                                         placeholder="Enter next of kin's full name"
-                                        className={errors.next_of_kin_name ? 'border-red-500' : ''}
+                                        className={errors?.next_of_kin_name ? 'border-red-500' : ''}
                                     />
-                                    {errors.next_of_kin_name && <div className="text-red-500 text-sm">{errors.next_of_kin_name}</div>}
+                                    {errors?.next_of_kin_name && <div className="text-red-500 text-sm">{errors.next_of_kin_name}</div>}
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -540,9 +563,9 @@ export default function DonationForm() {
                                             value={data.next_of_kin_email}
                                             onChange={e => setData('next_of_kin_email', e.target.value)}
                                             placeholder="nextofkin@example.com"
-                                            className={errors.next_of_kin_email ? 'border-red-500' : ''}
+                                            className={errors?.next_of_kin_email ? 'border-red-500' : ''}
                                         />
-                                        {errors.next_of_kin_email && <div className="text-red-500 text-sm">{errors.next_of_kin_email}</div>}
+                                        {errors?.next_of_kin_email && <div className="text-red-500 text-sm">{errors.next_of_kin_email}</div>}
                                     </div>
 
                                     <div className="space-y-1">
@@ -553,9 +576,9 @@ export default function DonationForm() {
                                             value={data.next_of_kin_phone}
                                             onChange={e => setData('next_of_kin_phone', e.target.value)}
                                             placeholder="+254 xxx xxx xxx"
-                                            className={errors.next_of_kin_phone ? 'border-red-500' : ''}
+                                            className={errors?.next_of_kin_phone ? 'border-red-500' : ''}
                                         />
-                                        {errors.next_of_kin_phone && <div className="text-red-500 text-sm">{errors.next_of_kin_phone}</div>}
+                                        {errors?.next_of_kin_phone && <div className="text-red-500 text-sm">{errors.next_of_kin_phone}</div>}
                                     </div>
                                 </div>
                             </CardContent>

@@ -76,7 +76,7 @@ class DonationController extends Controller
 
             DB::commit();
 
-            return redirect()->back()->with('success', 'Your artifact donation proposal has been submitted successfully! We will review it and contact you soon.');
+            return redirect()->route('home')->with('success', 'Your artifact donation proposal has been submitted successfully! We will review it and contact you soon.');
 
         } catch (\Exception $e) {
             DB::rollBack();
