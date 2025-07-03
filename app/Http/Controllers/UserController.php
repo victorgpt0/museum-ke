@@ -35,10 +35,12 @@ class UserController extends Controller implements HasMiddleware
      */
     public function index()
     {
+        $query = User::query()->with('roles');
+        if (!auth()->user()->hasRole('SuperAdmin')){
+            $query->whereIn('user_id', [auth()->user()->id]);
+        }
         return Inertia::render('users/index',[
-            'users' => User::query()
-                ->with('roles')
-                ->whereIn('user_id', [auth()->user()->id])
+            'users' => $query
                 ->when(request('search'), fn ($query, $search) =>
                 $query->where('name', 'like', "%{$search}%")
                 )

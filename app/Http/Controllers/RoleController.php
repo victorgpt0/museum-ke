@@ -27,10 +27,14 @@ class RoleController extends Controller implements HasMiddleware
      */
     public function index()
     {
+        $query = Role::query()->with('permissions');
+
+        if (!auth()->user()->hasRole('SuperAdmin')){
+            $query->whereIn('user_id', [auth()->user()->id]);
+        }
+
         return Inertia::render('roles/index',[
-            'roles' => Role::query()
-                ->with('permissions')
-            ->whereIn('user_id', [auth()->user()->id])
+            'roles' => $query
                 ->when(request('search'), fn ($query, $search) =>
                 $query->where('name', 'like', "%{$search}%")
                 )
