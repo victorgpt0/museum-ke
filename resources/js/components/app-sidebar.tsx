@@ -91,26 +91,9 @@ const mainNavItems: ExtendedNavItem[] = [
         href: '/curator/acquisition-history',
         icon: Package,
         permission: 'acquisitions.view',
-        children: [
-            {
-                title: 'Acquisition History',
-                href: '/curator/acquisition-history',
-                icon: History,
-                permission: 'acquisitions.view',
-            },
-            {
-                title: 'Acquisition Proposal',
-                href: '/curator/acquisition-portal',
-                icon: FileCheck,
-                permission: 'acquisitions.create',
-            },
-            {
-                title: 'New Proposal',
-                href: '/curator/new-proposal',
-                icon: FileCheck,
-                permission: 'acquisitions.create',
-            }
-        ]
+       
+            
+        
     },
     {
         title: 'Users',
@@ -130,12 +113,7 @@ const mainNavItems: ExtendedNavItem[] = [
         icon: LogsIcon,
         permission: 'logs.view',
     },
-    {
-        title: 'Acquisitions2',
-        href: '/acquisitions',
-        icon: FolderRoot,
-        permission: 'acquisitions.view',
-    },
+   
     {
         title: 'Archives',
         href: '/archives',
@@ -175,27 +153,8 @@ const mainNavItems: ExtendedNavItem[] = [
                 permission: 'proposals.view',
             },
         ]
-    },
-    {
-        title: 'Project Report',
-        href: '/project/report',
-        icon: Archive,
-        permission: 'reports.view',
-        children: [
-            {
-                title: 'Upload your Project Report',
-                href: '/project/new-report',
-                icon: Folder,
-                permission: 'reports.create',
-            },
-            {
-                title: 'View Reports',
-                href: '/project/report',
-                icon: FileText,
-                permission: 'reports.view',
-            }
-        ]
-    },
+    }
+   
 ];
 
 const footerNavItems: NavItem[] = [

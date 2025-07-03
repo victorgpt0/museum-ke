@@ -18,6 +18,7 @@ interface Project {
   status: string;
   completed: boolean;
   proposal?: any;
+  creator_name?: string;
 }
 
 interface AllProjectsProps {
@@ -57,6 +58,9 @@ const AllProjects: React.FC<AllProjectsProps> = ({ projects }) => {
                   <span>Milestones: {project.milestones_count}</span>
                   <span>Goals: {project.goals_count}</span>
                   <span>Completed Goals: {project.completed_goals_count}</span>
+                  {project.creator_name && (
+                    <span>Created by: {project.creator_name}</span>
+                  )}
                 </div>
               </Link>
             ))}

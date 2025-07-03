@@ -10,6 +10,7 @@ interface Archive {
     category: string;
     created_at: string;
     updated_at: string;
+    uploader_name: string;
 }
 
 interface Props {
@@ -177,6 +178,9 @@ export default function Archives({ archives, filters }: Props) {
                                 <div className="space-y-2 mb-4">
                                     <p className="text-sm text-gray-600 dark:text-gray-300">
                                         <span className="font-medium">Author:</span> {archive.author}
+                                    </p>
+                                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                                        <span className="font-medium">Uploaded by:</span> {archive.uploader_name}
                                     </p>
                                     <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center">
                                         <Calendar className="w-4 h-4 mr-1" />

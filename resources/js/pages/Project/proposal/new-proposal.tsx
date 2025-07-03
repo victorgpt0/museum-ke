@@ -22,6 +22,7 @@ interface Milestone {
   title: string;
   duration: string;
   description: string;
+  budgetItems: BudgetItem[];
 }
 
 interface Goal {
@@ -34,6 +35,13 @@ interface Objective {
   id: string;
   title: string;
   description: string;
+}
+
+interface BudgetItem {
+  id: string;
+  title: string;
+  description: string;
+  amount: string;
 }
 
 interface ProposalFormData {
@@ -68,8 +76,9 @@ const [isUploadingDocs, setIsUploadingDocs] = useState(false);
   // Sub-form states for adding new items
   const [newObjective, setNewObjective] = useState({ title: '', description: '',  });
   const [newTeamMember, setNewTeamMember] = useState({ fullName: '', email: '', role: '' });
-  const [newMilestone, setNewMilestone] = useState({ title: '', duration: '', description: '' });
+  const [newMilestone, setNewMilestone] = useState({ title: '', duration: '', description: '', budgetItems: [] });
   const [newGoal, setNewGoal] = useState({ title: '', description: '' });
+  const [newBudgetItem, setNewBudgetItem] = useState({ title: '', description: '', amount: '' });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [success, setSuccess] = useState<string>('');
@@ -201,6 +210,35 @@ const [isUploadingDocs, setIsUploadingDocs] = useState(false);
     toast.success('Team member removed');
   };
 
+  // Budget item handlers
+  const addBudgetItem = () => {
+    if (!newBudgetItem.title.trim() || !newBudgetItem.description.trim() || !newBudgetItem.amount.trim()) {
+      toast.error('Please fill in all budget item fields');
+      return;
+    }
+
+    const budgetItem: BudgetItem = {
+      id: Date.now().toString(),
+      ...newBudgetItem
+    };
+
+    setNewMilestone(prev => ({
+      ...prev,
+      budgetItems: [...(prev.budgetItems || []), budgetItem]
+    }));
+
+    setNewBudgetItem({ title: '', description: '', amount: '' });
+    toast.success('Budget item added successfully');
+  };
+
+  const removeBudgetItem = (id: string) => {
+    setNewMilestone(prev => ({
+      ...prev,
+      budgetItems: (prev.budgetItems || []).filter(item => item.id !== id)
+    }));
+    toast.success('Budget item removed');
+  };
+
   // Milestone handlers
   const addMilestone = () => {
     if (!newMilestone.title.trim() || !newMilestone.duration.trim() || !newMilestone.description.trim()) {
@@ -210,7 +248,10 @@ const [isUploadingDocs, setIsUploadingDocs] = useState(false);
 
     const milestone: Milestone = {
       id: Date.now().toString(),
-      ...newMilestone
+      title: newMilestone.title,
+      duration: newMilestone.duration,
+      description: newMilestone.description,
+      budgetItems: newMilestone.budgetItems || []
     };
 
     setData(prev => ({
@@ -218,7 +259,7 @@ const [isUploadingDocs, setIsUploadingDocs] = useState(false);
       milestones: [...prev.milestones, milestone]
     }));
 
-    setNewMilestone({ title: '', duration: '', description: '' });
+    setNewMilestone({ title: '', duration: '', description: '', budgetItems: [] });
     toast.success('Milestone added successfully');
   };
 
@@ -288,7 +329,16 @@ const handleSubmit = (e: React.FormEvent) => {
     }
     if (data.milestones?.length > 0) {
         const milestoneText = data.milestones
-            .map(m => `- ${m.title} (${m.duration}): ${m.description}`)
+            .map(m => {
+                let milestoneInfo = `- ${m.title} (${m.duration}): ${m.description}`;
+                if (m.budgetItems && m.budgetItems.length > 0) {
+                    const budgetText = m.budgetItems
+                        .map(item => `  • ${item.title}: ${item.description} - Ksh ${item.amount}`)
+                        .join('\n');
+                    milestoneInfo += `\n  Budget Breakdown:\n${budgetText}`;
+                }
+                return milestoneInfo;
+            })
             .join('\n');
         additions += `\n\nMilestones:\n${milestoneText}`;
     }
@@ -678,7 +728,7 @@ const handleSubmit = (e: React.FormEvent) => {
                   <span>Milestones</span>
                 </CardTitle>
                 <CardDescription className="text-gray-600 dark:text-gray-300">
-                  Define key milestones for your proposal
+                  Define key milestones for your proposal with budget breakdown
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -711,6 +761,75 @@ const handleSubmit = (e: React.FormEvent) => {
                     />
                   </div>
                 </div>
+
+                {/* Budget Items Section */}
+                <div className="border-t border-gray-200 dark:border-gray-600 pt-4">
+                  <h4 className="font-medium text-gray-900 dark:text-white mb-3">Budget Breakdown</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="space-y-1">
+                      <Label className="text-gray-700 dark:text-gray-300">Item Title</Label>
+                      <Input
+                        value={newBudgetItem.title}
+                        onChange={e => setNewBudgetItem(prev => ({ ...prev, title: e.target.value }))}
+                        placeholder="e.g., Equipment rental"
+                        className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-gray-700 dark:text-gray-300">Description</Label>
+                      <Input
+                        value={newBudgetItem.description}
+                        onChange={e => setNewBudgetItem(prev => ({ ...prev, description: e.target.value }))}
+                        placeholder="Brief description"
+                        className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-gray-700 dark:text-gray-300">Amount (Ksh)</Label>
+                      <Input
+                        type="number"
+                        value={newBudgetItem.amount}
+                        onChange={e => setNewBudgetItem(prev => ({ ...prev, amount: e.target.value }))}
+                        placeholder="0.00"
+                        step="0.01"
+                        min="0"
+                        className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="flex justify-end mt-3">
+                    <Button type="button" onClick={addBudgetItem} size="sm" className="bg-green-600 dark:bg-green-700 text-white hover:bg-green-700 dark:hover:bg-green-600">
+                      <Plus className="h-4 w-4 mr-1" />
+                      Add Budget Item
+                    </Button>
+                  </div>
+
+                  {/* Budget Items List */}
+                  {newMilestone.budgetItems && newMilestone.budgetItems.length > 0 && (
+                    <div className="space-y-2 mt-4">
+                      <h5 className="font-medium text-gray-900 dark:text-white">Budget Items:</h5>
+                      {newMilestone.budgetItems.map((item) => (
+                        <div key={item.id} className="flex items-center justify-between bg-blue-50 dark:bg-blue-900/20 p-3 rounded border border-blue-200 dark:border-blue-700">
+                          <div className="flex-1">
+                            <h6 className="font-medium text-gray-900 dark:text-white">{item.title}</h6>
+                            <p className="text-sm text-gray-600 dark:text-gray-300">{item.description}</p>
+                            <p className="text-sm font-medium text-green-600 dark:text-green-400">Ksh {item.amount}</p>
+                          </div>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => removeBudgetItem(item.id)}
+                            className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 border-gray-300 dark:border-gray-600"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
                 
                 <div className="flex justify-end">
                   <Button type="button" onClick={addMilestone} size="sm" className="bg-blue-600 dark:bg-blue-700 text-white hover:bg-blue-700 dark:hover:bg-blue-600">
@@ -726,21 +845,41 @@ const handleSubmit = (e: React.FormEvent) => {
                   <div className="space-y-2">
                     <h4 className="font-medium text-gray-900 dark:text-white">Milestones:</h4>
                     {data.milestones.map((milestone) => (
-                      <div key={milestone.id} className="flex items-center justify-between bg-yellow-50 dark:bg-yellow-900/20 p-3 rounded border border-yellow-200 dark:border-yellow-700">
-                        <div className="flex-1">
-                          <h5 className="font-medium text-gray-900 dark:text-white">{milestone.title}</h5>
-                          <p className="text-sm text-gray-600 dark:text-gray-300">{milestone.description}</p>
-                          <p className="text-xs text-gray-500 dark:text-gray-400">Duration: {milestone.duration}</p>
+                      <div key={milestone.id} className="bg-yellow-50 dark:bg-yellow-900/20 p-3 rounded border border-yellow-200 dark:border-yellow-700">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex-1">
+                            <h5 className="font-medium text-gray-900 dark:text-white">{milestone.title}</h5>
+                            <p className="text-sm text-gray-600 dark:text-gray-300">{milestone.description}</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">Duration: {milestone.duration}</p>
+                          </div>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => removeMilestone(milestone.id)}
+                            className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 border-gray-300 dark:border-gray-600"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
                         </div>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => removeMilestone(milestone.id)}
-                          className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 border-gray-300 dark:border-gray-600"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                        
+                        {/* Budget Items for this milestone */}
+                        {milestone.budgetItems && milestone.budgetItems.length > 0 && (
+                          <div className="mt-3 pt-3 border-t border-yellow-300 dark:border-yellow-600">
+                            <h6 className="font-medium text-gray-900 dark:text-white mb-2">Budget Breakdown:</h6>
+                            <div className="space-y-2">
+                              {milestone.budgetItems.map((item) => (
+                                <div key={item.id} className="flex justify-between items-center bg-white dark:bg-gray-700 p-2 rounded">
+                                  <div>
+                                    <p className="text-sm font-medium text-gray-900 dark:text-white">{item.title}</p>
+                                    <p className="text-xs text-gray-600 dark:text-gray-300">{item.description}</p>
+                                  </div>
+                                  <span className="text-sm font-medium text-green-600 dark:text-green-400">Ksh {item.amount}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>

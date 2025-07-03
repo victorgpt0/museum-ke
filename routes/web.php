@@ -144,6 +144,7 @@ Route::post('/goals', [GoalController::class, 'storeWithMilestone'])->name('goal
 Route::put('/goals/{goal:id}/save', [GoalController::class, 'update'])->name('goals.update');
 Route::get('/projects/{project}/milestones/{milestone}', [MilestoneController::class, 'show'])->name('project.milestones.show');
 Route::put('/projects/{project}/milestones/{milestone}/goals', [MilestoneController::class, 'updateGoals'])->name('project.milestones.update-goals');
+Route::put('/projects/{project}/milestones/{milestone}/budget', [MilestoneController::class, 'updateBudget'])->name('project.milestones.update-budget');
 
 
 

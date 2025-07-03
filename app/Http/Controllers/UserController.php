@@ -57,7 +57,6 @@ class UserController extends Controller implements HasMiddleware
         return Inertia::render('users/create',[
             'roles' => Role::select('id', 'name')
                 ->orderBy('name')
-                ->whereIn('user_id', [auth()->user()->id])
                 ->get()
                 ->map(function ($role) {
                     return [
@@ -127,7 +126,6 @@ class UserController extends Controller implements HasMiddleware
             'userRoles' => $user->roles->pluck('name')->first(),
             'roles' => Role::select('id', 'name')
                 ->orderBy('name')
-                ->whereIn('user_id', [auth()->user()->id])
                 ->get()
                 ->map(function ($role) {
                     return [

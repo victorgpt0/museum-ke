@@ -75,6 +75,14 @@ class Milestone extends Model implements HasMedia
     return $this->hasMany(Goals::class);
 }
 
+/**
+ * Get the budgets for this milestone.
+ */
+public function budgets(): HasMany
+{
+    return $this->hasMany(Budget::class);
+}
+
         public function registerMediaCollections(): void
     {
         $this->addMediaCollection('milestone_documents')

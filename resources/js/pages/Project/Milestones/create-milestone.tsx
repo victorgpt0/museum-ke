@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Head, useForm, usePage, router } from '@inertiajs/react';
-import { Calendar, Upload, Plus, Trash2, Save, FileText, Target } from 'lucide-react';
+import { Calendar, Upload, Plus, Trash2, Save, FileText, Target, DollarSign } from 'lucide-react';
 import AppLayout from '@/layouts/app-layout';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@headlessui/react';
@@ -18,6 +18,13 @@ interface Goal {
   performance: number | null; // 1-10 scale based on your model
   description: string;
   comments?: string; // Optional since it exists in your model
+}
+
+interface BudgetItem {
+  id: string;
+  title: string;
+  description: string;
+  amount: string;
 }
 
 interface Props {
@@ -41,6 +48,13 @@ export default function MilestoneDashboard({ project, milestone }: Props) {
     description: ''
   });
 
+  // New budget item being built
+  const [newBudgetItem, setNewBudgetItem] = useState({
+    title: '',
+    description: '',
+    amount: ''
+  });
+
   // In your component, update the useForm data structure:
 const { data, setData, post, processing, errors, reset } = useForm({
     title: milestone?.title || '',
@@ -48,7 +62,8 @@ const { data, setData, post, processing, errors, reset } = useForm({
     due_date: milestone?.due_date || '',
     project_id: project.id,
     documents: [] as File[],
-    goals: [] as Goal[]
+    goals: [] as Goal[],
+    budgetItems: [] as BudgetItem[]
 });
 
 // Remove any references to performance_description from your form
@@ -91,6 +106,54 @@ const { data, setData, post, processing, errors, reset } = useForm({
     const updatedGoals = data.goals.filter(goal => goal.id !== goalId);
     setData('goals', updatedGoals);
           toast.error(' goal removed');
+  };
+
+  // Add budget item to the list
+  const addBudgetItem = () => {
+    // Validate that all fields are provided
+    if (!newBudgetItem.title.trim() || !newBudgetItem.description.trim() || !newBudgetItem.amount.trim()) {
+      toast.error('Please fill in all budget item fields');
+      return;
+    }
+
+    // Validate amount is a positive number
+    const amount = parseFloat(newBudgetItem.amount);
+    if (isNaN(amount) || amount <= 0) {
+      toast.error('Please enter a valid positive amount');
+      return;
+    }
+
+    // Create the new budget item from the current newBudgetItem state
+    const budgetItemWithId: BudgetItem = {
+      title: newBudgetItem.title,
+      description: newBudgetItem.description,
+      amount: newBudgetItem.amount,
+      id: Date.now().toString()
+    };
+
+    // Get the current budget items and add the new one
+    const updatedBudgetItems = [...data.budgetItems, budgetItemWithId];
+    
+    // Update the form data
+    setData('budgetItems', updatedBudgetItems);
+    
+    // Console log the updated budget items list
+    console.log('Updated budget items:', updatedBudgetItems);
+    toast.success('Budget item added successfully');
+
+    // Clear the form
+    setNewBudgetItem({
+      title: '',
+      description: '',
+      amount: ''
+    });
+  };
+
+  // Remove budget item from the list
+  const removeBudgetItem = (budgetItemId: string) => {
+    const updatedBudgetItems = data.budgetItems.filter(item => item.id !== budgetItemId);
+    setData('budgetItems', updatedBudgetItems);
+    toast.error('Budget item removed');
   };
 
   // Rest of your component logic goes here...
@@ -158,6 +221,7 @@ const removeFile = (index: number) => {
     console.log('Original form data:', data);
     console.log('Uploaded files:', uploadedFiles);
     console.log('Goals data:', data.goals);
+    console.log('Budget items data:', data.budgetItems);
     
     // Basic validation
     if (!data.title.trim()) {
@@ -185,11 +249,13 @@ const removeFile = (index: number) => {
         due_date: formattedDueDate,
         project_id: data.project_id,
         goals: data.goals, // Send goals array directly
+        budgetItems: data.budgetItems, // Send budget items array directly
         documents: data.documents || [] // Include uploaded documents
     };
     
     console.log('Formatted Milestone Data:', formData);
     console.log('Goals being sent:', data.goals);
+    console.log('Budget items being sent:', data.budgetItems);
     console.log('Documents being sent:', data.documents?.map(doc => doc.name) || []);
     
     // Send data to backend using router.post with forceFormData
@@ -213,6 +279,7 @@ const removeFile = (index: number) => {
                 // Reset form data
                 reset();
                 setNewGoal({ title: '', description: '' });
+                setNewBudgetItem({ title: '', description: '', amount: '' });
                 setUploadedFiles([]);
             },
             onError: (errors) => {
@@ -223,6 +290,7 @@ const removeFile = (index: number) => {
                 if (errors.description) toast.error(`Description: ${errors.description}`);
                 if (errors.due_date) toast.error(`Due Date: ${errors.due_date}`);
                 if (errors.goals) toast.error(`Goals: ${errors.goals}`);
+                if (errors.budgetItems) toast.error(`Budget Items: ${errors.budgetItems}`);
                 if (errors.documents) toast.error(`Documents: ${errors.documents}`);
                 
                 // Fallback error message
@@ -422,6 +490,93 @@ const removeFile = (index: number) => {
                 </div>
               )}
             </div>
+
+            {/* Budget Section */}
+            <Card className="border border-gray-200 dark:border-gray-700">
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2 text-gray-900 dark:text-white">
+                  <DollarSign className="h-5 w-5" />
+                  <span>Budget Items</span>
+                </CardTitle>
+                <CardDescription className="text-gray-600 dark:text-gray-300">
+                  Define budget items for this milestone
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="space-y-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Item Title *</label>
+                    <input
+                      type="text"
+                      value={newBudgetItem.title}
+                      onChange={e => setNewBudgetItem({...newBudgetItem, title: e.target.value})}
+                      placeholder="e.g., Equipment rental"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                  
+                  <div className="space-y-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Description *</label>
+                    <input
+                      type="text"
+                      value={newBudgetItem.description}
+                      onChange={e => setNewBudgetItem({...newBudgetItem, description: e.target.value})}
+                      placeholder="Brief description"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Amount (Ksh) *</label>
+                    <input
+                      type="number"
+                      value={newBudgetItem.amount}
+                      onChange={e => setNewBudgetItem({...newBudgetItem, amount: e.target.value})}
+                      placeholder="0.00"
+                      step="0.01"
+                      min="0"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                </div>
+                
+                <div className="flex justify-end">
+                  <button 
+                    type="button" 
+                    onClick={addBudgetItem}
+                    className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-green-600 dark:bg-green-700 hover:bg-green-700 dark:hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                  >
+                    <Plus className="h-4 w-4 mr-1" />
+                    Add Budget Item
+                  </button>
+                </div>
+
+                {errors.budgetItems && <div className="text-red-500 dark:text-red-400 text-sm">{errors.budgetItems}</div>}
+
+                {/* Budget Items List */}
+                {Array.isArray(data.budgetItems) && data.budgetItems.length > 0 && (
+                  <div className="space-y-2">
+                    <h4 className="font-medium text-gray-900 dark:text-white">Added Budget Items:</h4>
+                    {data.budgetItems.map((item) => (
+                      <div key={item.id} className="flex items-center justify-between bg-green-50 dark:bg-green-900/20 p-3 rounded border border-green-200 dark:border-green-700">
+                        <div className="flex-1">
+                          <h5 className="font-medium text-gray-900 dark:text-white">{item.title}</h5>
+                          <p className="text-sm text-gray-600 dark:text-gray-300">{item.description}</p>
+                          <p className="text-sm font-medium text-green-600 dark:text-green-400">Ksh {item.amount}</p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => removeBudgetItem(item.id)}
+                          className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 px-2 py-1 border border-red-300 dark:border-red-600 rounded"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
 
             {/* Goals Section */}
            <Card className="border border-gray-200 dark:border-gray-700">

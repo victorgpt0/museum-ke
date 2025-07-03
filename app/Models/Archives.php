@@ -36,6 +36,7 @@ class Archives extends Model implements HasMedia
         'title',
         'author',
         'category',
+        'user_id',
     ];
 
     /**
@@ -153,5 +154,13 @@ class Archives extends Model implements HasMedia
     public function getImagesAttribute()
     {
         return $this->getMedia('images');
+    }
+
+    /**
+     * Get the user who uploaded the archive
+     */
+    public function user()
+    {
+        return $this->belongsTo(\App\Models\User::class, 'user_id');
     }
 }

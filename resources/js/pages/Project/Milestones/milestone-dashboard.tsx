@@ -12,7 +12,8 @@ import {
   TrendingUp, 
   Save,
   ArrowLeft,
-  Clock
+  Clock,
+  DollarSign
 } from 'lucide-react';
 
 interface Project {
@@ -31,6 +32,15 @@ interface Goal {
   completed: boolean;
 }
 
+interface Budget {
+  id: number;
+  title: string;
+  description: string;
+  amount: number;
+  amount_spent: number;
+  milestone_id: number;
+}
+
 interface Milestone {
   id: number;
   title: string;
@@ -46,10 +56,12 @@ interface Props {
   project: Project;
   milestone: Milestone;
   goals: Goal[];
+  budgets: Budget[];
 }
 
-export default function MilestoneDashboard({ project, milestone, goals }: Props) {
+export default function MilestoneDashboard({ project, milestone, goals, budgets }: Props) {
   const [savingGoals, setSavingGoals] = useState<{ [key: number]: boolean }>({});
+  const [savingBudgets, setSavingBudgets] = useState<{ [key: number]: boolean }>({});
 
   const getPerformanceColor = (performance: number | null) => {
     if (!performance) return 'bg-gray-200';
@@ -162,7 +174,7 @@ export default function MilestoneDashboard({ project, milestone, goals }: Props)
           </div>
 
           {/* Goals Section */}
-          <Card className="border border-gray-200 dark:border-gray-700">
+          <Card className="border border-gray-200 dark:border-gray-700 mb-8">
             <CardHeader>
               <CardTitle className="flex items-center space-x-2 text-gray-900 dark:text-white">
                 <Target className="h-5 w-5" />
@@ -187,6 +199,40 @@ export default function MilestoneDashboard({ project, milestone, goals }: Props)
                       isSaving={savingGoals[goal.id] || false}
                       setSaving={setSavingGoals}
                       getPerformanceLabel={getPerformanceLabel}
+                    />
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Budget Section */}
+          <Card className="border border-gray-200 dark:border-gray-700">
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2 text-gray-900 dark:text-white">
+                <DollarSign className="h-5 w-5" />
+                <span>Budget Utilization</span>
+              </CardTitle>
+              <CardDescription className="text-gray-600 dark:text-gray-300">
+                Track budget spending for each budget item. <strong className="text-red-600 dark:text-red-400">Warning: Saving amount spent is irreversible.</strong>
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {budgets.length === 0 ? (
+                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                  <DollarSign className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p>No budget items have been set for this milestone.</p>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {budgets.map((budget) => (
+                    <BudgetCard 
+                      key={budget.id} 
+                      budget={budget} 
+                      projectId={project.id}
+                      milestoneId={milestone.id}
+                      isSaving={savingBudgets[budget.id] || false}
+                      setSaving={setSavingBudgets}
                     />
                   ))}
                 </div>
@@ -339,6 +385,178 @@ function GoalCard({
             {goal.completed
               ? 'Goal Completed'
               : (isSaving || processing ? 'Saving...' : 'Complete Goal (Irreversible)')}
+          </span>
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+// Separate component for individual budget cards
+function BudgetCard({ 
+  budget, 
+  projectId,
+  milestoneId,
+  isSaving, 
+  setSaving
+}: {
+  budget: Budget;
+  projectId: number;
+  milestoneId: number;
+  isSaving: boolean;
+  setSaving: React.Dispatch<React.SetStateAction<{ [key: number]: boolean }>>;
+}) {
+  const { data, setData, put, processing } = useForm({
+    amount_spent: (() => {
+      const amountSpent = typeof budget.amount_spent === 'string' ? parseFloat(budget.amount_spent) : budget.amount_spent;
+      return amountSpent > 0 && amountSpent !== null && !isNaN(amountSpent) ? amountSpent : '';
+    })()
+  });
+
+  const handleAmountSpentChange = (value: string) => {
+    // Only allow changes if no amount has been saved yet
+    const amountSpent = typeof budget.amount_spent === 'string' ? parseFloat(budget.amount_spent) : budget.amount_spent;
+    if (amountSpent === 0 || amountSpent === null || isNaN(amountSpent)) {
+      setData('amount_spent', value);
+    }
+  };
+
+  const handleSave = () => {
+    const amountSpent = typeof budget.amount_spent === 'string' ? parseFloat(budget.amount_spent) : budget.amount_spent;
+    if (amountSpent > 0 && amountSpent !== null && !isNaN(amountSpent)) return; // Already spent, cannot edit
+    
+    // Validate that amount_spent is not empty and is a valid number
+    if (!data.amount_spent || isNaN(parseFloat(data.amount_spent)) || parseFloat(data.amount_spent) < 0) {
+      alert('Please enter a valid amount spent');
+      return;
+    }
+    
+    setSaving(prev => ({ ...prev, [budget.id]: true }));
+    put(route('project.milestones.update-budget', { project: projectId, milestone: milestoneId }), {
+      budget_id: budget.id,
+      amount_spent: parseFloat(data.amount_spent)
+    }, {
+      onSuccess: () => {
+        setSaving(prev => ({ ...prev, [budget.id]: false }));
+        window.location.reload();
+      },
+      onError: () => {
+        setSaving(prev => ({ ...prev, [budget.id]: false }));
+      }
+    });
+  };
+
+  // Convert amount_spent to number and check if it's actually been set
+  const amountSpent = typeof budget.amount_spent === 'string' ? parseFloat(budget.amount_spent) : budget.amount_spent;
+  const isCompleted = amountSpent > 0 && amountSpent !== null && !isNaN(amountSpent);
+  const utilizationPercentage = budget.amount > 0 ? (budget.amount_spent / budget.amount) * 100 : 0;
+
+  return (
+    <div className={`border rounded-lg p-6 ${
+      isCompleted 
+        ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-700' 
+        : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600'
+    }`}>
+      {/* Completed Tag - Display above the budget card */}
+      {isCompleted && (
+        <div className="mb-4 flex justify-center">
+          <Badge variant="default" className="bg-green-600 text-white px-4 py-2 text-sm font-medium">
+            ✓ Budget Spent
+          </Badge>
+        </div>
+      )}
+      
+      <div className="mb-4">
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+            {budget.title}
+          </h3>
+        </div>
+        <p className="text-gray-600 dark:text-gray-300 mt-1">{budget.description}</p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Budget Information */}
+        <div className="space-y-3">
+          <div className="flex justify-between items-center">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Budgeted Amount
+            </label>
+            <span className="text-lg font-semibold text-green-600 dark:text-green-400">
+              Ksh {budget.amount.toLocaleString()}
+            </span>
+          </div>
+          
+          {isCompleted && (
+            <div className="flex justify-between items-center">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Amount Spent
+              </label>
+              <span className="text-lg font-semibold text-blue-600 dark:text-blue-400">
+                Ksh {budget.amount_spent.toLocaleString()}
+              </span>
+            </div>
+          )}
+
+          {isCompleted && (
+            <div className="flex justify-between items-center">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Utilization
+              </label>
+              <span className={`text-sm font-medium ${
+                utilizationPercentage > 100 ? 'text-red-600 dark:text-red-400' :
+                utilizationPercentage > 80 ? 'text-yellow-600 dark:text-yellow-400' :
+                'text-green-600 dark:text-green-400'
+              }`}>
+                {utilizationPercentage.toFixed(1)}%
+              </span>
+            </div>
+          )}
+        </div>
+
+        {/* Amount Spent Input */}
+        <div className="space-y-3">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            Amount Spent (Ksh)
+          </label>
+          <input
+            type="number"
+            min="0"
+            step="0.01"
+            value={data.amount_spent}
+            onChange={(e) => handleAmountSpentChange(e.target.value)}
+            disabled={isCompleted}
+            className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:border-blue-500 dark:focus:border-blue-400 ${
+              isCompleted 
+                ? 'bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 cursor-not-allowed text-gray-500 dark:text-gray-400' 
+                : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-blue-500 dark:focus:ring-blue-400'
+            }`}
+            placeholder={isCompleted ? "Budget already spent - no further changes allowed" : "Enter amount spent..."}
+          />
+          {!isCompleted && (
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              Enter the actual amount spent on this budget item
+            </p>
+          )}
+        </div>
+      </div>
+
+      {/* Individual Save Button */}
+      <div className="mt-4 flex justify-end">
+        <Button
+          onClick={handleSave}
+          disabled={isCompleted || isSaving || processing}
+          className={`flex items-center space-x-2 ${
+            isCompleted 
+              ? 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed border border-gray-300 dark:border-gray-600' 
+              : 'bg-blue-600 dark:bg-blue-700 hover:bg-blue-700 dark:hover:bg-blue-600 text-white'
+          }`}
+        >
+          <Save className="h-4 w-4" />
+          <span>
+            {isCompleted
+              ? 'Budget Spent'
+              : (isSaving || processing ? 'Saving...' : 'Save Amount Spent (Irreversible)')}
           </span>
         </Button>
       </div>

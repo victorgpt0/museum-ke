@@ -21,11 +21,13 @@ public function index()
             })
             ->with([
                 'proposal', 
+                'proposal.user',
                 'milestones', 
                 'milestones.goals' => function($query) {
                     $query->orderBy('completed', 'desc')
                           ->orderBy('performance', 'desc');
                 },
+                'milestones.budgets', // Add budgets to eager loading
                 'findings.media', // Eager load findings and their media
                 'teamMembers', // Eager load team members
             ])
@@ -109,6 +111,9 @@ public function index()
             }
             $latestProject->team_members = $teamMembers->toArray();
             $latestProject->team_members_count = $teamMembersCount;
+
+            // Add creator name
+            $latestProject->creator_name = $latestProject->proposal && $latestProject->proposal->user ? $latestProject->proposal->user->name : '';
         }
 
         return Inertia::render('Project/project-dashboard', [
@@ -126,16 +131,29 @@ public function showAll()
 {
     try {
         $userId = auth()->id();
-        $projects = Project::whereHas('proposal', function ($query) use ($userId) {
+        $user = auth()->user();
+        
+        // Check if user is HOD or SuperAdmin
+        $isAdmin = $user->hasRole(['HOD', 'SuperAdmin']);
+        
+        $query = Project::query();
+        
+        // Only filter by user's proposals if not admin
+        if (!$isAdmin) {
+            $query->whereHas('proposal', function ($query) use ($userId) {
                 $query->where('user_id', $userId);
-            })
-            ->with([
+            });
+        }
+        
+        $projects = $query->with([
                 'proposal',
+                'proposal.user',
                 'milestones',
                 'milestones.goals' => function($query) {
                     $query->orderBy('completed', 'desc')
                           ->orderBy('performance', 'desc');
                 },
+                'milestones.budgets', // Add budgets to eager loading
                 'findings.media',
                 'teamMembers',
             ])
@@ -162,6 +180,10 @@ public function showAll()
             $project->completed_goals_count = $completedGoalsCount;
             $project->project_progress = $projectProgress;
             $project->status = ($projectProgress < 100) ? 'Ongoing' : 'Completed';
+
+            // Add creator name
+            $project->creator_name = $project->proposal && $project->proposal->user ? $project->proposal->user->name : '';
+
             return $project;
         });
 
@@ -186,11 +208,13 @@ public function show($id)
             })
             ->with([
                 'proposal',
+                'proposal.user',
                 'milestones',
                 'milestones.goals' => function($query) {
                     $query->orderBy('completed', 'desc')
                           ->orderBy('performance', 'desc');
                 },
+                'milestones.budgets', // Add budgets to eager loading
                 'findings.media',
                 'teamMembers',
             ])
@@ -260,6 +284,9 @@ public function show($id)
         }
         $project->team_members = $teamMembers->toArray();
         $project->team_members_count = $teamMembers->count();
+
+        // Add creator name
+        $project->creator_name = $project->proposal && $project->proposal->user ? $project->proposal->user->name : '';
 
         return Inertia::render('Project/project-dashboard', [
             'project' => $project

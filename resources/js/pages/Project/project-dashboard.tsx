@@ -3,6 +3,8 @@ import { Head, Link, useForm, router } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
 import { Badge } from '@/components/ui/badge';
 import toast, { Toaster } from 'react-hot-toast';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 import { 
   Calendar, 
@@ -42,6 +44,7 @@ interface Milestone {
   due_date: string;
   performance_indicator?: number;
   completion?: number;
+  budgets?: any[]; // Assuming budgets are of type any[]
 }
 
 interface Goal {
@@ -77,6 +80,7 @@ interface Project {
   team_members_count: number;
   team_members: any[]; // Assuming team_members are of type any[]
   completed: boolean;
+  creator_name?: string;
 }
 
 interface ProjectDashboardProps {
@@ -139,6 +143,177 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ project }) => {
         toast.error('Failed to mark project as complete.');
       }
     });
+  };
+
+  const handleDownloadPDF = async () => {
+    if (!project) return;
+    const doc = new jsPDF();
+    let y = 10;
+
+    // Project Info
+    doc.setFontSize(18);
+    doc.text(project.title, 10, y);
+    y += 8;
+    if (project.creator_name) {
+      doc.text(`Created by: ${project.creator_name}`, 10, y);
+      y += 8;
+    }
+    doc.setFontSize(12);
+    doc.text(doc.splitTextToSize(`Description: ${project.description}`, 180), 10, y);
+    y += 8 + Math.ceil(doc.getTextDimensions(doc.splitTextToSize(`Description: ${project.description}`, 180)).h);
+    doc.text(`Duration: ${project.duration}`, 10, y);
+    y += 8;
+    doc.text(`Start Date: ${new Date(project.start_date).toLocaleDateString()}`, 10, y);
+    y += 8;
+    doc.text(`Proposal: ${project.proposal.title}`, 10, y);
+    y += 8;
+    doc.text(doc.splitTextToSize(`Proposal Description: ${project.proposal.description}`, 180), 10, y);
+    y += 12 + Math.ceil(doc.getTextDimensions(doc.splitTextToSize(`Proposal Description: ${project.proposal.description}`, 180)).h);
+
+    // Team Members
+    doc.setFontSize(14);
+    doc.text('Team Members', 10, y);
+    y += 4;
+    autoTable(doc, {
+      startY: y,
+      head: [['Name', 'Email', 'Position', 'Phone']],
+      body: (project.team_members || []).map((m: any) => [m.fullname, m.email_address, m.position, m.phone_number]),
+      theme: 'grid',
+      styles: { fontSize: 10, cellWidth: 'wrap' },
+      columnStyles: { 0: { cellWidth: 40 }, 1: { cellWidth: 50 }, 2: { cellWidth: 40 }, 3: { cellWidth: 40 } },
+    });
+    y = (doc as any).lastAutoTable.finalY + 8;
+
+    // Milestones
+    doc.setFontSize(14);
+    doc.text('Milestones', 10, y);
+    y += 4;
+    autoTable(doc, {
+      startY: y,
+      head: [['Title', 'Description', 'Due Date', 'Performance', 'Completion']],
+      body: (project.milestones || []).map((m: any) => [m.title, m.description, m.due_date ? new Date(m.due_date).toLocaleDateString() : '', m.performance_indicator || '', m.completion ? (m.completion * 10 + '%') : '']),
+      theme: 'grid',
+      styles: { fontSize: 10, cellWidth: 'wrap' },
+      columnStyles: { 0: { cellWidth: 30 }, 1: { cellWidth: 60 }, 2: { cellWidth: 30 }, 3: { cellWidth: 25 }, 4: { cellWidth: 25 } },
+    });
+    y = (doc as any).lastAutoTable.finalY + 8;
+
+    // Budget Items
+    doc.setFontSize(14);
+    doc.text('Budget Items', 10, y);
+    y += 4;
+    
+    // Collect all budget items from all milestones
+    const allBudgetItems: any[] = [];
+    (project.milestones || []).forEach((milestone: any) => {
+      if (milestone.budgets && milestone.budgets.length > 0) {
+        milestone.budgets.forEach((budget: any) => {
+          allBudgetItems.push([
+            budget.title,
+            budget.description,
+            `Ksh ${budget.amount}`,
+            budget.amount_spent > 0 ? `Ksh ${budget.amount_spent}` : 'Ksh 0',
+            milestone.title
+          ]);
+        });
+      }
+    });
+
+    if (allBudgetItems.length > 0) {
+      autoTable(doc, {
+        startY: y,
+        head: [['Title', 'Description', 'Budgeted Amount', 'Amount Spent', 'Milestone']],
+        body: allBudgetItems,
+        theme: 'grid',
+        styles: { fontSize: 10, cellWidth: 'wrap' },
+        columnStyles: { 0: { cellWidth: 30 }, 1: { cellWidth: 50 }, 2: { cellWidth: 25 }, 3: { cellWidth: 25 }, 4: { cellWidth: 30 } },
+      });
+      y = (doc as any).lastAutoTable.finalY + 8;
+    } else {
+      doc.setFontSize(10);
+      doc.text('No budget items recorded.', 10, y);
+      y += 6;
+    }
+
+    // Goals
+    doc.setFontSize(14);
+    doc.text('Goals', 10, y);
+    y += 4;
+    autoTable(doc, {
+      startY: y,
+      head: [['Title', 'Description', 'Performance', 'Comments', 'Completed', 'Milestone']],
+      body: (project.goals || []).map((g: any) => [g.title, g.description, g.performance !== null ? (g.performance * 10 + '%') : '', g.comments || '', g.completed ? 'Yes' : 'No', g.milestone?.title || '']),
+      theme: 'grid',
+      styles: { fontSize: 10, cellWidth: 'wrap' },
+      columnStyles: { 0: { cellWidth: 30 }, 1: { cellWidth: 60 }, 2: { cellWidth: 25 }, 3: { cellWidth: 30 }, 4: { cellWidth: 20 }, 5: { cellWidth: 30 } },
+    });
+    y = (doc as any).lastAutoTable.finalY + 8;
+
+    // Findings
+    doc.setFontSize(14);
+    doc.text('Findings', 10, y);
+    y += 6;
+    if (project.findings && project.findings.length > 0) {
+      for (const f of project.findings) {
+        // Title
+        doc.setFontSize(12);
+        doc.text(f.title, 10, y);
+        y += 6;
+        // Description
+        const descLines = doc.splitTextToSize(f.description || '', 180);
+        doc.setFontSize(10);
+        doc.text(descLines, 10, y);
+        y += descLines.length * 5 + 2;
+        // Documents
+        if (f.all_documents_urls && f.all_documents_urls.length > 0) {
+          doc.setFontSize(10);
+          doc.text('Documents: ' + f.all_documents_urls.map((d: any) => d.file_name || d.name).join(', '), 10, y);
+          y += 6;
+        }
+        // Images
+        if (f.all_image_urls && f.all_image_urls.length > 0) {
+          doc.setFontSize(10);
+          doc.text('Images:', 10, y);
+          y += 4;
+          for (const imgUrl of f.all_image_urls) {
+            try {
+              // Fetch image and convert to base64
+              const imgData = await fetch(imgUrl)
+                .then(res => res.blob())
+                .then(blob => new Promise<string>((resolve, reject) => {
+                  const reader = new FileReader();
+                  reader.onloadend = () => resolve(reader.result as string);
+                  reader.onerror = reject;
+                  reader.readAsDataURL(blob);
+                }));
+              // Add image as a medium thumbnail (100x100 px)
+              doc.addImage(imgData, 'JPEG', 10, y, 30, 30, undefined, 'FAST');
+              y += 32;
+              // If near bottom, add new page
+              if (y > 260) {
+                doc.addPage();
+                y = 10;
+              }
+            } catch (e) {
+              doc.text('[Image could not be loaded]', 10, y);
+              y += 6;
+            }
+          }
+        }
+        y += 6;
+        // If near bottom, add new page
+        if (y > 260) {
+          doc.addPage();
+          y = 10;
+        }
+      }
+    } else {
+      doc.setFontSize(10);
+      doc.text('No findings recorded.', 10, y);
+      y += 6;
+    }
+
+    doc.save(`${project.title.replace(/[^a-z0-9]/gi, '_')}_details.pdf`);
   };
 
   const MetricCard = ({ 
@@ -291,13 +466,14 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ project }) => {
                 </div>
               </div>
               <div className="flex space-x-3">
-                <Link
-                  href={`/projects/${project.id}/edit`}
+                <button
+                  onClick={handleDownloadPDF}
                   className="inline-flex items-center px-4 py-2 bg-gray-600 dark:bg-gray-700 text-white rounded-md hover:bg-gray-700 dark:hover:bg-gray-600 transition-colors"
+                  type="button"
                 >
-                  <Settings className="h-4 w-4 mr-2" />
-                  Edit Project
-                </Link>
+                  <FileText className="h-4 w-4 mr-2" />
+                  Download Project PDF
+                </button>
               </div>
             </div>
           </div>
@@ -487,6 +663,31 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ project }) => {
               View Details
             </Link>
           </div>
+
+          {/* Budget Information */}
+          {milestone.budgets && milestone.budgets.length > 0 && (
+            <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-600">
+              <h5 className="text-sm font-medium text-gray-900 dark:text-white mb-2">Budget Items:</h5>
+              <div className="space-y-2">
+                {milestone.budgets.map((budget: any) => (
+                  <div key={budget.id} className="flex justify-between items-center bg-white dark:bg-gray-600 p-2 rounded text-sm">
+                    <div>
+                      <p className="font-medium text-gray-900 dark:text-white">{budget.title}</p>
+                      <p className="text-gray-600 dark:text-gray-300">{budget.description}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-medium text-green-600 dark:text-green-400">Ksh {budget.amount}</p>
+                      {budget.amount_spent > 0 && (
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          Spent: Ksh {budget.amount_spent}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       ))}
     </div>
@@ -692,6 +893,12 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ project }) => {
                     <dt className="text-sm text-gray-500 dark:text-gray-400">Start Date</dt>
                     <dd className="text-sm text-gray-900 dark:text-white">{new Date(project.start_date).toLocaleDateString()}</dd>
                   </div>
+                  {project.creator_name && (
+                    <div>
+                      <dt className="text-sm text-gray-500 dark:text-gray-400">Created By</dt>
+                      <dd className="text-sm text-gray-900 dark:text-white">{project.creator_name}</dd>
+                    </div>
+                  )}
                 </dl>
               </div>
               <div>

@@ -34,11 +34,17 @@ class ArchivesController extends Controller
             $query->where('author', 'LIKE', '%' . $request->author . '%');
         }
 
-        $archives = $query->orderBy('created_at', 'desc')
+        $archives = $query->with('user')->orderBy('created_at', 'desc')
                          ->paginate(12)
                          ->withQueryString();
 
         $categories = Category::all();
+
+        // Add uploader name to each archive
+        $archives->getCollection()->transform(function ($archive) {
+            $archive->uploader_name = $archive->user ? $archive->user->name : 'Unknown';
+            return $archive;
+        });
 
         return Inertia::render('Archives', [
             'archives' => $archives,
@@ -72,6 +78,7 @@ class ArchivesController extends Controller
             'title' => $validated['title'],
             'author' => $validated['author'],
             'category' => $validated['category'],
+            'user_id' => auth()->id(),
         ]);
 
         // Attach document if uploaded

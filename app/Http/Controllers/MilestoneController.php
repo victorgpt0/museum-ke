@@ -45,6 +45,10 @@ class MilestoneController extends Controller
         'goals.*.title' => 'required|string|max:255',
         'goals.*.description' => 'nullable|string|max:1000',
         'goals.*.performance' => 'nullable|integer|min:1|max:10',
+        'budgetItems' => 'nullable|array',
+        'budgetItems.*.title' => 'required|string|max:255',
+        'budgetItems.*.description' => 'required|string|max:1000',
+        'budgetItems.*.amount' => 'required|numeric|min:0',
         'documents.*' => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx,txt,png,jpg,jpeg,webp|max:10240', // 10MB max per file
     ]);
     
@@ -82,6 +86,20 @@ class MilestoneController extends Controller
                 ]);
             }
         }
+
+        // Handle budget items if provided
+        if ($request->has('budgetItems') && is_array($request->budgetItems)) {
+            foreach ($request->budgetItems as $budgetData) {
+                // Create each budget item with the milestone_id
+                \App\Models\Budget::create([
+                    'title' => $budgetData['title'],
+                    'description' => $budgetData['description'],
+                    'amount' => $budgetData['amount'],
+                    'amount_spent' => 0, // Default to 0
+                    'milestone_id' => $milestone->id,
+                ]);
+            }
+        }
         
         // Handle document uploads
         if ($request->hasFile('documents') && is_array($request->file('documents'))) {
@@ -114,7 +132,10 @@ class MilestoneController extends Controller
         
         DB::commit();
         
-        return redirect()->back()->with('success', 'Milestone created successfully with ' . count($request->goals ?? []) . ' goals!');
+        $goalsCount = count($request->goals ?? []);
+        $budgetItemsCount = count($request->budgetItems ?? []);
+        
+        return redirect()->back()->with('success', "Milestone created successfully with {$goalsCount} goals and {$budgetItemsCount} budget items!");
         
     } catch (\Exception $e) {
         DB::rollBack();
@@ -227,7 +248,7 @@ class MilestoneController extends Controller
         }
 
         // Load milestone with its goals
-        $milestone->load('goals');
+        $milestone->load('goals', 'budgets');
 
         return Inertia::render('Project/Milestones/milestone-dashboard', [
             'project' => [
@@ -255,6 +276,25 @@ class MilestoneController extends Controller
                     'milestone_id' => $goal->milestone_id,
                 ];
             }),
+            'budgets' => $milestone->budgets->map(function ($budget) {
+                // Log the budget data for debugging
+                Log::info('Budget data being sent to frontend', [
+                    'budget_id' => $budget->id,
+                    'amount_spent_raw' => $budget->amount_spent,
+                    'amount_spent_type' => gettype($budget->amount_spent),
+                    'amount_spent_is_null' => is_null($budget->amount_spent),
+                    'amount_spent_is_zero' => $budget->amount_spent == 0,
+                ]);
+                
+                return [
+                    'id' => $budget->id,
+                    'title' => $budget->title,
+                    'description' => $budget->description,
+                    'amount' => $budget->amount,
+                    'amount_spent' => $budget->amount_spent,
+                    'milestone_id' => $budget->milestone_id,
+                ];
+            }),
         ]);
     }
     public function updateGoals(Request $request, Project $project, Milestone $milestone)
@@ -279,6 +319,78 @@ class MilestoneController extends Controller
     }
 
     return redirect()->back()->with('success', 'Goals updated successfully!');
+}
+
+public function updateBudget(Request $request, Project $project, Milestone $milestone)
+{
+    try {
+        // Ensure the milestone belongs to the project
+        if ($milestone->project_id !== $project->id) {
+            abort(404, 'Milestone not found for this project');
+        }
+
+        // Log the incoming request data for debugging
+        Log::info('Budget update request received', [
+            'request_data' => $request->all(),
+            'project_id' => $project->id,
+            'milestone_id' => $milestone->id
+        ]);
+
+        $validated = $request->validate([
+            'budget_id' => 'required|exists:budgets,id',
+            'amount_spent' => 'required|numeric|min:0',
+        ]);
+
+        Log::info('Validation passed', ['validated_data' => $validated]);
+
+        $budget = $milestone->budgets()->findOrFail($validated['budget_id']);
+        
+        Log::info('Budget found', [
+            'budget_id' => $budget->id,
+            'current_amount_spent' => $budget->amount_spent,
+            'new_amount_spent' => $validated['amount_spent']
+        ]);
+
+        $result = $budget->update([
+            'amount_spent' => $validated['amount_spent'],
+        ]);
+
+        Log::info('Budget update result', [
+            'update_result' => $result,
+            'budget_id' => $budget->id,
+            'new_amount_spent' => $budget->fresh()->amount_spent
+        ]);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Budget amount spent updated successfully!',
+                'budget' => $budget->fresh()
+            ]);
+        }
+
+        return redirect()->back()->with('success', 'Budget amount spent updated successfully!');
+        
+    } catch (\Exception $e) {
+        Log::error('Budget update failed', [
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString(),
+            'request_data' => $request->all()
+        ]);
+        
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update budget amount spent.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+        
+        return back()->withErrors([
+            'error' => 'Failed to update budget amount spent.',
+            'exception' => $e->getMessage(),
+        ]);
+    }
 }
 
     /**

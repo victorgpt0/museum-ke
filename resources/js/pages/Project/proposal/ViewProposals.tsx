@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Head, router } from '@inertiajs/react';
 import { PageProps } from '@/types';
 import AppLayout from '@/layouts/app-layout';
@@ -39,6 +39,15 @@ export default function ViewProposals({ proposals }: Props) {
   const [filteredProposals, setFilteredProposals] = useState<ProjectProposal[]>(proposals.data);
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
+  // Sync filteredProposals with proposals.data and statusFilter
+  useEffect(() => {
+    if (statusFilter === 'all') {
+      setFilteredProposals(proposals.data);
+    } else {
+      setFilteredProposals(proposals.data.filter(proposal => proposal.status === statusFilter));
+    }
+  }, [proposals.data, statusFilter]);
+
   // Format date helper
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -78,18 +87,12 @@ export default function ViewProposals({ proposals }: Props) {
   // Handle status filter
   const handleStatusFilter = (status: string) => {
     setStatusFilter(status);
-    if (status === 'all') {
-      setFilteredProposals(proposals.data);
-    } else {
-      setFilteredProposals(proposals.data.filter(proposal => proposal.status === status));
-    }
   };
 
   // Handle approve proposal
   const handleApprove = (proposalId: number) => {
-    router.patch('/curator/acquisition-history/status', {
-      artifact_proposal_id: proposalId,
-      status: 'approved',
+    router.post('/project/proposal/approve', {
+      id: proposalId,
     }, {
       preserveScroll: true,
       onSuccess: () => {
@@ -141,12 +144,12 @@ export default function ViewProposals({ proposals }: Props) {
     <AppLayout>
       <Head title="Project Proposals" />
 
-      <div className="min-h-screen bg-gray-50 py-8">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900">Project Proposals</h1>
-            <p className="mt-2 text-gray-600">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Project Proposals</h1>
+            <p className="mt-2 text-gray-600 dark:text-gray-400">
               Manage and review submitted project proposals
             </p>
           </div>
@@ -161,7 +164,7 @@ export default function ViewProposals({ proposals }: Props) {
                   className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
                     statusFilter === status
                       ? 'bg-blue-600 text-white'
-                      : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                      : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'
                   }`}
                 >
                   {status === 'all' ? 'All' : status.charAt(0).toUpperCase() + status.slice(1).replace('_', ' ')}
@@ -173,18 +176,18 @@ export default function ViewProposals({ proposals }: Props) {
           {/* Proposals List */}
           <div className="space-y-6">
             {filteredProposals.map((proposal) => (
-              <div key={proposal.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <div key={proposal.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex-1">
-                    <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
                       {proposal.title}
                     </h3>
                     <span className={getStatusBadge(proposal.status)}>
                       {formatStatusText(proposal.status)}
                     </span>
-                    <div className="text-sm text-gray-500 mt-1">Uploaded by: <span className="font-medium text-gray-700">{proposal.user_name || 'Unknown'}</span></div>
+                    <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">Uploaded by: <span className="font-medium text-gray-700 dark:text-gray-200">{proposal.user_name || 'Unknown'}</span></div>
                   </div>
-                  <div className="text-right text-sm text-gray-500">
+                  <div className="text-right text-sm text-gray-500 dark:text-gray-400">
                     Submitted: {formatDate(proposal.submitted_at || proposal.created_at)}
                   </div>
                 </div>
@@ -192,7 +195,7 @@ export default function ViewProposals({ proposals }: Props) {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                   {/* Images */}
                   <div className="lg:col-span-1">
-                    <h4 className="font-medium text-gray-900 mb-2">Images</h4>
+                    <h4 className="font-medium text-gray-900 dark:text-white mb-2">Images</h4>
                     {proposal.all_image_urls && proposal.all_image_urls.length > 0 ? (
                       <div className="grid grid-cols-2 gap-2">
                         {proposal.all_image_urls.map((image: string, index) => (
@@ -209,7 +212,7 @@ export default function ViewProposals({ proposals }: Props) {
                         ))}
                       </div>
                     ) : (
-                      <div className="aspect-square bg-gray-100 rounded-lg flex items-center justify-center text-gray-400 text-sm">
+                      <div className="aspect-square bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center text-gray-400 dark:text-gray-500 text-sm">
                         No images uploaded
                       </div>
                     )}
@@ -218,8 +221,8 @@ export default function ViewProposals({ proposals }: Props) {
                   {/* Details */}
                   <div className="lg:col-span-2 space-y-4">
                     <div>
-                      <h4 className="font-medium text-gray-900 mb-1">Description</h4>
-                      <p className="text-gray-600 text-sm leading-relaxed">
+                      <h4 className="font-medium text-gray-900 dark:text-white mb-1">Description</h4>
+                      <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
                         {proposal.description}
                       </p>
                     </div>
@@ -227,15 +230,15 @@ export default function ViewProposals({ proposals }: Props) {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {proposal.duration && (
                         <div>
-                          <h4 className="font-medium text-gray-900 mb-1">Duration</h4>
-                          <p className="text-gray-600 text-sm">{proposal.duration}</p>
+                          <h4 className="font-medium text-gray-900 dark:text-white mb-1">Duration</h4>
+                          <p className="text-gray-600 dark:text-gray-300 text-sm">{proposal.duration}</p>
                         </div>
                       )}
 
                       {proposal.approved_at && (
                         <div>
-                          <h4 className="font-medium text-gray-900 mb-1">Approved Date</h4>
-                          <p className="text-gray-600 text-sm">{formatDate(proposal.approved_at)}</p>
+                          <h4 className="font-medium text-gray-900 dark:text-white mb-1">Approved Date</h4>
+                          <p className="text-gray-600 dark:text-gray-300 text-sm">{formatDate(proposal.approved_at)}</p>
                         </div>
                       )}
                     </div>
@@ -246,7 +249,7 @@ export default function ViewProposals({ proposals }: Props) {
                 <div className="mt-6 pt-4 border-t border-gray-100 flex justify-end space-x-3">
                   <button
                     onClick={() => handleViewDetails(proposal.id)}
-                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 transition-colors"
                   >
                     View Details
                   </button>
@@ -255,19 +258,19 @@ export default function ViewProposals({ proposals }: Props) {
                     <>
                       <button
                         onClick={() => handleReview(proposal.id)}
-                        className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
                       >
                         Review
                       </button>
                       <button
                         onClick={() => handleApprove(proposal.id)}
-                        className="px-4 py-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+                        className="px-4 py-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors"
                       >
                         Approve
                       </button>
                       <button
                         onClick={() => handleReject(proposal.id)}
-                        className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
+                        className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors"
                       >
                         Reject
                       </button>
@@ -278,13 +281,13 @@ export default function ViewProposals({ proposals }: Props) {
                     <>
                       <button
                         onClick={() => handleApprove(proposal.id)}
-                        className="px-4 py-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+                        className="px-4 py-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors"
                       >
                         Approve
                       </button>
                       <button
                         onClick={() => handleReject(proposal.id)}
-                        className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
+                        className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors"
                       >
                         Reject
                       </button>
@@ -298,13 +301,13 @@ export default function ViewProposals({ proposals }: Props) {
           {/* Empty State */}
           {filteredProposals.length === 0 && (
             <div className="text-center py-12">
-              <div className="mx-auto h-12 w-12 text-gray-400">
+              <div className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500">
                 <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
               </div>
-              <h3 className="mt-2 text-sm font-medium text-gray-900">No proposals found</h3>
-              <p className="mt-1 text-sm text-gray-500">
+              <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No proposals found</h3>
+              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                 {statusFilter === 'all' ? 'No project proposals have been submitted yet.' : `No proposals with status "${statusFilter.replace('_', ' ')}" found.`}
               </p>
             </div>
