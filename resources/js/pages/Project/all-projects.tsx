@@ -2,6 +2,8 @@ import React from 'react';
 import { Head, Link } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { BreadcrumbItem } from '@/types';
 
 interface Project {
   id: number;
@@ -25,12 +27,20 @@ interface AllProjectsProps {
   projects: Project[];
 }
 
+const breadcrumbs: BreadcrumbItem[] = [
+    {
+        title: 'Project Dashboard',
+        href: '/project/all-projects',
+    }
+]
 const AllProjects: React.FC<AllProjectsProps> = ({ projects }) => {
   return (
-    <AppLayout>
+    <AppLayout breadcrumbs={breadcrumbs}>
       <Head title="All Projects" />
       <div className="max-w-5xl mx-auto py-10 px-4">
+          <div className={`flex items-center justify-between`}>
         <h1 className="text-3xl font-bold mb-8">My Projects</h1>
+          </div>
         {projects.length === 0 ? (
           <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow text-center">
             <p className="text-gray-600 dark:text-gray-300">You have no projects yet.</p>

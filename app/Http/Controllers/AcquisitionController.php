@@ -112,7 +112,7 @@ class AcquisitionController extends Controller implements HasMiddleware
                         'info',
                         "New Acquisition Proposal",
                         "$request->donor_full_name wishes to donate to the museum an item titled: $request->title. Please review the proposal and respond accordingly.",
-                        relative_route(route('acquisitions.show', $artifactProposal->id)),
+                        route('acquisitions.show', $artifactProposal->id),
                         $user->id
                     ));
             });
@@ -210,7 +210,7 @@ class AcquisitionController extends Controller implements HasMiddleware
                         'success',
                         "Acquisition Proposal Approved",
                         "$user->name has approved of an acquisition titled: $artifactProposal->title. Please follow the redirect to know more!",
-                        relative_route(route('acquisitions.show', $artifactProposal->id)),
+                        route('acquisitions.show', $artifactProposal->id),
                         $user->id
                     ));
             });
@@ -243,7 +243,7 @@ class AcquisitionController extends Controller implements HasMiddleware
                         'error',
                         "Acquisition Proposal Rejected",
                         "$user->name has rejected of an acquisition titled: $artifactProposal->title. Please follow the redirect to know more!",
-                        relative_route(route('acquisitions.show', $artifactProposal->id)),
+                        route('acquisitions.show', $artifactProposal->id),
                         $user->id
                     ));
             });
