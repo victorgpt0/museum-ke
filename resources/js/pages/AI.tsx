@@ -3,6 +3,7 @@ import { Head } from '@inertiajs/react';
 import axios from 'axios';
 import AppLayout from '@/layouts/app-layout';
 import ReactMarkdown from 'react-markdown';
+import { BreadcrumbItem } from '@/types';
 
 export default function AI() {
     const [query, setQuery] = useState('');
@@ -27,8 +28,12 @@ export default function AI() {
         }
     };
 
+    const breadcrumbs: BreadcrumbItem[] = [
+        { title: 'AI Assistant', href: '/AI' },
+    ];
+
     return (
-        <AppLayout>
+        <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="AI Assistant" />
             <div className="py-6">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

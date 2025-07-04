@@ -5,6 +5,8 @@ import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem } from '@/types';
 import Can from '@/lib/can';
 import { PlusIcon } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import toast from 'react-hot-toast';
 
 
 interface Media {
@@ -111,9 +113,39 @@ const Index: React.FC<Props> = ({ proposals }) => {
     });
   };
 
-  const handleViewDetails = (proposalId: number) => {
-    router.visit(`/curator/acquisition-history/${proposalId}`);
-  };
+    const handleApprove = (id) => {
+        router.post(route('acquisitions.approve', id), {}, {
+            preserveScroll: true,
+            onSuccess: () => {
+                toast.success('Proposal approved successfully!');
+                setTimeout(() => window.location.reload(), 1000);
+            },
+            onError: (errors) => {
+                if (errors.error) {
+                    toast.error(errors.error);
+                } else {
+                    toast.error('Failed to approve proposal.');
+                }
+            }
+        });
+    };
+
+    const handleReject = (id) => {
+        router.post(route('acquisitions.reject',id), {}, {
+            preserveScroll: true,
+            onSuccess: () => {
+                toast.success('Proposal rejected successfully!');
+                setTimeout(() => window.location.reload(), 1000);
+            },
+            onError: (errors) => {
+                if (errors.error) {
+                    toast.error(errors.error);
+                } else {
+                    toast.error('Failed to reject proposal.');
+                }
+            }
+        });
+    };
 
   return (
     <AppLayout breadcrumbs={breadcrumbs}>
@@ -267,12 +299,14 @@ const Index: React.FC<Props> = ({ proposals }) => {
 
                 {/* Action Buttons */}
                 <div className="mt-6 pt-4 border-t border-gray-100 flex justify-end space-x-3">
-                  <button
-                    onClick={() => handleViewDetails(proposal.id)}
-                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    View Details
-                  </button>
+                  <Link href={route('acquisitions.show', proposal.id)}>
+                    <Button
+                      variant="outline"
+                      className="px-4 py-2 text-sm font-medium"
+                    >
+                      View Details
+                    </Button>
+                  </Link>
 
                   {proposal.proposal_status === 'pending' && (
                     <>
@@ -283,13 +317,13 @@ const Index: React.FC<Props> = ({ proposals }) => {
                         Review
                       </button>
                       <button
-                        onClick={() => handleStatusUpdate(proposal.id, 'approved')}
+                        onClick={() => handleApprove(proposal.id)}
                         className="px-4 py-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
                       >
                         Approve
                       </button>
                       <button
-                        onClick={() => handleStatusUpdate(proposal.id, 'rejected')}
+                        onClick={() => handleReject(proposal.id)}
                         className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
                       >
                         Reject

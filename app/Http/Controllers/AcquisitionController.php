@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\ArtifactProposal;
 use App\Models\Donor;
 use App\Models\User;
+use App\Notifications\UserNotification;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
@@ -56,10 +57,6 @@ class AcquisitionController extends Controller implements HasMiddleware
      */
     public function store(Request $request)
     {
-        Log::info('Donation proposal submitted',[$request->all()]);
-
-        Log::info('images',[$request->allFiles()]);
-
         $validator = Validator::make($request->all(), [
             // Artifact information
             'title' => 'required|string|max:255',
@@ -109,6 +106,17 @@ class AcquisitionController extends Controller implements HasMiddleware
 
             DB::commit();
 
+            User::role(['Curator','SuperAdmin'])->each(function($user) use ($artifactProposal, $request){
+                $user->notify(
+                    new UserNotification(
+                        'info',
+                        "New Acquisition Proposal",
+                        "$request->donor_full_name wishes to donate to the museum an item titled: $request->title. Please review the proposal and respond accordingly.",
+                        relative_route(route('acquisitions.show', $artifactProposal->id)),
+                        $user->id
+                    ));
+            });
+
             return to_route('home')->with('success','Acquisition Created Successfully');
         } catch (\Exception $exception){
             Log::error('Acquisition Create Error:',[$exception]);
@@ -150,7 +158,11 @@ class AcquisitionController extends Controller implements HasMiddleware
      */
     public function show(string $id)
     {
-        //
+        $artifactProposal = ArtifactProposal::with(['donor', 'media'])->findOrFail($id);
+
+        return Inertia::render('acquisitions/show', [
+            'proposal' => $artifactProposal
+        ]);
     }
 
     /**
@@ -192,6 +204,17 @@ class AcquisitionController extends Controller implements HasMiddleware
 
             DB::commit();
 
+            User::role(['Curator','SuperAdmin'])->each(function($user) use ($artifactProposal){
+                $user->notify(
+                    new UserNotification(
+                        'success',
+                        "Acquisition Proposal Approved",
+                        "$user->name has approved of an acquisition titled: $artifactProposal->title. Please follow the redirect to know more!",
+                        relative_route(route('acquisitions.show', $artifactProposal->id)),
+                        $user->id
+                    ));
+            });
+
             return back()->with('success', 'Artifact proposal approved successfully.');
 
         } catch (\Exception $e) {
@@ -213,6 +236,17 @@ class AcquisitionController extends Controller implements HasMiddleware
             $artifactProposal->update([
                 'proposal_status' => 'rejected'
             ]);
+
+            User::role(['Curator','SuperAdmin'])->each(function($user) use ($artifactProposal){
+                $user->notify(
+                    new UserNotification(
+                        'error',
+                        "Acquisition Proposal Rejected",
+                        "$user->name has rejected of an acquisition titled: $artifactProposal->title. Please follow the redirect to know more!",
+                        relative_route(route('acquisitions.show', $artifactProposal->id)),
+                        $user->id
+                    ));
+            });
 
             return back()->with('success', 'Artifact proposal rejected successfully.');
 

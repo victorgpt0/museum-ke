@@ -2,6 +2,7 @@ import React, { useRef, useState } from 'react';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { Upload, FileText, ArrowLeft, Save, X } from 'lucide-react';
 import AppLayout from '@/layouts/app-layout';
+import { BreadcrumbItem } from '@/types';
 
 interface FormData {
     title: string;
@@ -116,8 +117,13 @@ function NewArchive() {
         }
     };
 
+    const breadcrumbs: BreadcrumbItem[] = [
+        { title: 'Archives', href: '/archives' },
+        { title: 'Add New Archive', href: '/archives/new-file' },
+    ];
+
     return (
-        <>
+        <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="New Archive" />
             
             <div className="py-8">
@@ -377,11 +383,8 @@ function NewArchive() {
                     </div>
                 </div>
             </div>
-        </>
+        </AppLayout>
     );
 }
-
-// Wrap the component with your layout
-NewArchive.layout = (page: React.ReactElement) => <AppLayout>{page}</AppLayout>;
 
 export default NewArchive;
