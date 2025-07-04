@@ -33,8 +33,8 @@ class AppServiceProvider extends ServiceProvider
 //        URL::forceScheme('https');
         Vite::usePrefetchStrategy('aggressive');
 
-        Gate::before(function ($user, $ability) {
-            return $user->hasRole('SuperAdmin') ? true : null;
-        });
+//        Gate::before(function ($user, $ability) {
+//            return $user->hasRole('SuperAdmin') ? true : null;
+//        });
     }
 }

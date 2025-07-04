@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
 import { Search, Filter, Plus, Eye, Edit, Trash2, FileText, Calendar } from 'lucide-react';
 import AppLayout from '@/layouts/app-layout';
+import { BreadcrumbItem } from '@/types';
 
 interface Archive {
     id: number;
@@ -80,8 +81,12 @@ export default function Archives({ archives, filters }: Props) {
         });
     };
 
+    const breadcrumbs: BreadcrumbItem[] = [
+        { title: 'Archives', href: '/archives' },
+    ];
+
     return (
-        <AppLayout>
+        <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Archives" />
             
             <div className="py-8">

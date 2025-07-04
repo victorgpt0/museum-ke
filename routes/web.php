@@ -14,8 +14,6 @@ use App\Http\Controllers\MilestoneController;
 use App\Http\Controllers\GoalController;
 use App\Http\Controllers\FindingController;
 use App\Http\Controllers\TeamMembersController;
- 
-
 
 
 
@@ -58,14 +56,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('artifacts', \App\Http\Controllers\ArtifactController::class);
 
     // Approve and reject artifact proposals
-    Route::post('/acquisition/{artifactProposal}/approve', [AcquisitionController::class, 'approve'])->name('acquisition.approve');
-    Route::post('/acquisition/{artifactProposal}/reject', [AcquisitionController::class, 'reject'])->name('acquisition.reject');
+    Route::post('/acquisition/{artifactProposal}/approve', [AcquisitionController::class, 'approve'])->name('acquisitions.approve');
+    Route::post('/acquisition/{artifactProposal}/reject', [AcquisitionController::class, 'reject'])->name('acquisitions.reject');
 
 });
 
 //Guest Routes
 
-Route::get('/dashboard/new-artifact', [ArtifactController::class, 'create'])->name('artifacts.create');
+Route::get('/dashboard/new-artifact', [ArtifactController::class, 'create'])->name('artifact.create');
 
 // In your web.php routes file
 Route::get('/archives', [ArchivesController::class, 'index'])->name('archives.index');
@@ -124,8 +122,8 @@ Route::post('/project/proposal/reject', [ProjectProposalController::class, 'reje
 
 Route::get('/projects/{project}/findings/create', [FindingController::class, 'create'])->name('findings.create');
 Route::post('/projects/{project}/findings', [FindingController::class, 'store'])->name('findings.store');
-Route::post('/projects/{project}/team-members', [TeamMembersController::class, 'store'])->name('findings.create');
-Route::get('/projects/{project}/team-members/create', [TeamMembersController::class, 'create'])->name('findings.create');
+Route::post('/projects/{project}/team-members', [TeamMembersController::class, 'store'])->name('findings.team-members');
+Route::get('/projects/{project}/team-members/create', [TeamMembersController::class, 'create'])->name('findings.team-members.create');
 
 
 

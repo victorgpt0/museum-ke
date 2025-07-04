@@ -255,7 +255,7 @@ export default function Index() {
                 <Card key={artifact.id} className="overflow-hidden">
                   <div className="aspect-square overflow-hidden">
                     <img
-                      src="https://placehold.co/400x400?text=IMG"
+                      src={artifact.thumbnail_url || "https://placehold.co/400x400?text=IMG"}
                       alt="Artifact Thumbnail"
                       className="w-full h-full object-cover hover:scale-105 transition-transform"
                     />

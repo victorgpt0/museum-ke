@@ -4,6 +4,7 @@ import Pagination from '../../components/pagination';
 import { Link, router, usePage } from '@inertiajs/react';
 import { Button, Input, Select } from '@headlessui/react';
 import AppLayout from '@/layouts/app-layout';
+import { BreadcrumbItem } from '@/types';
 
 export default function ActivityLogsIndex() {
   const { logs, users, events, filters } = usePage().props as any;
@@ -18,8 +19,12 @@ export default function ActivityLogsIndex() {
     router.get(route('activity-logs.index'), filter);
   };
 
+  const breadcrumbs: BreadcrumbItem[] = [
+    { title: 'Activity Logs', href: '/activity-logs' },
+  ];
+
   return (
-      <AppLayout>
+      <AppLayout breadcrumbs={breadcrumbs}>
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-4">Item Activity Logs</h1>
       <form onSubmit={submitFilter} className="flex gap-2 mb-4 flex-wrap items-end">

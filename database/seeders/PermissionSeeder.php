@@ -80,6 +80,14 @@ class PermissionSeeder extends Seeder
                 'reports.create', 'reports.view',
                 'ai.view',
             ],
+            'Curator' => [
+                'dashboard.view',
+                'artifacts.view','artifacts.create','artifacts.edit','artifacts.delete',
+                'maps.view',
+                'ai.view',
+                'reports.view',
+                'archives.view', 'archives.create', 'archives.edit', 'archives.delete',
+            ]
         ];
 
         foreach ($rolePermissions as $roleName => $perms) {
@@ -109,6 +117,11 @@ class PermissionSeeder extends Seeder
                 'email' => 'researcher@museum.ke',
                 'role' => 'Researcher',
             ],
+            [
+                'name' => 'Curator',
+                'email' => 'curator@museum.ke',
+                'role' => 'Curator',
+            ]
         ];
 
         foreach ($users as $userData) {
