@@ -71,7 +71,7 @@ const mainNavItems: NavItem[] = [
     },
     {
         title: 'Project Proposal',
-        href: '/myproposal/dashboard',
+        href: '/project/viewproposals',
         icon: Archive,
         permission: 'proposals.view',
         // children: [
