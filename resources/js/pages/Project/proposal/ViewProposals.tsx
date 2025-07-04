@@ -59,6 +59,18 @@ export default function ViewProposals({ proposals }: Props) {
     });
   };
 
+  // Truncate text to 50 words
+  const truncateText = (text: string, maxWords: number = 50) => {
+    const words = text.split(' ');
+    if (words.length <= maxWords) {
+      return { text: text, truncated: false };
+    }
+    return {
+      text: words.slice(0, maxWords).join(' ') + '...',
+      truncated: true
+    };
+  };
+
   // Get status badge styling
   const getStatusBadge = (status: string | undefined) => {
     const baseClasses = "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium";
@@ -148,10 +160,20 @@ export default function ViewProposals({ proposals }: Props) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Project Proposals</h1>
-            <p className="mt-2 text-gray-600 dark:text-gray-400">
-              Manage and review submitted project proposals
-            </p>
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Project Proposals</h1>
+                <p className="mt-2 text-gray-600 dark:text-gray-400">
+                  Manage and review submitted project proposals
+                </p>
+              </div>
+              <button
+                onClick={() => router.visit('/project/new-proposal')}
+                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+              >
+                Create New Proposal
+              </button>
+            </div>
           </div>
 
           {/* Status Filter */}
@@ -222,9 +244,24 @@ export default function ViewProposals({ proposals }: Props) {
                   <div className="lg:col-span-2 space-y-4">
                     <div>
                       <h4 className="font-medium text-gray-900 dark:text-white mb-1">Description</h4>
-                      <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
-                        {proposal.description}
-                      </p>
+                      {(() => {
+                        const { text, truncated } = truncateText(proposal.description);
+                        return (
+                          <div>
+                            <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
+                              {text}
+                            </p>
+                            {truncated && (
+                              <button
+                                onClick={() => handleViewDetails(proposal.id)}
+                                className="mt-2 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium transition-colors"
+                              >
+                                Read more →
+                              </button>
+                            )}
+                          </div>
+                        );
+                      })()}
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
