@@ -262,20 +262,36 @@ function GoalCard({
     comments: goal.comments || ''
   });
 
+  // Check if goal is completed (has both performance and comments)
+  const isCompleted = (goal.performance !== null && goal.performance > 0) && 
+                     (goal.comments && goal.comments.trim() !== '');
+
   const handlePerformanceChange = (value: number) => {
-    if (!goal.completed) {
+    if (!isCompleted) {
       setData('performance', value);
     }
   };
 
   const handleCommentsChange = (value: string) => {
-    if (!goal.completed) {
+    if (!isCompleted) {
       setData('comments', value);
     }
   };
 
   const handleSave = () => {
-    if (goal.completed) return;
+    if (isCompleted) return;
+    
+    // Validate that both performance and comments are provided
+    if (!data.performance || data.performance === 0) {
+      alert('Please set a performance rating');
+      return;
+    }
+    
+    if (!data.comments || data.comments.trim() === '') {
+      alert('Please add comments about this goal');
+      return;
+    }
+    
     setSaving(prev => ({ ...prev, [goal.id]: true }));
     put(route('goals.update', { goal: goal.id }), {
       onSuccess: () => {
@@ -290,12 +306,12 @@ function GoalCard({
 
   return (
     <div className={`border rounded-lg p-6 ${
-      goal.completed 
+      isCompleted 
         ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-700' 
         : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600'
     }`}>
       {/* Completed Tag - Display above the goal card */}
-      {goal.completed && (
+      {isCompleted && (
         <div className="mb-4 flex justify-center">
           <Badge variant="default" className="bg-green-600 text-white px-4 py-2 text-sm font-medium">
             ✓ Goal Completed
@@ -327,13 +343,13 @@ function GoalCard({
                 max="10"
                 value={data.performance}
                 onChange={(e) => handlePerformanceChange(parseInt(e.target.value))}
-                disabled={goal.completed}
+                disabled={isCompleted || false}
                 className={`w-full h-2 rounded-lg appearance-none cursor-pointer slider ${
-                  goal.completed 
+                  isCompleted 
                     ? 'bg-gray-300 dark:bg-gray-600 cursor-not-allowed' 
                     : 'bg-gray-200 dark:bg-gray-700'
                 }`}
-                style={!goal.completed ? {
+                style={!isCompleted ? {
                   backgroundImage: `linear-gradient(to right, #3b82f6, #3b82f6)`,
                   backgroundRepeat: 'no-repeat',
                   backgroundSize: `${data.performance * 10}% 100%`,
@@ -358,13 +374,13 @@ function GoalCard({
             rows={4}
             value={data.comments}
             onChange={(e) => handleCommentsChange(e.target.value)}
-            disabled={goal.completed}
+            disabled={isCompleted || false}
             className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:border-blue-500 dark:focus:border-blue-400 ${
-              goal.completed 
+              isCompleted 
                 ? 'bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 cursor-not-allowed text-gray-500 dark:text-gray-400' 
                 : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-blue-500 dark:focus:ring-blue-400'
             }`}
-            placeholder={goal.completed ? "Goal has been completed - no further changes allowed" : "Add comments about this goal's progress..."}
+            placeholder={isCompleted ? "Goal has been completed - no further changes allowed" : "Add comments about this goal's progress..."}
           />
         </div>
       </div>
@@ -373,16 +389,16 @@ function GoalCard({
       <div className="mt-4 flex justify-end">
         <Button
           onClick={handleSave}
-          disabled={goal.completed || isSaving || processing}
+          disabled={isCompleted || isSaving || processing}
           className={`flex items-center space-x-2 ${
-            goal.completed 
+            isCompleted 
               ? 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed border border-gray-300 dark:border-gray-600' 
               : 'bg-blue-600 dark:bg-blue-700 hover:bg-blue-700 dark:hover:bg-blue-600 text-white'
           }`}
         >
           <Save className="h-4 w-4" />
           <span>
-            {goal.completed
+            {isCompleted
               ? 'Goal Completed'
               : (isSaving || processing ? 'Saving...' : 'Complete Goal (Irreversible)')}
           </span>
@@ -407,6 +423,7 @@ function BudgetCard({
   setSaving: React.Dispatch<React.SetStateAction<{ [key: number]: boolean }>>;
 }) {
   const { data, setData, put, processing } = useForm({
+    budget_id: budget.id,
     amount_spent: (() => {
       const amountSpent = typeof budget.amount_spent === 'string' ? parseFloat(budget.amount_spent) : budget.amount_spent;
       return amountSpent > 0 && amountSpent !== null && !isNaN(amountSpent) ? amountSpent : '';
@@ -426,21 +443,30 @@ function BudgetCard({
     if (amountSpent > 0 && amountSpent !== null && !isNaN(amountSpent)) return; // Already spent, cannot edit
     
     // Validate that amount_spent is not empty and is a valid number
-    if (!data.amount_spent || isNaN(parseFloat(data.amount_spent)) || parseFloat(data.amount_spent) < 0) {
+    const amountSpentValue = typeof data.amount_spent === 'string' ? parseFloat(data.amount_spent) : data.amount_spent;
+    if (!data.amount_spent || isNaN(amountSpentValue) || amountSpentValue < 0) {
       alert('Please enter a valid amount spent');
       return;
     }
     
-    setSaving(prev => ({ ...prev, [budget.id]: true }));
-    put(route('project.milestones.update-budget', { project: projectId, milestone: milestoneId }), {
+    // Debug: Log the data being sent
+    console.log('Sending budget update data:', {
       budget_id: budget.id,
-      amount_spent: parseFloat(data.amount_spent)
-    }, {
+      amount_spent: amountSpentValue,
+      data_object: data,
+      budget_object: budget
+    });
+    
+    setSaving(prev => ({ ...prev, [budget.id]: true }));
+    
+    put(route('project.milestones.update-budget', { project: projectId, milestone: milestoneId }), {
       onSuccess: () => {
+        console.log('Budget update success');
         setSaving(prev => ({ ...prev, [budget.id]: false }));
         window.location.reload();
       },
-      onError: () => {
+      onError: (errors: any) => {
+        console.error('Budget update error:', errors);
         setSaving(prev => ({ ...prev, [budget.id]: false }));
       }
     });

@@ -202,11 +202,21 @@ public function show($id)
 {
     try {
         $userId = auth()->id();
-        $project = Project::where('id', $id)
-            ->whereHas('proposal', function ($query) use ($userId) {
+        $user = auth()->user();
+        
+        // Check if user is HOD or SuperAdmin
+        $isAdmin = $user->hasRole(['HOD', 'SuperAdmin']);
+        
+        $query = Project::where('id', $id);
+        
+        // Only filter by user's proposals if not admin
+        if (!$isAdmin) {
+            $query->whereHas('proposal', function ($query) use ($userId) {
                 $query->where('user_id', $userId);
-            })
-            ->with([
+            });
+        }
+        
+        $project = $query->with([
                 'proposal',
                 'proposal.user',
                 'milestones',
@@ -302,11 +312,26 @@ public function show($id)
 public function markComplete($id)
 {
     $userId = auth()->id();
-    $project = Project::where('id', $id)
-        ->whereHas('proposal', function ($query) use ($userId) {
+    $user = auth()->user();
+    
+    // Check if user is HOD or SuperAdmin
+    $isAdmin = $user->hasRole(['HOD', 'SuperAdmin']);
+    
+    $query = Project::where('id', $id);
+    
+    // For admin users, we still need to check if they own the project to mark it complete
+    if ($isAdmin) {
+        $query->whereHas('proposal', function ($query) use ($userId) {
             $query->where('user_id', $userId);
-        })
-        ->firstOrFail();
+        });
+    } else {
+        // Regular users can only mark their own projects as complete
+        $query->whereHas('proposal', function ($query) use ($userId) {
+            $query->where('user_id', $userId);
+        });
+    }
+    
+    $project = $query->firstOrFail();
     $project->completed = true;
     $project->save();
     return redirect()->back()->with('success', 'Project marked as complete.');

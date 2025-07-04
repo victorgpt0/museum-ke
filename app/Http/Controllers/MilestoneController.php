@@ -332,8 +332,11 @@ public function updateBudget(Request $request, Project $project, Milestone $mile
         // Log the incoming request data for debugging
         Log::info('Budget update request received', [
             'request_data' => $request->all(),
+            'request_method' => $request->method(),
+            'request_url' => $request->url(),
             'project_id' => $project->id,
-            'milestone_id' => $milestone->id
+            'milestone_id' => $milestone->id,
+            'headers' => $request->headers->all()
         ]);
 
         $validated = $request->validate([
