@@ -116,8 +116,8 @@ export default function Index() {
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Artifacts</h1>
-            <p className="text-gray-600 mt-1">Manage your museum artifacts</p>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Artifacts</h1>
+            <p className="text-gray-600 dark:text-gray-300 mt-1">Manage your museum artifacts</p>
           </div>
           <Link href={route('artifacts.create')}>
             <Button>
@@ -264,12 +264,12 @@ export default function Index() {
                     <div className="font-bold text-lg mb-2">
                       <Link
                         href={route('artifacts.show', artifact.id)}
-                        className="hover:underline text-gray-900"
+                        className="hover:underline text-gray-900 dark:text-white"
                       >
                         {artifact.title}
                       </Link>
                     </div>
-                    <div className="text-sm text-gray-600 mb-2">
+                    <div className="text-sm text-gray-600 dark:text-gray-300 mb-2">
                       Category: {artifact.category?.title}
                     </div>
                     <div className="flex gap-2 mb-2">
@@ -278,10 +278,10 @@ export default function Index() {
                       </Badge>
                       <Badge variant="outline">{artifact.status}</Badge>
                     </div>
-                    <div className="text-sm text-gray-500 mb-3">
+                    <div className="text-sm text-gray-500 dark:text-gray-400 mb-3">
                       Location: {artifact.location || 'Not specified'}
                     </div>
-                    <div className="text-xs text-gray-400 mb-3">
+                    <div className="text-xs text-gray-400 dark:text-gray-500 mb-3">
                       Acquired: {artifact.acquisition_date ? new Date(artifact.acquisition_date).toLocaleDateString() : 'Not specified'}
                     </div>
                     <div className="flex gap-2">

@@ -81,27 +81,27 @@ const AllProjects: React.FC<AllProjectsProps> = ({ projects }) => {
                       <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
                         {project.title}
                       </h3>
-                      <div className="flex items-center gap-2 mb-1">
-                        {project.completed ? (
-                          <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-                            Completed
-                          </Badge>
-                        ) : (
-                          <Badge variant="default" className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                            Ongoing
-                          </Badge>
-                        )}
-                        <span className="text-sm text-gray-500 dark:text-gray-400">
-                          Progress: {project.project_progress}%
-                        </span>
-                      </div>
-                      <div className="text-sm text-gray-500 dark:text-gray-400">
-                        Created by: <span className="font-medium text-gray-700 dark:text-gray-200">{project.creator_name || 'Unknown'}</span>
-                      </div>
+                                             <div className="flex items-center gap-2 mb-1">
+                         {project.completed ? (
+                           <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                             Completed
+                           </Badge>
+                         ) : (
+                           <Badge variant="default" className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                             Ongoing
+                           </Badge>
+                         )}
+                         <span className="text-sm text-gray-500 dark:text-gray-300">
+                           Progress: {project.project_progress}%
+                         </span>
+                       </div>
+                       <div className="text-sm text-gray-500 dark:text-gray-300">
+                         Created by: <span className="font-medium text-gray-700 dark:text-gray-100">{project.creator_name || 'Unknown'}</span>
+                       </div>
                     </div>
-                    <div className="text-right text-sm text-gray-500 dark:text-gray-400">
-                      Created: {formatDate(project.created_at)}
-                    </div>
+                                         <div className="text-right text-sm text-gray-500 dark:text-gray-300">
+                       Created: {formatDate(project.created_at)}
+                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -138,33 +138,33 @@ const AllProjects: React.FC<AllProjectsProps> = ({ projects }) => {
                           const { text, truncated } = truncateText(project.description);
                           return (
                             <div>
-                              <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
-                                {text}
-                              </p>
-                              {truncated && (
-                                <span className="mt-2 text-blue-600 dark:text-blue-400 text-sm font-medium">
-                                  Read more →
-                                </span>
-                              )}
+                                                             <p className="text-gray-600 dark:text-gray-200 text-sm leading-relaxed">
+                                 {text}
+                               </p>
+                               {truncated && (
+                                 <span className="mt-2 text-blue-600 dark:text-blue-300 text-sm font-medium">
+                                   Read more →
+                                 </span>
+                               )}
                             </div>
                           );
                         })()}
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div>
-                          <h4 className="font-medium text-gray-900 dark:text-white mb-1">Duration</h4>
-                          <p className="text-gray-600 dark:text-gray-300 text-sm">{project.duration || 'Not specified'}</p>
-                        </div>
-                        <div>
-                          <h4 className="font-medium text-gray-900 dark:text-white mb-1">Milestones</h4>
-                          <p className="text-gray-600 dark:text-gray-300 text-sm">{project.milestones_count}</p>
-                        </div>
-                        <div>
-                          <h4 className="font-medium text-gray-900 dark:text-white mb-1">Goals</h4>
-                          <p className="text-gray-600 dark:text-gray-300 text-sm">{project.completed_goals_count}/{project.goals_count} completed</p>
-                        </div>
-                      </div>
+                                               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                           <div>
+                             <h4 className="font-medium text-gray-900 dark:text-white mb-1">Duration</h4>
+                             <p className="text-gray-600 dark:text-gray-200 text-sm">{project.duration || 'Not specified'}</p>
+                           </div>
+                           <div>
+                             <h4 className="font-medium text-gray-900 dark:text-white mb-1">Milestones</h4>
+                             <p className="text-gray-600 dark:text-gray-200 text-sm">{project.milestones_count}</p>
+                           </div>
+                           <div>
+                             <h4 className="font-medium text-gray-900 dark:text-white mb-1">Goals</h4>
+                             <p className="text-gray-600 dark:text-gray-200 text-sm">{project.completed_goals_count}/{project.goals_count} completed</p>
+                           </div>
+                         </div>
                     </div>
                   </div>
                 </Link>

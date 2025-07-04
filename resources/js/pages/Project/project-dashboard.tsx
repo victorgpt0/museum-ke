@@ -1,10 +1,32 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Head, Link, useForm, router } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
 import { Badge } from '@/components/ui/badge';
 import toast, { Toaster } from 'react-hot-toast';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement,
+} from 'chart.js';
+import { Bar, Doughnut } from 'react-chartjs-2';
+
+// Register Chart.js components
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement
+);
 
 import { 
   Calendar, 
@@ -26,7 +48,9 @@ import {
   Settings,
   ArrowRight,
   FolderOpen,
-  Star
+  Star,
+  DollarSign,
+  TrendingDown
 } from 'lucide-react';
 
 interface Proposal {
@@ -205,9 +229,14 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ project }) => {
     
     // Collect all budget items from all milestones
     const allBudgetItems: any[] = [];
+    let totalBudget = 0;
+    let totalSpent = 0;
+    
     (project.milestones || []).forEach((milestone: any) => {
       if (milestone.budgets && milestone.budgets.length > 0) {
         milestone.budgets.forEach((budget: any) => {
+          totalBudget += budget.amount ? parseFloat(budget.amount) : 0;
+          totalSpent += budget.amount_spent ? parseFloat(budget.amount_spent) : 0;
           allBudgetItems.push([
             budget.title,
             budget.description,
@@ -229,6 +258,21 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ project }) => {
         columnStyles: { 0: { cellWidth: 30 }, 1: { cellWidth: 50 }, 2: { cellWidth: 25 }, 3: { cellWidth: 25 }, 4: { cellWidth: 30 } },
       });
       y = (doc as any).lastAutoTable.finalY + 8;
+      
+      // Add financial summary
+      doc.setFontSize(12);
+      doc.text('Financial Summary:', 10, y);
+      y += 6;
+      doc.setFontSize(10);
+      doc.text(`Total Budget: Ksh ${totalBudget.toLocaleString()}`, 10, y);
+      y += 5;
+      doc.text(`Total Spent: Ksh ${totalSpent.toLocaleString()}`, 10, y);
+      y += 5;
+      doc.text(`Remaining: Ksh ${(totalBudget - totalSpent).toLocaleString()}`, 10, y);
+      y += 5;
+      const efficiency = totalBudget > 0 ? ((totalBudget - totalSpent) / totalBudget) * 100 : 100;
+      doc.text(`Financial Efficiency: ${efficiency.toFixed(1)}%`, 10, y);
+      y += 8;
     } else {
       doc.setFontSize(10);
       doc.text('No budget items recorded.', 10, y);
@@ -341,14 +385,29 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ project }) => {
         </div>
         <Icon className="h-8 w-8 text-gray-400 dark:text-gray-500" />
       </div>
-      {isEmpty && (
-        <Link
-          href={actionLink}
-          className="inline-flex items-center text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium"
-        >
-          {actionText}
-          <ArrowRight className="h-4 w-4 ml-1" />
-        </Link>
+      {(isEmpty || actionLink.startsWith('#')) && (
+        actionLink.startsWith('#') ? (
+          <button
+            onClick={() => {
+              const element = document.querySelector(actionLink);
+              if (element) {
+                element.scrollIntoView({ behavior: 'smooth' });
+              }
+            }}
+            className="inline-flex items-center text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium"
+          >
+            {actionText}
+            <ArrowRight className="h-4 w-4 ml-1" />
+          </button>
+        ) : (
+          <Link
+            href={actionLink}
+            className="inline-flex items-center text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium"
+          >
+            {actionText}
+            <ArrowRight className="h-4 w-4 ml-1" />
+          </Link>
+        )
       )}
     </div>
   );
@@ -379,6 +438,93 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ project }) => {
       </Link>
     </div>
   );
+
+  // Financial data processing
+  const processFinancialData = () => {
+    if (!project?.milestones) return null;
+
+    const milestoneData = project.milestones.map((milestone: any) => {
+      const totalBudget = milestone.budgets?.reduce((sum: number, budget: any) => sum + (budget.amount ? parseFloat(budget.amount) : 0), 0) || 0;
+      const totalSpent = milestone.budgets?.reduce((sum: number, budget: any) => sum + (budget.amount_spent ? parseFloat(budget.amount_spent) : 0), 0) || 0;
+      
+      return {
+        milestone: milestone.title,
+        budget: totalBudget,
+        spent: totalSpent,
+        efficiency: totalBudget > 0 ? ((totalBudget - totalSpent) / totalBudget) * 100 : 100
+      };
+    });
+
+    const overallBudget = milestoneData.reduce((sum, item) => sum + item.budget, 0);
+    const overallSpent = milestoneData.reduce((sum, item) => sum + item.spent, 0);
+    const overallEfficiency = overallBudget > 0 ? ((overallBudget - overallSpent) / overallBudget) * 100 : 100;
+
+    return {
+      milestoneData,
+      overallBudget,
+      overallSpent,
+      overallEfficiency
+    };
+  };
+
+  const financialData = processFinancialData();
+
+  // Chart configuration
+  const chartOptions = {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: 'top' as const,
+        labels: {
+          color: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#374151'
+        }
+      },
+      title: {
+        display: true,
+        text: 'Budget vs Expenditure by Milestone',
+        color: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#374151'
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: {
+          color: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#374151',
+          callback: function(value: any) {
+            return 'Ksh ' + value.toLocaleString();
+          }
+        },
+        grid: {
+          color: document.documentElement.classList.contains('dark') ? '#374151' : '#e5e7eb'
+        }
+      },
+      x: {
+        ticks: {
+          color: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#374151'
+        },
+        grid: {
+          color: document.documentElement.classList.contains('dark') ? '#374151' : '#e5e7eb'
+        }
+      }
+    }
+  };
+
+  const efficiencyChartOptions = {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: 'bottom' as const,
+        labels: {
+          color: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#374151'
+        }
+      },
+      title: {
+        display: true,
+        text: 'Financial Efficiency Overview',
+        color: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#374151'
+      },
+    }
+  };
 
   // Show message if no project found
   if (!project) {
@@ -479,7 +625,7 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ project }) => {
           </div>
 
           {/* Metrics Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
               <MetricCard
               title="Milestones"
               value={project.milestones_count || 0}
@@ -516,6 +662,17 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ project }) => {
               actionLink={`/projects/${project.id}/team-members/create`}
               isEmpty={!project.team_members_count || project.team_members_count === 0}
             />
+            {financialData && (
+              <MetricCard
+                title="Budget Efficiency"
+                value={`${financialData.overallEfficiency.toFixed(1)}%`}
+                icon={DollarSign}
+                color="border-emerald-500"
+                actionText="View Details"
+                actionLink="#financial-section"
+                isEmpty={false}
+              />
+            )}
           </div>
 
           {/* Progress Overview */}
@@ -542,6 +699,146 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ project }) => {
               </div>
             </div>
           </div>
+
+          {/* Financial Overview */}
+          {financialData && (
+            <div id="financial-section" className="bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6 mb-12">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-8">Financial Overview</h3>
+              {/* Financial Statistics Cards */}
+              <div className="flex flex-wrap gap-6 mb-10">
+                <div className="flex-1 min-w-[220px] max-w-xs bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg p-5 flex flex-col justify-between shadow-sm">
+                  <p className="text-sm font-medium text-blue-600 dark:text-blue-400 mb-2">Total Budget</p>
+                  <div className="flex items-end gap-2">
+                    <span className="text-lg font-semibold text-blue-900 dark:text-blue-100">Ksh</span>
+                    <span className="text-3xl font-bold text-blue-900 dark:text-blue-100 break-all">{financialData.overallBudget.toLocaleString()}</span>
+                  </div>
+                </div>
+                <div className="flex-1 min-w-[220px] max-w-xs bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-700 rounded-lg p-5 flex flex-col justify-between shadow-sm">
+                  <p className="text-sm font-medium text-orange-600 dark:text-orange-400 mb-2">Total Spent</p>
+                  <div className="flex items-end gap-2">
+                    <span className="text-lg font-semibold text-orange-900 dark:text-orange-100">Ksh</span>
+                    <span className="text-3xl font-bold text-orange-900 dark:text-orange-100 break-all">{financialData.overallSpent.toLocaleString()}</span>
+                  </div>
+                </div>
+                <div className="flex-1 min-w-[220px] max-w-xs bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-lg p-5 flex flex-col justify-between shadow-sm">
+                  <p className="text-sm font-medium text-green-600 dark:text-green-400 mb-2">Remaining</p>
+                  <div className="flex items-end gap-2">
+                    <span className="text-lg font-semibold text-green-900 dark:text-green-100">Ksh</span>
+                    <span className="text-3xl font-bold text-green-900 dark:text-green-100 break-all">{(financialData.overallBudget - financialData.overallSpent).toLocaleString()}</span>
+                  </div>
+                </div>
+                <div className="flex-1 min-w-[220px] max-w-xs bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-700 rounded-lg p-5 flex flex-col justify-between shadow-sm">
+                  <p className="text-sm font-medium text-purple-600 dark:text-purple-400 mb-2">Efficiency</p>
+                  <div className="flex items-end gap-2">
+                    <span className="text-3xl font-bold text-purple-900 dark:text-purple-100">{financialData.overallEfficiency.toFixed(1)}%</span>
+                  </div>
+                </div>
+              </div>
+              {/* Charts */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 mb-10">
+                {/* Budget vs Expenditure Chart */}
+                <div className="bg-gray-50 dark:bg-gray-900/30 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+                  <h4 className="text-md font-semibold text-gray-900 dark:text-white mb-4">Budget vs Expenditure by Milestone</h4>
+                  {financialData.milestoneData.length > 0 ? (
+                    <Bar
+                      data={{
+                        labels: financialData.milestoneData.map(item => item.milestone),
+                        datasets: [
+                          {
+                            label: 'Budgeted Amount',
+                            data: financialData.milestoneData.map(item => item.budget),
+                            backgroundColor: 'rgba(59, 130, 246, 0.8)',
+                            borderColor: 'rgba(59, 130, 246, 1)',
+                            borderWidth: 1,
+                          },
+                          {
+                            label: 'Amount Spent',
+                            data: financialData.milestoneData.map(item => item.spent),
+                            backgroundColor: 'rgba(249, 115, 22, 0.8)',
+                            borderColor: 'rgba(249, 115, 22, 1)',
+                            borderWidth: 1,
+                          },
+                        ],
+                      }}
+                      options={chartOptions}
+                    />
+                  ) : (
+                    <div className="flex items-center justify-center h-40 text-gray-500 dark:text-gray-400 text-center">
+                      No budget data available
+                    </div>
+                  )}
+                </div>
+                {/* Efficiency Chart */}
+                <div className="bg-gray-50 dark:bg-gray-900/30 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+                  <h4 className="text-md font-semibold text-gray-900 dark:text-white mb-4">Financial Efficiency</h4>
+                  {financialData.overallBudget > 0 ? (
+                    <Doughnut
+                      data={{
+                        labels: ['Spent', 'Remaining'],
+                        datasets: [
+                          {
+                            data: [financialData.overallSpent, financialData.overallBudget - financialData.overallSpent],
+                            backgroundColor: [
+                              'rgba(249, 115, 22, 0.8)',
+                              'rgba(34, 197, 94, 0.8)',
+                            ],
+                            borderColor: [
+                              'rgba(249, 115, 22, 1)',
+                              'rgba(34, 197, 94, 1)',
+                            ],
+                            borderWidth: 2,
+                          },
+                        ],
+                      }}
+                      options={efficiencyChartOptions}
+                    />
+                  ) : (
+                    <div className="flex items-center justify-center h-40 text-gray-500 dark:text-gray-400 text-center">
+                      No budget data available
+                    </div>
+                  )}
+                </div>
+              </div>
+              {/* Detailed Budget Table */}
+              {financialData.milestoneData.length > 0 && (
+                <div className="mt-8">
+                  <h4 className="text-md font-semibold text-gray-900 dark:text-white mb-4">Detailed Budget Breakdown</h4>
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                      <thead className="bg-gray-100 dark:bg-gray-700">
+                        <tr>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-200 uppercase tracking-wider">Milestone</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-200 uppercase tracking-wider">Budgeted</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-200 uppercase tracking-wider">Spent</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-200 uppercase tracking-wider">Remaining</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-200 uppercase tracking-wider">Efficiency</th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                        {financialData.milestoneData.map((item, index) => (
+                          <tr key={index} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">{item.milestone}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">Ksh {item.budget.toLocaleString()}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">Ksh {item.spent.toLocaleString()}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">Ksh {(item.budget - item.spent).toLocaleString()}</td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                                item.efficiency >= 80 ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
+                                item.efficiency >= 60 ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' :
+                                'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                              }`}>
+                                {item.efficiency.toFixed(1)}%
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
             {/* Team Members Section */}
