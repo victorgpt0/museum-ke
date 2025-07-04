@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\DonorApprovalMail;
+use App\Mail\DonorRejectionMail;
+use App\Mail\DonorSubmissionMail;
 use App\Models\ArtifactProposal;
 use App\Models\Donor;
 use App\Models\User;
@@ -12,6 +15,7 @@ use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use Inertia\Inertia;
 use Carbon\Carbon;
@@ -106,6 +110,7 @@ class AcquisitionController extends Controller implements HasMiddleware
 
             DB::commit();
 
+            // Send notification to curators and admins
             User::role(['Curator','SuperAdmin'])->each(function($user) use ($artifactProposal, $request){
                 $user->notify(
                     new UserNotification(
@@ -116,6 +121,9 @@ class AcquisitionController extends Controller implements HasMiddleware
                         $user->id
                     ));
             });
+
+            // Send confirmation email to donor
+            Mail::to($donor->email)->send(new DonorSubmissionMail($artifactProposal));
 
             return to_route('home')->with('success','Acquisition Created Successfully');
         } catch (\Exception $exception){
@@ -204,6 +212,7 @@ class AcquisitionController extends Controller implements HasMiddleware
 
             DB::commit();
 
+            // Send notification to curators and admins
             User::role(['Curator','SuperAdmin'])->each(function($user) use ($artifactProposal){
                 $user->notify(
                     new UserNotification(
@@ -214,6 +223,9 @@ class AcquisitionController extends Controller implements HasMiddleware
                         $user->id
                     ));
             });
+
+            // Send approval email to donor
+            Mail::to($artifactProposal->donor->email)->send(new DonorApprovalMail($artifactProposal));
 
             return back()->with('success', 'Artifact proposal approved successfully.');
 
@@ -237,6 +249,7 @@ class AcquisitionController extends Controller implements HasMiddleware
                 'proposal_status' => 'rejected'
             ]);
 
+            // Send notification to curators and admins
             User::role(['Curator','SuperAdmin'])->each(function($user) use ($artifactProposal){
                 $user->notify(
                     new UserNotification(
@@ -247,6 +260,9 @@ class AcquisitionController extends Controller implements HasMiddleware
                         $user->id
                     ));
             });
+
+            // Send rejection email to donor
+            Mail::to($artifactProposal->donor->email)->send(new DonorRejectionMail($artifactProposal));
 
             return back()->with('success', 'Artifact proposal rejected successfully.');
 

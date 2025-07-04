@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * Milestone Model Template
- * 
+ *
  * REUSABLE TEMPLATE INSTRUCTIONS:
  * 1. Change class name from 'Milestone' to your desired model name
  * 2. Update $table property to match your table name
@@ -60,7 +60,7 @@ class Milestone extends Model implements HasMedia
 
     /**
      * Get the project that owns this milestone.
-     * 
+     *
      * TEMPLATE USAGE:
      * - Change method name to match your relationship (e.g., user(), category(), etc.)
      * - Change 'Project::class' to your related model class
@@ -107,7 +107,7 @@ public function budgets(): HasMany
     /**
      * Define media conversions (optional - for image processing)
      */
-    public function registerMediaConversions(Media $media = null): void
+    public function registerMediaConversions(?Media $media = null): void
     {
         $this->addMediaConversion('thumb')
             ->width(300)
@@ -119,19 +119,19 @@ public function budgets(): HasMany
 
     /**
      * ADDITIONAL RELATIONSHIP EXAMPLES FOR REUSE:
-     * 
+     *
      * // One-to-Many (if this model has many related records)
      * public function relatedItems(): HasMany
      * {
      *     return $this->hasMany(RelatedModel::class, 'foreign_key_field');
      * }
-     * 
+     *
      * // Many-to-Many
      * public function tags(): BelongsToMany
      * {
      *     return $this->belongsToMany(Tag::class, 'pivot_table_name');
      * }
-     * 
+     *
      * // Has One
      * public function detail(): HasOne
      * {
@@ -188,6 +188,6 @@ public function budgets(): HasMany
     {
         $this->attributes['title'] = ucfirst(trim($value));
     }
-    
+
 
 }

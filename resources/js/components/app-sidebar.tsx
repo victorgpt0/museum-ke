@@ -74,20 +74,6 @@ const mainNavItems: NavItem[] = [
         href: '/project/viewproposals',
         icon: Archive,
         permission: 'proposals.view',
-        // children: [
-        //     {
-        //         title: 'Make a project Proposal',
-        //         href: '/project/new-proposal',
-        //         icon: FileCheck,
-        //         permission: 'proposals.create',
-        //     },
-        //     {
-        //         title: 'View Proposal',
-        //         href: '/project/viewproposals',
-        //         icon: FileText,
-        //         permission: 'proposals.view',
-        //     },
-        // ]
     },
     {
         title: 'Project Report',
