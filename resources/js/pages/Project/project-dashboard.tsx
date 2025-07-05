@@ -9,6 +9,7 @@ import {
   Chart as ChartJS,
   CategoryScale,
   LinearScale,
+  LogarithmicScale,
   BarElement,
   Title,
   Tooltip,
@@ -21,6 +22,7 @@ import { Bar, Doughnut } from 'react-chartjs-2';
 ChartJS.register(
   CategoryScale,
   LinearScale,
+  LogarithmicScale,
   BarElement,
   Title,
   Tooltip,
@@ -60,6 +62,7 @@ interface Proposal {
     title: string;
     description: string;
     user_id: number;
+    user_name?: string;
     // Add other proposal fields as needed
 }
 
@@ -567,16 +570,19 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ project }) => {
       },
       title: {
         display: true,
-        text: 'Budget vs Expenditure by Milestone',
+        text: 'Budget vs Expenditure by Milestone (Log Scale)',
         color: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#374151'
       },
     },
     scales: {
       y: {
-        beginAtZero: true,
+        type: 'logarithmic' as const,
+        beginAtZero: false,
+        min: 1, // Start from 1 to avoid log(0) issues
         ticks: {
           color: document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#374151',
           callback: function(value: any) {
+            if (value === 0) return 'Ksh 0';
             return 'Ksh ' + value.toLocaleString();
           }
         },
@@ -1422,6 +1428,43 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ project }) => {
                             </div>
                         )}
                     </div>
+                </div>
+            </div>
+
+            {/* Project Proposal Section */}
+            <div className="mb-8 rounded-lg border border-gray-200 bg-white p-6 shadow-md dark:border-gray-700 dark:bg-gray-800">
+                <div className="mb-6 flex items-center justify-between">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Project Proposal</h3>
+                    <Link
+                        href={`/proposals/${project.proposal.id}`}
+                        className="flex items-center rounded-md bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600"
+                    >
+                        <FileText className="mr-2 h-4 w-4" />
+                        View Full Proposal
+                    </Link>
+                </div>
+
+                <div className="space-y-4">
+                    <div>
+                        <h4 className="mb-2 text-md font-medium text-gray-900 dark:text-white">{project.proposal.title}</h4>
+                        <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
+                            {project.proposal.description.length > 300 
+                                ? `${project.proposal.description.substring(0, 300)}...` 
+                                : project.proposal.description
+                            }
+                        </p>
+                        {project.proposal.description.length > 300 && (
+                            <Link
+                                href={`/proposals/${project.proposal.id}`}
+                                className="inline-flex items-center text-sm text-blue-600 hover:underline dark:text-blue-400 mt-2"
+                            >
+                                Read more
+                                <ArrowRight className="ml-1 h-4 w-4" />
+                            </Link>
+                        )}
+                    </div>
+                    
+                   
                 </div>
             </div>
 

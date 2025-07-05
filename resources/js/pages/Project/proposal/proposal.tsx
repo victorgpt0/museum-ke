@@ -73,9 +73,11 @@ const ProposalDetails: React.FC<ProposalDetailsProps> = ({ proposal }) => {
                 </Link>
                 <div className="mb-6 flex items-center justify-between">
                     <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{proposal.title}</h1>
-                    <div className="flex items-center gap-2 rounded-full bg-gray-100 px-3 py-1 dark:bg-gray-700">
-                        <User className="h-5 w-5 text-gray-500 dark:text-gray-300" />
-                        <span className="text-sm font-medium text-gray-800 dark:text-gray-200">{proposal.user_name || 'Unknown'}</span>
+                    <div className="flex items-center gap-2 rounded-full bg-blue-100 px-4 py-2 dark:bg-blue-900/30">
+                        <User className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                        <span className="text-sm font-semibold text-blue-800 dark:text-blue-200">
+                            {proposal.user_name || `User ID ${proposal.user_id}`}
+                        </span>
                     </div>
                 </div>
                 {sections.main[0] && (
