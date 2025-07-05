@@ -2,6 +2,8 @@ import React from 'react';
 import { Head, Link } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { BreadcrumbItem } from '@/types';
 
 interface Project {
   id: number;
@@ -26,6 +28,12 @@ interface AllProjectsProps {
   projects: Project[];
 }
 
+const breadcrumbs: BreadcrumbItem[] = [
+    {
+        title: 'Project Dashboard',
+        href: '/project/all-projects',
+    }
+]
 const AllProjects: React.FC<AllProjectsProps> = ({ projects }) => {
   // Truncate text to 50 words
   const truncateText = (text: string, maxWords: number = 50) => {
@@ -51,7 +59,7 @@ const AllProjects: React.FC<AllProjectsProps> = ({ projects }) => {
   };
 
   return (
-    <AppLayout>
+    <AppLayout breadcrumbs={breadcrumbs}>
       <Head title="All Projects" />
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

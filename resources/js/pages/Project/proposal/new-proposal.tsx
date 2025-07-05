@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Upload, X, CheckCircle, AlertCircle, Plus, Trash2, User, Target, Flag } from 'lucide-react';
+import { BreadcrumbItem } from '@/types';
 
 interface TeamMember {
   id: string;
@@ -54,6 +55,16 @@ interface ProposalFormData {
   goals: Goal[];
 }
 
+const breadcrumbs: BreadcrumbItem[] = [
+    {
+        title: 'Project Proposals',
+        href: '/project/viewproposals'
+    },
+    {
+        title: 'New Proposal',
+        href: '/project/new-proposal'
+    }
+];
 export default function NewProposalForm() {
 
   const [processing, setProcessing] = useState(false);
@@ -106,7 +117,7 @@ const [isUploadingDocs, setIsUploadingDocs] = useState(false);
 
   const handleDocumentUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    
+
     if (files.length === 0) return;
 
     // Validate file types - allow various document types
@@ -121,7 +132,7 @@ const [isUploadingDocs, setIsUploadingDocs] = useState(false);
       'image/jpg',
       'image/png'
     ];
-    
+
     const invalidFiles = files.filter(file => !allowedTypes.includes(file.type));
     if (invalidFiles.length > 0) {
       toast.error('Please upload only supported document types (PDF, Word, Excel, Text, or Image files).');
@@ -137,7 +148,7 @@ const [isUploadingDocs, setIsUploadingDocs] = useState(false);
 
     const newDocuments = [...selectedDocuments, ...files];
     const newPreviews = [...documentPreviews, ...files.map(file => file.name)];
-    
+
     setSelectedDocuments(newDocuments);
     setDocumentPreviews(newPreviews);
     toast.success(`${files.length} file(s) added successfully`);
@@ -146,7 +157,7 @@ const [isUploadingDocs, setIsUploadingDocs] = useState(false);
   const removeDocument = (index: number) => {
     const newDocuments = selectedDocuments.filter((_, i) => i !== index);
     const newPreviews = documentPreviews.filter((_, i) => i !== index);
-    
+
     setSelectedDocuments(newDocuments);
     setDocumentPreviews(newPreviews);
     toast.success('Document removed');
@@ -303,22 +314,22 @@ const [isUploadingDocs, setIsUploadingDocs] = useState(false);
 
 const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     console.log('Form submission started');
     console.log('Original form data:', data);
     console.log('Selected documents:', selectedDocuments); // Log the actual File objects
     console.log('Document previews:', documentPreviews); // Log the preview names
-    
+
     if (!data.title.trim()) {
         alert('Please enter a proposal title');
         return;
     }
-    
+
     if (!data.description.trim()) {
         alert('Please enter a description');
         return;
     }
-    
+
     // Build the additional description content
     let additions = '';
     if (data.objectives?.length > 0) {
@@ -355,7 +366,7 @@ const handleSubmit = (e: React.FormEvent) => {
         additions += `\n\nTeam Members:\n${teamText}`;
     }
     const fullDescription = `${data.description.trim()}${additions}`;
-    
+
     // Create form data object that includes documents
     const formData = {
         title: data.title.trim(),
@@ -363,10 +374,10 @@ const handleSubmit = (e: React.FormEvent) => {
         duration: data.duration.trim() || 'Not specified',
         documents: selectedDocuments || [] // Add the uploaded documents here
     };
-    
+
     console.log('Formatted Proposal Data:', formData);
     console.log('Documents being sent:', selectedDocuments?.map(doc => doc.name) || []); // Log document names
-    
+
     // Send data to backend
     router.post(
         route('projectproposal.store'),
@@ -384,7 +395,7 @@ const handleSubmit = (e: React.FormEvent) => {
             onSuccess: (page) => {
                 console.log('[✅] Request successful! Server response page:', page);
                 toast.success('Proposal has been submitted successfully');
-                
+
                 // Redirect after 3 seconds to allow user to see the success message
                 setTimeout(() => {
                     router.visit(route('projectproposal.index'), {
@@ -403,13 +414,13 @@ const handleSubmit = (e: React.FormEvent) => {
         }
     );
 };
- 
+
 
   return (
-    <AppLayout>
+    <AppLayout breadcrumbs={breadcrumbs}>
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
         {/* Toast Notifications */}
-        <Toaster 
+        <Toaster
           position="top-right"
           toastOptions={{
             style: {
@@ -447,7 +458,7 @@ const handleSubmit = (e: React.FormEvent) => {
             }
           }}
         />
-        
+
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-8 text-center">
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
@@ -525,11 +536,11 @@ const handleSubmit = (e: React.FormEvent) => {
                       <div className="text-center">
                         <Upload className="mx-auto h-8 w-8 text-gray-400 dark:text-gray-500" />
                         <div className="mt-2">
-                          <Label 
-                            htmlFor="documents" 
+                          <Label
+                            htmlFor="documents"
                             className={`cursor-pointer px-3 py-1 rounded-md text-sm inline-block transition-colors ${
-                              isUploadingDocs 
-                                ? 'bg-gray-400 dark:bg-gray-600 text-white cursor-not-allowed' 
+                              isUploadingDocs
+                                ? 'bg-gray-400 dark:bg-gray-600 text-white cursor-not-allowed'
                                 : 'bg-blue-600 dark:bg-blue-700 text-white hover:bg-blue-700 dark:hover:bg-blue-600'
                             }`}
                           >
@@ -604,9 +615,9 @@ const handleSubmit = (e: React.FormEvent) => {
                       className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
                     />
                   </div>
-                  
+
                 </div>
-                
+
                 <div className="flex justify-end">
                   <Button type="button" onClick={addObjective} size="sm" className="bg-blue-600 dark:bg-blue-700 text-white hover:bg-blue-700 dark:hover:bg-blue-600">
                     <Plus className="h-4 w-4 mr-1" />
@@ -684,7 +695,7 @@ const handleSubmit = (e: React.FormEvent) => {
                     />
                   </div>
                 </div>
-                
+
                 <div className="flex justify-end">
                   <Button type="button" onClick={addTeamMember} size="sm" className="bg-blue-600 dark:bg-blue-700 text-white hover:bg-blue-700 dark:hover:bg-blue-600">
                     <Plus className="h-4 w-4 mr-1" />
@@ -797,7 +808,7 @@ const handleSubmit = (e: React.FormEvent) => {
                       />
                     </div>
                   </div>
-                  
+
                   <div className="flex justify-end mt-3">
                     <Button type="button" onClick={addBudgetItem} size="sm" className="bg-green-600 dark:bg-green-700 text-white hover:bg-green-700 dark:hover:bg-green-600">
                       <Plus className="h-4 w-4 mr-1" />
@@ -830,7 +841,7 @@ const handleSubmit = (e: React.FormEvent) => {
                     </div>
                   )}
                 </div>
-                
+
                 <div className="flex justify-end">
                   <Button type="button" onClick={addMilestone} size="sm" className="bg-blue-600 dark:bg-blue-700 text-white hover:bg-blue-700 dark:hover:bg-blue-600">
                     <Plus className="h-4 w-4 mr-1" />
@@ -862,7 +873,7 @@ const handleSubmit = (e: React.FormEvent) => {
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
-                        
+
                         {/* Budget Items for this milestone */}
                         {milestone.budgetItems && milestone.budgetItems.length > 0 && (
                           <div className="mt-3 pt-3 border-t border-yellow-300 dark:border-yellow-600">
@@ -919,7 +930,7 @@ const handleSubmit = (e: React.FormEvent) => {
                     />
                   </div>
                 </div>
-                
+
                 <div className="flex justify-end">
                   <Button type="button" onClick={addGoal} size="sm" className="bg-blue-600 dark:bg-blue-700 text-white hover:bg-blue-700 dark:hover:bg-blue-600">
                     <Plus className="h-4 w-4 mr-1" />
@@ -958,17 +969,17 @@ const handleSubmit = (e: React.FormEvent) => {
             {/* Submit Buttons */}
             <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
               <CardFooter className="flex justify-end space-x-4">
-                <Button 
-                  variant="outline" 
-                  type="button" 
+                <Button
+                  variant="outline"
+                  type="button"
                   onClick={() => window.history.back()}
                   disabled={processing}
                   className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
                 >
                   Cancel
                 </Button>
-                <Button 
-                  type="submit" 
+                <Button
+                  type="submit"
                   onClick={handleSubmit}
                   disabled={processing}
                   className="bg-blue-600 dark:bg-blue-700 text-white hover:bg-blue-700 dark:hover:bg-blue-600"
