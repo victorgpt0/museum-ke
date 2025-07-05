@@ -9,16 +9,16 @@ import AppLogo from './app-logo';
 
 const mainNavItems: NavItem[] = [
     {
-        title: 'Artifacts',
-        href: '/artifacts',
-        icon: Archive,
-        permission: 'artifacts.view',
-    },
-    {
         title: 'Dashboard',
         href: '/dashboard',
         icon: LayoutGrid,
         permission: 'dashboard.view',
+    },
+    {
+        title: 'Artifacts',
+        href: '/artifacts',
+        icon: Archive,
+        permission: 'artifacts.view',
     },
     {
         title: 'Project Dashboard',

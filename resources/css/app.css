@@ -79,74 +79,85 @@
 }
 
 :root {
-    --background: oklch(1 0 0);
-    --foreground: oklch(0.145 0 0);
-    --card: oklch(1 0 0);
-    --card-foreground: oklch(0.145 0 0);
-    --popover: oklch(1 0 0);
-    --popover-foreground: oklch(0.145 0 0);
-    --primary: oklch(0.205 0 0);
-    --primary-foreground: oklch(0.985 0 0);
-    --secondary: oklch(0.97 0 0);
-    --secondary-foreground: oklch(0.205 0 0);
-    --muted: oklch(0.97 0 0);
-    --muted-foreground: oklch(0.556 0 0);
-    --accent: oklch(0.97 0 0);
-    --accent-foreground: oklch(0.205 0 0);
-    --destructive: oklch(0.577 0.245 27.325);
-    --destructive-foreground: oklch(0.577 0.245 27.325);
-    --border: oklch(0.922 0 0);
-    --input: oklch(0.922 0 0);
-    --ring: oklch(0.87 0 0);
-    --chart-1: oklch(0.646 0.222 41.116);
-    --chart-2: oklch(0.6 0.118 184.704);
-    --chart-3: oklch(0.398 0.07 227.392);
-    --chart-4: oklch(0.828 0.189 84.429);
-    --chart-5: oklch(0.769 0.188 70.08);
+    /* Museum Light Theme - Warm, elegant, and professional */
+    --background: oklch(0.98 0.01 85); /* Warm cream background */
+    --foreground: oklch(0.15 0.02 85); /* Deep brown text */
+    --card: oklch(0.99 0.005 85); /* Slightly warmer white for cards */
+    --card-foreground: oklch(0.15 0.02 85); /* Deep brown text */
+    --popover: oklch(0.99 0.005 85); /* Warm white for popovers */
+    --popover-foreground: oklch(0.15 0.02 85); /* Deep brown text */
+    --primary: oklch(0.65 0.15 85); /* Museum gold - primary brand color */
+    --primary-foreground: oklch(0.15 0.02 85); /* Dark brown on gold */
+    --secondary: oklch(0.95 0.02 85); /* Warm light beige */
+    --secondary-foreground: oklch(0.25 0.03 85); /* Medium brown */
+    --muted: oklch(0.94 0.015 85); /* Muted warm beige */
+    --muted-foreground: oklch(0.45 0.03 85); /* Muted brown text */
+    --accent: oklch(0.92 0.025 85); /* Light warm accent */
+    --accent-foreground: oklch(0.25 0.03 85); /* Medium brown on accent */
+    --destructive: oklch(0.65 0.25 25); /* Warm red for destructive actions */
+    --destructive-foreground: oklch(0.98 0.01 85); /* Light cream on red */
+    --border: oklch(0.88 0.02 85); /* Warm border color */
+    --input: oklch(0.96 0.01 85); /* Warm input background */
+    --ring: oklch(0.65 0.15 85); /* Gold ring color */
+    
+    /* Museum-themed chart colors */
+    --chart-1: oklch(0.65 0.15 85); /* Museum gold */
+    --chart-2: oklch(0.55 0.12 45); /* Rich brown */
+    --chart-3: oklch(0.45 0.08 25); /* Deep brown */
+    --chart-4: oklch(0.75 0.10 65); /* Warm tan */
+    --chart-5: oklch(0.60 0.13 55); /* Medium brown */
+    
     --radius: 0.625rem;
-    --sidebar: oklch(0.985 0 0);
-    --sidebar-foreground: oklch(0.145 0 0);
-    --sidebar-primary: oklch(0.205 0 0);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.97 0 0);
-    --sidebar-accent-foreground: oklch(0.205 0 0);
-    --sidebar-border: oklch(0.922 0 0);
-    --sidebar-ring: oklch(0.87 0 0);
+    
+    /* Sidebar with museum theme */
+    --sidebar: oklch(0.96 0.015 85); /* Warm sidebar background */
+    --sidebar-foreground: oklch(0.15 0.02 85); /* Deep brown text */
+    --sidebar-primary: oklch(0.65 0.15 85); /* Museum gold */
+    --sidebar-primary-foreground: oklch(0.15 0.02 85); /* Dark brown on gold */
+    --sidebar-accent: oklch(0.92 0.025 85); /* Light warm accent */
+    --sidebar-accent-foreground: oklch(0.25 0.03 85); /* Medium brown on accent */
+    --sidebar-border: oklch(0.88 0.02 85); /* Warm border */
+    --sidebar-ring: oklch(0.65 0.15 85); /* Gold ring */
 }
 
 .dark {
-    --background: oklch(0.108 0.049 296.626);
-    --foreground: oklch(0.985 0 0);
-    --card: oklch(0.145 0 0);
-    --card-foreground: oklch(0.985 0 0);
-    --popover: oklch(0.145 0 0);
-    --popover-foreground: oklch(0.985 0 0);
-    --primary: oklch(0.985 0 0);
-    --primary-foreground: oklch(0.205 0 0);
-    --secondary: oklch(0.269 0 0);
-    --secondary-foreground: oklch(0.985 0 0);
-    --muted: oklch(0.269 0 0);
-    --muted-foreground: oklch(0.708 0 0);
-    --accent: oklch(0.269 0 0);
-    --accent-foreground: oklch(0.985 0 0);
-    --destructive: oklch(0.396 0.141 25.723);
-    --destructive-foreground: oklch(0.637 0.237 25.331);
-    --border: oklch(0.269 0 0);
-    --input: oklch(0.269 0 0);
-    --ring: oklch(0.439 0 0);
-    --chart-1: oklch(0.488 0.243 264.376);
-    --chart-2: oklch(0.696 0.17 162.48);
-    --chart-3: oklch(0.769 0.188 70.08);
-    --chart-4: oklch(0.627 0.265 303.9);
-    --chart-5: oklch(0.645 0.246 16.439);
-    --sidebar-foreground: oklch(0.985 0 0);
-    --sidebar-primary: oklch(0.985 0 0);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar: oklch(0.131 0.062 303.725);
-    --sidebar-accent: oklch(0.292 0.029 284.464 / 0.39);
-    --sidebar-accent-foreground: oklch(0.985 0 0);
-    --sidebar-border: oklch(0.269 0 0);
-    --sidebar-ring: oklch(0.439 0 0);
+    /* Museum Dark Theme - Elegant and sophisticated */
+    --background: oklch(0.08 0.02 85); /* Deep warm dark */
+    --foreground: oklch(0.95 0.01 85); /* Warm light text */
+    --card: oklch(0.12 0.02 85); /* Slightly lighter warm dark */
+    --card-foreground: oklch(0.95 0.01 85); /* Warm light text */
+    --popover: oklch(0.12 0.02 85); /* Warm dark popover */
+    --popover-foreground: oklch(0.95 0.01 85); /* Warm light text */
+    --primary: oklch(0.70 0.18 85); /* Brighter museum gold for dark mode */
+    --primary-foreground: oklch(0.08 0.02 85); /* Dark background on gold */
+    --secondary: oklch(0.18 0.03 85); /* Warm medium dark */
+    --secondary-foreground: oklch(0.90 0.01 85); /* Light text */
+    --muted: oklch(0.15 0.02 85); /* Muted warm dark */
+    --muted-foreground: oklch(0.65 0.03 85); /* Muted warm text */
+    --accent: oklch(0.20 0.03 85); /* Warm accent dark */
+    --accent-foreground: oklch(0.90 0.01 85); /* Light text on accent */
+    --destructive: oklch(0.55 0.25 25); /* Warm red for dark mode */
+    --destructive-foreground: oklch(0.95 0.01 85); /* Light text on red */
+    --border: oklch(0.22 0.03 85); /* Warm border dark */
+    --input: oklch(0.15 0.02 85); /* Warm input dark */
+    --ring: oklch(0.70 0.18 85); /* Bright gold ring */
+    
+    /* Dark mode chart colors */
+    --chart-1: oklch(0.70 0.18 85); /* Bright museum gold */
+    --chart-2: oklch(0.60 0.15 45); /* Rich brown */
+    --chart-3: oklch(0.50 0.12 25); /* Deep brown */
+    --chart-4: oklch(0.80 0.13 65); /* Bright warm tan */
+    --chart-5: oklch(0.65 0.16 55); /* Medium brown */
+    
+    /* Dark sidebar */
+    --sidebar: oklch(0.10 0.02 85); /* Deep warm sidebar */
+    --sidebar-foreground: oklch(0.95 0.01 85); /* Warm light text */
+    --sidebar-primary: oklch(0.70 0.18 85); /* Bright museum gold */
+    --sidebar-primary-foreground: oklch(0.08 0.02 85); /* Dark on gold */
+    --sidebar-accent: oklch(0.18 0.03 85); /* Warm medium dark */
+    --sidebar-accent-foreground: oklch(0.90 0.01 85); /* Light text */
+    --sidebar-border: oklch(0.22 0.03 85); /* Warm border */
+    --sidebar-ring: oklch(0.70 0.18 85); /* Bright gold ring */
 }
 
 @layer base {
@@ -165,4 +176,43 @@
     .scrollbar-hide::-webkit-scrollbar {
         display: none; /* Safari and Chrome */
     }
+}
+
+/* Museum-specific gradient utilities */
+.museum-gradient {
+    background: linear-gradient(135deg, 
+        oklch(0.98 0.01 85) 0%, 
+        oklch(0.95 0.02 85) 25%, 
+        oklch(0.92 0.025 85) 50%, 
+        oklch(0.88 0.02 85) 75%, 
+        oklch(0.85 0.015 85) 100%);
+}
+
+.museum-gradient-dark {
+    background: linear-gradient(135deg, 
+        oklch(0.08 0.02 85) 0%, 
+        oklch(0.12 0.02 85) 25%, 
+        oklch(0.15 0.02 85) 50%, 
+        oklch(0.18 0.03 85) 75%, 
+        oklch(0.22 0.03 85) 100%);
+}
+
+.museum-gold-gradient {
+    background: linear-gradient(135deg, 
+        oklch(0.75 0.18 85) 0%, 
+        oklch(0.70 0.18 85) 50%, 
+        oklch(0.65 0.15 85) 100%);
+}
+
+/* Museum accent colors for special elements */
+.museum-accent {
+    color: oklch(0.65 0.15 85);
+}
+
+.museum-accent-bg {
+    background-color: oklch(0.65 0.15 85);
+}
+
+.museum-accent-border {
+    border-color: oklch(0.65 0.15 85);
 }

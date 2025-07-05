@@ -23,6 +23,7 @@ class Project extends Model
             'description',
             'duration',
             'start_date',
+            'project_proposal_id'
         ];
 
     /**
@@ -49,7 +50,7 @@ class Project extends Model
         {
             return $this->hasMany(TeamMember::class, 'project_id');
         }
-        
+
 
     /**
      * Get formatted start date
