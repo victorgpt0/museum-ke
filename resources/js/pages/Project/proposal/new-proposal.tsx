@@ -1,388 +1,375 @@
-import React, { useState, useEffect } from 'react';
 import AppLayout from '@/layouts/app-layout';
-import toast, { Toaster } from 'react-hot-toast';
 import { router } from '@inertiajs/react'; // or '@inertiajs/inertia-react' depending on your setup
+import React, { useEffect, useState } from 'react';
+import toast, { Toaster } from 'react-hot-toast';
 
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Upload, X, CheckCircle, AlertCircle, Plus, Trash2, User, Target, Flag } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { BreadcrumbItem } from '@/types';
+import { CheckCircle, Flag, Plus, Target, Trash2, Upload, User, X } from 'lucide-react';
 
 interface TeamMember {
-  id: string;
-  fullName: string;
-  email: string;
-  role: string;
+    id: string;
+    fullName: string;
+    email: string;
+    role: string;
 }
 
 interface Milestone {
-  id: string;
-  title: string;
-  duration: string;
-  description: string;
-  budgetItems: BudgetItem[];
+    id: string;
+    title: string;
+    duration: string;
+    description: string;
+    budgetItems: BudgetItem[];
 }
 
 interface Goal {
-  id: string;
-  title: string;
-  description: string;
+    id: string;
+    title: string;
+    description: string;
 }
 
 interface Objective {
-  id: string;
-  title: string;
-  description: string;
+    id: string;
+    title: string;
+    description: string;
 }
 
 interface BudgetItem {
-  id: string;
-  title: string;
-  description: string;
-  amount: string;
+    id: string;
+    title: string;
+    description: string;
+    amount: string;
 }
 
 interface ProposalFormData {
-  title: string;
-  description: string;
-  duration: string;
-  objectives: Objective[];
-  teamMembers: TeamMember[];
-  milestones: Milestone[];
-  goals: Goal[];
+    title: string;
+    description: string;
+    duration: string;
+    objectives: Objective[];
+    teamMembers: TeamMember[];
+    milestones: Milestone[];
+    goals: Goal[];
 }
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Project Proposals',
-        href: '/project/viewproposals'
+        href: '/project/viewproposals',
     },
     {
         title: 'New Proposal',
-        href: '/project/new-proposal'
-    }
+        href: '/project/new-proposal',
+    },
 ];
 export default function NewProposalForm() {
+    const [processing, setProcessing] = useState(false);
 
-  const [processing, setProcessing] = useState(false);
+    // Form data state
+    const [data, setData] = useState<ProposalFormData>({
+        title: '',
+        description: '',
+        duration: '',
+        objectives: [],
+        teamMembers: [],
+        milestones: [],
+        goals: [],
+    });
+    const [selectedDocuments, setSelectedDocuments] = useState<File[]>([]);
+    const [documentPreviews, setDocumentPreviews] = useState<string[]>([]);
+    const [isUploadingDocs, setIsUploadingDocs] = useState(false);
 
-  // Form data state
-  const [data, setData] = useState<ProposalFormData>({
-    title: '',
-    description: '',
-    duration: '',
-    objectives: [],
-    teamMembers: [],
-    milestones: [],
-    goals: []
-  });
-const [selectedDocuments, setSelectedDocuments] = useState<File[]>([]);
-const [documentPreviews, setDocumentPreviews] = useState<string[]>([]);
-const [isUploadingDocs, setIsUploadingDocs] = useState(false);
+    // Sub-form states for adding new items (your existing code)
+    // Sub-form states for adding new items
+    const [newObjective, setNewObjective] = useState({ title: '', description: '' });
+    const [newTeamMember, setNewTeamMember] = useState({ fullName: '', email: '', role: '' });
+    const [newMilestone, setNewMilestone] = useState({ title: '', duration: '', description: '', budgetItems: [] });
+    const [newGoal, setNewGoal] = useState({ title: '', description: '' });
+    const [newBudgetItem, setNewBudgetItem] = useState({ title: '', description: '', amount: '' });
 
-// Sub-form states for adding new items (your existing code)
-  // Sub-form states for adding new items
-  const [newObjective, setNewObjective] = useState({ title: '', description: '',  });
-  const [newTeamMember, setNewTeamMember] = useState({ fullName: '', email: '', role: '' });
-  const [newMilestone, setNewMilestone] = useState({ title: '', duration: '', description: '', budgetItems: [] });
-  const [newGoal, setNewGoal] = useState({ title: '', description: '' });
-  const [newBudgetItem, setNewBudgetItem] = useState({ title: '', description: '', amount: '' });
+    const [errors, setErrors] = useState<Record<string, string>>({});
+    const [success, setSuccess] = useState<string>('');
 
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [success, setSuccess] = useState<string>('');
-
-  // Duration options in months
-  const durationOptions = [
-    { value: '', label: 'Select Duration' },
-    { value: '1', label: '1 Month' },
-    { value: '2', label: '2 Months' },
-    { value: '3', label: '3 Months' },
-    { value: '6', label: '6 Months' },
-    { value: '9', label: '9 Months' },
-    { value: '12', label: '12 Months' },
-    { value: '18', label: '18 Months' },
-    { value: '24', label: '24 Months' },
-    { value: '36', label: '36 Months' }
-  ];
-
-  // Clean up object URLs on component unmount
-  useEffect(() => {
-    return () => {
-      documentPreviews.forEach(url => URL.revokeObjectURL(url));
-    };
-  }, [documentPreviews]);
-
-  const handleDocumentUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-
-    if (files.length === 0) return;
-
-    // Validate file types - allow various document types
-    const allowedTypes = [
-      'application/pdf',
-      'application/msword',
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-      'application/vnd.ms-excel',
-      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      'text/plain',
-      'image/jpeg',
-      'image/jpg',
-      'image/png'
+    // Duration options in months
+    const durationOptions = [
+        { value: '', label: 'Select Duration' },
+        { value: '1', label: '1 Month' },
+        { value: '2', label: '2 Months' },
+        { value: '3', label: '3 Months' },
+        { value: '6', label: '6 Months' },
+        { value: '9', label: '9 Months' },
+        { value: '12', label: '12 Months' },
+        { value: '18', label: '18 Months' },
+        { value: '24', label: '24 Months' },
+        { value: '36', label: '36 Months' },
     ];
 
-    const invalidFiles = files.filter(file => !allowedTypes.includes(file.type));
-    if (invalidFiles.length > 0) {
-      toast.error('Please upload only supported document types (PDF, Word, Excel, Text, or Image files).');
-      return;
-    }
+    // Clean up object URLs on component unmount
+    useEffect(() => {
+        return () => {
+            documentPreviews.forEach((url) => URL.revokeObjectURL(url));
+        };
+    }, [documentPreviews]);
 
-    // Validate file sizes (10MB max per file)
-    const oversizedFiles = files.filter(file => file.size > 10 * 1024 * 1024);
-    if (oversizedFiles.length > 0) {
-      toast.error('Some files are too large. Maximum file size is 10MB. Please choose smaller files.');
-      return;
-    }
+    const handleDocumentUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = Array.from(e.target.files || []);
 
-    const newDocuments = [...selectedDocuments, ...files];
-    const newPreviews = [...documentPreviews, ...files.map(file => file.name)];
+        if (files.length === 0) return;
 
-    setSelectedDocuments(newDocuments);
-    setDocumentPreviews(newPreviews);
-    toast.success(`${files.length} file(s) added successfully`);
-  };
+        // Validate file types - allow various document types
+        const allowedTypes = [
+            'application/pdf',
+            'application/msword',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'application/vnd.ms-excel',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'text/plain',
+            'image/jpeg',
+            'image/jpg',
+            'image/png',
+        ];
 
-  const removeDocument = (index: number) => {
-    const newDocuments = selectedDocuments.filter((_, i) => i !== index);
-    const newPreviews = documentPreviews.filter((_, i) => i !== index);
+        const invalidFiles = files.filter((file) => !allowedTypes.includes(file.type));
+        if (invalidFiles.length > 0) {
+            toast.error('Please upload only supported document types (PDF, Word, Excel, Text, or Image files).');
+            return;
+        }
 
-    setSelectedDocuments(newDocuments);
-    setDocumentPreviews(newPreviews);
-    toast.success('Document removed');
-  };
+        // Validate file sizes (10MB max per file)
+        const oversizedFiles = files.filter((file) => file.size > 10 * 1024 * 1024);
+        if (oversizedFiles.length > 0) {
+            toast.error('Some files are too large. Maximum file size is 10MB. Please choose smaller files.');
+            return;
+        }
 
-  // Objective handlers
-  const addObjective = () => {
-    if (!newObjective.title.trim() || !newObjective.description.trim()) {
-      toast.error('Please fill in all objective fields');
-      return;
-    }
+        const newDocuments = [...selectedDocuments, ...files];
+        const newPreviews = [...documentPreviews, ...files.map((file) => file.name)];
 
-    const objective: Objective = {
-      id: Date.now().toString(),
-      ...newObjective
+        setSelectedDocuments(newDocuments);
+        setDocumentPreviews(newPreviews);
+        toast.success(`${files.length} file(s) added successfully`);
     };
 
-    setData(prev => ({
-      ...prev,
-      objectives: [...prev.objectives, objective]
-    }));
+    const removeDocument = (index: number) => {
+        const newDocuments = selectedDocuments.filter((_, i) => i !== index);
+        const newPreviews = documentPreviews.filter((_, i) => i !== index);
 
-    setNewObjective({ title: '', description: '',  });
-    toast.success('Objective added successfully');
-  };
-
-  const removeObjective = (id: string) => {
-    setData(prev => ({
-      ...prev,
-      objectives: prev.objectives.filter(obj => obj.id !== id)
-    }));
-    toast.success('Objective removed');
-  };
-
-  // Team member handlers
-  const addTeamMember = () => {
-    if (!newTeamMember.fullName.trim() || !newTeamMember.email.trim() || !newTeamMember.role.trim()) {
-      toast.error('Please fill in all team member fields');
-      return;
-    }
-
-    const teamMember: TeamMember = {
-      id: Date.now().toString(),
-      ...newTeamMember
+        setSelectedDocuments(newDocuments);
+        setDocumentPreviews(newPreviews);
+        toast.success('Document removed');
     };
 
-    setData(prev => ({
-      ...prev,
-      teamMembers: [...prev.teamMembers, teamMember]
-    }));
+    // Objective handlers
+    const addObjective = () => {
+        if (!newObjective.title.trim() || !newObjective.description.trim()) {
+            toast.error('Please fill in all objective fields');
+            return;
+        }
 
-    setNewTeamMember({ fullName: '', email: '', role: '' });
-    toast.success('Team member added successfully');
-  };
+        const objective: Objective = {
+            id: Date.now().toString(),
+            ...newObjective,
+        };
 
-  const removeTeamMember = (id: string) => {
-    setData(prev => ({
-      ...prev,
-      teamMembers: prev.teamMembers.filter(member => member.id !== id)
-    }));
-    toast.success('Team member removed');
-  };
+        setData((prev) => ({
+            ...prev,
+            objectives: [...prev.objectives, objective],
+        }));
 
-  // Budget item handlers
-  const addBudgetItem = () => {
-    if (!newBudgetItem.title.trim() || !newBudgetItem.description.trim() || !newBudgetItem.amount.trim()) {
-      toast.error('Please fill in all budget item fields');
-      return;
-    }
-
-    const budgetItem: BudgetItem = {
-      id: Date.now().toString(),
-      ...newBudgetItem
+        setNewObjective({ title: '', description: '' });
+        toast.success('Objective added successfully');
     };
 
-    setNewMilestone(prev => ({
-      ...prev,
-      budgetItems: [...(prev.budgetItems || []), budgetItem]
-    }));
-
-    setNewBudgetItem({ title: '', description: '', amount: '' });
-    toast.success('Budget item added successfully');
-  };
-
-  const removeBudgetItem = (id: string) => {
-    setNewMilestone(prev => ({
-      ...prev,
-      budgetItems: (prev.budgetItems || []).filter(item => item.id !== id)
-    }));
-    toast.success('Budget item removed');
-  };
-
-  // Milestone handlers
-  const addMilestone = () => {
-    if (!newMilestone.title.trim() || !newMilestone.duration.trim() || !newMilestone.description.trim()) {
-      toast.error('Please fill in all milestone fields');
-      return;
-    }
-
-    const milestone: Milestone = {
-      id: Date.now().toString(),
-      title: newMilestone.title,
-      duration: newMilestone.duration,
-      description: newMilestone.description,
-      budgetItems: newMilestone.budgetItems || []
+    const removeObjective = (id: string) => {
+        setData((prev) => ({
+            ...prev,
+            objectives: prev.objectives.filter((obj) => obj.id !== id),
+        }));
+        toast.success('Objective removed');
     };
 
-    setData(prev => ({
-      ...prev,
-      milestones: [...prev.milestones, milestone]
-    }));
+    // Team member handlers
+    const addTeamMember = () => {
+        if (!newTeamMember.fullName.trim() || !newTeamMember.email.trim() || !newTeamMember.role.trim()) {
+            toast.error('Please fill in all team member fields');
+            return;
+        }
 
-    setNewMilestone({ title: '', duration: '', description: '', budgetItems: [] });
-    toast.success('Milestone added successfully');
-  };
+        const teamMember: TeamMember = {
+            id: Date.now().toString(),
+            ...newTeamMember,
+        };
 
-  const removeMilestone = (id: string) => {
-    setData(prev => ({
-      ...prev,
-      milestones: prev.milestones.filter(milestone => milestone.id !== id)
-    }));
-    toast.success('Milestone removed');
-  };
+        setData((prev) => ({
+            ...prev,
+            teamMembers: [...prev.teamMembers, teamMember],
+        }));
 
-  // Goal handlers
-  const addGoal = () => {
-    if (!newGoal.title.trim() || !newGoal.description.trim()) {
-      toast.error('Please fill in all goal fields');
-      return;
-    }
-
-    const goal: Goal = {
-      id: Date.now().toString(),
-      ...newGoal
+        setNewTeamMember({ fullName: '', email: '', role: '' });
+        toast.success('Team member added successfully');
     };
 
-    setData(prev => ({
-      ...prev,
-      goals: [...prev.goals, goal]
-    }));
-
-    setNewGoal({ title: '', description: '' });
-    toast.success('Goal added successfully');
-  };
-
-  const removeGoal = (id: string) => {
-    setData(prev => ({
-      ...prev,
-      goals: prev.goals.filter(goal => goal.id !== id)
-    }));
-    toast.success('Goal removed');
-  };
-
-
-const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    console.log('Form submission started');
-    console.log('Original form data:', data);
-    console.log('Selected documents:', selectedDocuments); // Log the actual File objects
-    console.log('Document previews:', documentPreviews); // Log the preview names
-
-    if (!data.title.trim()) {
-        alert('Please enter a proposal title');
-        return;
-    }
-
-    if (!data.description.trim()) {
-        alert('Please enter a description');
-        return;
-    }
-
-    // Build the additional description content
-    let additions = '';
-    if (data.objectives?.length > 0) {
-        const objectiveText = data.objectives
-            .map(obj => `- ${obj.title}: ${obj.description}`)
-            .join('\n');
-        additions += `\n\nObjectives:\n${objectiveText}`;
-    }
-    if (data.milestones?.length > 0) {
-        const milestoneText = data.milestones
-            .map(m => {
-                let milestoneInfo = `- ${m.title} (${m.duration}): ${m.description}`;
-                if (m.budgetItems && m.budgetItems.length > 0) {
-                    const budgetText = m.budgetItems
-                        .map(item => `  • ${item.title}: ${item.description} - Ksh ${item.amount}`)
-                        .join('\n');
-                    milestoneInfo += `\n  Budget Breakdown:\n${budgetText}`;
-                }
-                return milestoneInfo;
-            })
-            .join('\n');
-        additions += `\n\nMilestones:\n${milestoneText}`;
-    }
-    if (data.goals?.length > 0) {
-        const goalText = data.goals
-            .map(goal => `- ${goal.title}: ${goal.description}`)
-            .join('\n');
-        additions += `\n\nGoals:\n${goalText}`;
-    }
-    if (data.teamMembers?.length > 0) {
-        const teamText = data.teamMembers
-            .map(member => `- ${member.fullName} (${member.role}, ${member.email})`)
-            .join('\n');
-        additions += `\n\nTeam Members:\n${teamText}`;
-    }
-    const fullDescription = `${data.description.trim()}${additions}`;
-
-    // Create form data object that includes documents
-    const formData = {
-        title: data.title.trim(),
-        description: fullDescription,
-        duration: data.duration.trim() || 'Not specified',
-        documents: selectedDocuments || [] // Add the uploaded documents here
+    const removeTeamMember = (id: string) => {
+        setData((prev) => ({
+            ...prev,
+            teamMembers: prev.teamMembers.filter((member) => member.id !== id),
+        }));
+        toast.success('Team member removed');
     };
 
-    console.log('Formatted Proposal Data:', formData);
-    console.log('Documents being sent:', selectedDocuments?.map(doc => doc.name) || []); // Log document names
+    // Budget item handlers
+    const addBudgetItem = () => {
+        if (!newBudgetItem.title.trim() || !newBudgetItem.description.trim() || !newBudgetItem.amount.trim()) {
+            toast.error('Please fill in all budget item fields');
+            return;
+        }
 
-    // Send data to backend
-    router.post(
-        route('projectproposal.store'),
-        formData,
-        {
+        const budgetItem: BudgetItem = {
+            id: Date.now().toString(),
+            ...newBudgetItem,
+        };
+
+        setNewMilestone((prev) => ({
+            ...prev,
+            budgetItems: [...(prev.budgetItems || []), budgetItem],
+        }));
+
+        setNewBudgetItem({ title: '', description: '', amount: '' });
+        toast.success('Budget item added successfully');
+    };
+
+    const removeBudgetItem = (id: string) => {
+        setNewMilestone((prev) => ({
+            ...prev,
+            budgetItems: (prev.budgetItems || []).filter((item) => item.id !== id),
+        }));
+        toast.success('Budget item removed');
+    };
+
+    // Milestone handlers
+    const addMilestone = () => {
+        if (!newMilestone.title.trim() || !newMilestone.duration.trim() || !newMilestone.description.trim()) {
+            toast.error('Please fill in all milestone fields');
+            return;
+        }
+
+        const milestone: Milestone = {
+            id: Date.now().toString(),
+            title: newMilestone.title,
+            duration: newMilestone.duration,
+            description: newMilestone.description,
+            budgetItems: newMilestone.budgetItems || [],
+        };
+
+        setData((prev) => ({
+            ...prev,
+            milestones: [...prev.milestones, milestone],
+        }));
+
+        setNewMilestone({ title: '', duration: '', description: '', budgetItems: [] });
+        toast.success('Milestone added successfully');
+    };
+
+    const removeMilestone = (id: string) => {
+        setData((prev) => ({
+            ...prev,
+            milestones: prev.milestones.filter((milestone) => milestone.id !== id),
+        }));
+        toast.success('Milestone removed');
+    };
+
+    // Goal handlers
+    const addGoal = () => {
+        if (!newGoal.title.trim() || !newGoal.description.trim()) {
+            toast.error('Please fill in all goal fields');
+            return;
+        }
+
+        const goal: Goal = {
+            id: Date.now().toString(),
+            ...newGoal,
+        };
+
+        setData((prev) => ({
+            ...prev,
+            goals: [...prev.goals, goal],
+        }));
+
+        setNewGoal({ title: '', description: '' });
+        toast.success('Goal added successfully');
+    };
+
+    const removeGoal = (id: string) => {
+        setData((prev) => ({
+            ...prev,
+            goals: prev.goals.filter((goal) => goal.id !== id),
+        }));
+        toast.success('Goal removed');
+    };
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+
+        console.log('Form submission started');
+        console.log('Original form data:', data);
+        console.log('Selected documents:', selectedDocuments); // Log the actual File objects
+        console.log('Document previews:', documentPreviews); // Log the preview names
+
+        if (!data.title.trim()) {
+            alert('Please enter a proposal title');
+            return;
+        }
+
+        if (!data.description.trim()) {
+            alert('Please enter a description');
+            return;
+        }
+
+        // Build the additional description content
+        let additions = '';
+        if (data.objectives?.length > 0) {
+            const objectiveText = data.objectives.map((obj) => `- ${obj.title}: ${obj.description}`).join('\n');
+            additions += `\n\nObjectives:\n${objectiveText}`;
+        }
+        if (data.milestones?.length > 0) {
+            const milestoneText = data.milestones
+                .map((m) => {
+                    let milestoneInfo = `- ${m.title} (${m.duration}): ${m.description}`;
+                    if (m.budgetItems && m.budgetItems.length > 0) {
+                        const budgetText = m.budgetItems.map((item) => `  • ${item.title}: ${item.description} - Ksh ${item.amount}`).join('\n');
+                        milestoneInfo += `\n  Budget Breakdown:\n${budgetText}`;
+                    }
+                    return milestoneInfo;
+                })
+                .join('\n');
+            additions += `\n\nMilestones:\n${milestoneText}`;
+        }
+        if (data.goals?.length > 0) {
+            const goalText = data.goals.map((goal) => `- ${goal.title}: ${goal.description}`).join('\n');
+            additions += `\n\nGoals:\n${goalText}`;
+        }
+        if (data.teamMembers?.length > 0) {
+            const teamText = data.teamMembers.map((member) => `- ${member.fullName} (${member.role}, ${member.email})`).join('\n');
+            additions += `\n\nTeam Members:\n${teamText}`;
+        }
+        const fullDescription = `${data.description.trim()}${additions}`;
+
+        // Create form data object that includes documents
+        const formData = {
+            title: data.title.trim(),
+            description: fullDescription,
+            duration: data.duration.trim() || 'Not specified',
+            documents: selectedDocuments || [], // Add the uploaded documents here
+        };
+
+        console.log('Formatted Proposal Data:', formData);
+        console.log('Documents being sent:', selectedDocuments?.map((doc) => doc.name) || []); // Log document names
+
+        // Send data to backend
+        router.post(route('projectproposal.store'), formData, {
             forceFormData: true, // This ensures files are handled properly
             preserveState: false,
             preserveScroll: true,
@@ -410,587 +397,636 @@ const handleSubmit = (e: React.FormEvent) => {
             },
             onFinish: () => {
                 console.log('[DEBUG] ✅ Request finished (success or failure)');
-            }
-        }
-    );
-};
-
-
-  return (
-    <AppLayout breadcrumbs={breadcrumbs}>
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
-        {/* Toast Notifications */}
-        <Toaster
-          position="top-right"
-          toastOptions={{
-            style: {
-              borderRadius: '8px',
-              padding: '12px 16px',
             },
-            success: {
-              style: {
-                background: '#f0fdf4',
-                color: '#166534',
-                border: '1px solid #bbf7d0',
-              },
-              iconTheme: {
-                primary: '#16a34a',
-                secondary: '#f0fdf4',
-              },
-            },
-            error: {
-              style: {
-                background: '#fef2f2',
-                color: '#991b1b',
-                border: '1px solid #fecaca',
-              },
-              iconTheme: {
-                primary: '#dc2626',
-                secondary: '#fef2f2',
-              },
-            },
-            loading: {
-              style: {
-                background: '#eff6ff',
-                color: '#1e40af',
-                border: '1px solid #bfdbfe',
-              },
-            }
-          }}
-        />
+        });
+    };
 
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mb-8 text-center">
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-              New Proposal Form
-            </h1>
-            <p className="text-gray-600 dark:text-gray-300">
-              Submit your project proposal with detailed information
-            </p>
-          </div>
+    return (
+        <AppLayout breadcrumbs={breadcrumbs}>
+            <div className="min-h-screen bg-gray-50 py-8 dark:bg-gray-900">
+                {/* Toast Notifications */}
+                <Toaster
+                    position="top-right"
+                    toastOptions={{
+                        style: {
+                            borderRadius: '8px',
+                            padding: '12px 16px',
+                        },
+                        success: {
+                            style: {
+                                background: '#f0fdf4',
+                                color: '#166534',
+                                border: '1px solid #bbf7d0',
+                            },
+                            iconTheme: {
+                                primary: '#16a34a',
+                                secondary: '#f0fdf4',
+                            },
+                        },
+                        error: {
+                            style: {
+                                background: '#fef2f2',
+                                color: '#991b1b',
+                                border: '1px solid #fecaca',
+                            },
+                            iconTheme: {
+                                primary: '#dc2626',
+                                secondary: '#fef2f2',
+                            },
+                        },
+                        loading: {
+                            style: {
+                                background: '#eff6ff',
+                                color: '#1e40af',
+                                border: '1px solid #bfdbfe',
+                            },
+                        },
+                    }}
+                />
 
-          {/* Success Message */}
-          {success && (
-            <div className="mb-6 border border-green-200 dark:border-green-700 bg-green-50 dark:bg-green-900/20 p-4 rounded-md flex items-center space-x-2">
-              <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400 flex-shrink-0" />
-              <p className="text-green-800 dark:text-green-200">{success}</p>
-            </div>
-          )}
-
-          <div className="space-y-8">
-            {/* Basic Information */}
-            <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-              <CardHeader>
-                <CardTitle className="text-gray-900 dark:text-white">Basic Information</CardTitle>
-                <CardDescription className="text-gray-600 dark:text-gray-300">
-                  Provide the fundamental details of your proposal
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-1">
-                  <Label htmlFor="title" className="text-gray-700 dark:text-gray-300">Title *</Label>
-                  <Input
-                    id="title"
-                    value={data.title}
-                    onChange={e => setData(prev => ({ ...prev, title: e.target.value }))}
-                    placeholder="Enter your proposal title"
-                    className={`${errors.title ? 'border-red-500' : ''} bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400`}
-                  />
-                  {errors.title && <div className="text-red-500 text-sm">{errors.title}</div>}
-                </div>
-
-                <div className="space-y-1">
-                  <Label htmlFor="description" className="text-gray-700 dark:text-gray-300">Description *</Label>
-                  <Textarea
-                    id="description"
-                    value={data.description}
-                    onChange={e => setData(prev => ({ ...prev, description: e.target.value }))}
-                    placeholder="Provide a detailed description of your proposal"
-                    rows={4}
-                    className={`${errors.description ? 'border-red-500' : ''} bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400`}
-                  />
-                  {errors.description && <div className="text-red-500 text-sm">{errors.description}</div>}
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <Label htmlFor="duration" className="text-gray-700 dark:text-gray-300">Duration *</Label>
-                    <select
-                      id="duration"
-                      value={data.duration}
-                      onChange={e => setData(prev => ({ ...prev, duration: e.target.value }))}
-                      className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white ${errors.duration ? 'border-red-500' : ''}`}
-                    >
-                      {durationOptions.map(option => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))}
-                    </select>
-                    {errors.duration && <div className="text-red-500 text-sm">{errors.duration}</div>}
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label className="text-gray-700 dark:text-gray-300">Documents</Label>
-                    <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4 bg-gray-50 dark:bg-gray-700">
-                      <div className="text-center">
-                        <Upload className="mx-auto h-8 w-8 text-gray-400 dark:text-gray-500" />
-                        <div className="mt-2">
-                          <Label
-                            htmlFor="documents"
-                            className={`cursor-pointer px-3 py-1 rounded-md text-sm inline-block transition-colors ${
-                              isUploadingDocs
-                                ? 'bg-gray-400 dark:bg-gray-600 text-white cursor-not-allowed'
-                                : 'bg-blue-600 dark:bg-blue-700 text-white hover:bg-blue-700 dark:hover:bg-blue-600'
-                            }`}
-                          >
-                            {isUploadingDocs ? 'Uploading...' : 'Choose Files'}
-                          </Label>
-                          <Input
-                            id="documents"
-                            type="file"
-                            multiple
-                            accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.png,.jpg,.jpeg"
-                            onChange={handleDocumentUpload}
-                            className="hidden"
-                            disabled={isUploadingDocs}
-                          />
-                        </div>
-                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                          PDF, Word, Excel, Text, Images (Max 10MB each)
-                        </p>
-                      </div>
+                <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+                    <div className="mb-8 text-center">
+                        <h1 className="mb-2 text-3xl font-bold text-gray-900 dark:text-white">New Proposal Form</h1>
+                        <p className="text-gray-600 dark:text-gray-300">Submit your project proposal with detailed information</p>
                     </div>
 
-                    {/* Document Previews */}
-                    {documentPreviews.length > 0 && (
-                      <div className="space-y-2">
-                        {documentPreviews.map((fileName, index) => (
-                          <div key={index} className="flex items-center justify-between bg-gray-100 dark:bg-gray-600 p-2 rounded">
-                            <span className="text-sm truncate text-gray-900 dark:text-white">{fileName}</span>
-                            <button
-                              type="button"
-                              onClick={() => removeDocument(index)}
-                              className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
-                            >
-                              <X size={16} />
-                            </button>
-                          </div>
-                        ))}
-                      </div>
+                    {/* Success Message */}
+                    {success && (
+                        <div className="mb-6 flex items-center space-x-2 rounded-md border border-green-200 bg-green-50 p-4 dark:border-green-700 dark:bg-green-900/20">
+                            <CheckCircle className="h-4 w-4 flex-shrink-0 text-green-600 dark:text-green-400" />
+                            <p className="text-green-800 dark:text-green-200">{success}</p>
+                        </div>
                     )}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
 
-            {/* Objectives */}
-            <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2 text-gray-900 dark:text-white">
-                  <Target className="h-5 w-5" />
-                  <span>Objectives</span>
-                </CardTitle>
-                <CardDescription className="text-gray-600 dark:text-gray-300">
-                  Define the specific objectives of your proposal
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <Label className="text-gray-700 dark:text-gray-300">Title</Label>
-                    <Input
-                      value={newObjective.title}
-                      onChange={e => setNewObjective(prev => ({ ...prev, title: e.target.value }))}
-                      placeholder="Objective title"
-                      className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-gray-700 dark:text-gray-300">Description</Label>
-                    <Input
-                      value={newObjective.description}
-                      onChange={e => setNewObjective(prev => ({ ...prev, description: e.target.value }))}
-                      placeholder="Brief description"
-                      className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
-                    />
-                  </div>
-
-                </div>
-
-                <div className="flex justify-end">
-                  <Button type="button" onClick={addObjective} size="sm" className="bg-blue-600 dark:bg-blue-700 text-white hover:bg-blue-700 dark:hover:bg-blue-600">
-                    <Plus className="h-4 w-4 mr-1" />
-                    Add Objective
-                  </Button>
-                </div>
-
-                {errors.objectives && <div className="text-red-500 text-sm">{errors.objectives}</div>}
-
-                {/* Objectives List */}
-                {data.objectives.length > 0 && (
-                  <div className="space-y-2">
-                    <h4 className="font-medium text-gray-900 dark:text-white">Added Objectives:</h4>
-                    {data.objectives.map((objective) => (
-                      <div key={objective.id} className="flex items-center justify-between bg-blue-50 dark:bg-blue-900/20 p-3 rounded border border-blue-200 dark:border-blue-700">
-                        <div className="flex-1">
-                          <h5 className="font-medium text-gray-900 dark:text-white">{objective.title}</h5>
-                          <p className="text-sm text-gray-600 dark:text-gray-300">{objective.description}</p>
-                        </div>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => removeObjective(objective.id)}
-                          className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 border-gray-300 dark:border-gray-600"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Team Members */}
-            <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2 text-gray-900 dark:text-white">
-                  <User className="h-5 w-5" />
-                  <span>Team Members</span>
-                </CardTitle>
-                <CardDescription className="text-gray-600 dark:text-gray-300">
-                  Add the team members who will work on this proposal
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="space-y-1">
-                    <Label className="text-gray-700 dark:text-gray-300">Full Name</Label>
-                    <Input
-                      value={newTeamMember.fullName}
-                      onChange={e => setNewTeamMember(prev => ({ ...prev, fullName: e.target.value }))}
-                      placeholder="Enter full name"
-                      className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-gray-700 dark:text-gray-300">Email</Label>
-                    <Input
-                      type="email"
-                      value={newTeamMember.email}
-                      onChange={e => setNewTeamMember(prev => ({ ...prev, email: e.target.value }))}
-                      placeholder="Enter email address"
-                      className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-gray-700 dark:text-gray-300">Role</Label>
-                    <Input
-                      value={newTeamMember.role}
-                      onChange={e => setNewTeamMember(prev => ({ ...prev, role: e.target.value }))}
-                      placeholder="Enter role/position"
-                      className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
-                    />
-                  </div>
-                </div>
-
-                <div className="flex justify-end">
-                  <Button type="button" onClick={addTeamMember} size="sm" className="bg-blue-600 dark:bg-blue-700 text-white hover:bg-blue-700 dark:hover:bg-blue-600">
-                    <Plus className="h-4 w-4 mr-1" />
-                    Add Team Member
-                  </Button>
-                </div>
-
-                {errors.teamMembers && <div className="text-red-500 text-sm">{errors.teamMembers}</div>}
-
-                {/* Team Members List */}
-                {data.teamMembers.length > 0 && (
-                  <div className="space-y-2">
-                    <h4 className="font-medium text-gray-900 dark:text-white">Team Members:</h4>
-                    {data.teamMembers.map((member) => (
-                      <div key={member.id} className="flex items-center justify-between bg-green-50 dark:bg-green-900/20 p-3 rounded border border-green-200 dark:border-green-700">
-                        <div className="flex-1">
-                          <h5 className="font-medium text-gray-900 dark:text-white">{member.fullName}</h5>
-                          <p className="text-sm text-gray-600 dark:text-gray-300">{member.email} • {member.role}</p>
-                        </div>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => removeTeamMember(member.id)}
-                          className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 border-gray-300 dark:border-gray-600"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Milestones */}
-            <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2 text-gray-900 dark:text-white">
-                  <Flag className="h-5 w-5" />
-                  <span>Milestones</span>
-                </CardTitle>
-                <CardDescription className="text-gray-600 dark:text-gray-300">
-                  Define key milestones for your proposal with budget breakdown
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="space-y-1">
-                    <Label className="text-gray-700 dark:text-gray-300">Title</Label>
-                    <Input
-                      value={newMilestone.title}
-                      onChange={e => setNewMilestone(prev => ({ ...prev, title: e.target.value }))}
-                      placeholder="Milestone title"
-                      className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-gray-700 dark:text-gray-300">Duration</Label>
-                    <Input
-                      value={newMilestone.duration}
-                      onChange={e => setNewMilestone(prev => ({ ...prev, duration: e.target.value }))}
-                      placeholder="e.g., 2 weeks, 1 month"
-                      className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-gray-700 dark:text-gray-300">Description</Label>
-                    <Input
-                      value={newMilestone.description}
-                      onChange={e => setNewMilestone(prev => ({ ...prev, description: e.target.value }))}
-                      placeholder="Brief description"
-                      className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
-                    />
-                  </div>
-                </div>
-
-                {/* Budget Items Section */}
-                <div className="border-t border-gray-200 dark:border-gray-600 pt-4">
-                  <h4 className="font-medium text-gray-900 dark:text-white mb-3">Budget Breakdown</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="space-y-1">
-                      <Label className="text-gray-700 dark:text-gray-300">Item Title</Label>
-                      <Input
-                        value={newBudgetItem.title}
-                        onChange={e => setNewBudgetItem(prev => ({ ...prev, title: e.target.value }))}
-                        placeholder="e.g., Equipment rental"
-                        className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <Label className="text-gray-700 dark:text-gray-300">Description</Label>
-                      <Input
-                        value={newBudgetItem.description}
-                        onChange={e => setNewBudgetItem(prev => ({ ...prev, description: e.target.value }))}
-                        placeholder="Brief description"
-                        className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <Label className="text-gray-700 dark:text-gray-300">Amount (Ksh)</Label>
-                      <Input
-                        type="number"
-                        value={newBudgetItem.amount}
-                        onChange={e => setNewBudgetItem(prev => ({ ...prev, amount: e.target.value }))}
-                        placeholder="0.00"
-                        step="0.01"
-                        min="0"
-                        className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="flex justify-end mt-3">
-                    <Button type="button" onClick={addBudgetItem} size="sm" className="bg-green-600 dark:bg-green-700 text-white hover:bg-green-700 dark:hover:bg-green-600">
-                      <Plus className="h-4 w-4 mr-1" />
-                      Add Budget Item
-                    </Button>
-                  </div>
-
-                  {/* Budget Items List */}
-                  {newMilestone.budgetItems && newMilestone.budgetItems.length > 0 && (
-                    <div className="space-y-2 mt-4">
-                      <h5 className="font-medium text-gray-900 dark:text-white">Budget Items:</h5>
-                      {newMilestone.budgetItems.map((item) => (
-                        <div key={item.id} className="flex items-center justify-between bg-blue-50 dark:bg-blue-900/20 p-3 rounded border border-blue-200 dark:border-blue-700">
-                          <div className="flex-1">
-                            <h6 className="font-medium text-gray-900 dark:text-white">{item.title}</h6>
-                            <p className="text-sm text-gray-600 dark:text-gray-300">{item.description}</p>
-                            <p className="text-sm font-medium text-green-600 dark:text-green-400">Ksh {item.amount}</p>
-                          </div>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => removeBudgetItem(item.id)}
-                            className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 border-gray-300 dark:border-gray-600"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex justify-end">
-                  <Button type="button" onClick={addMilestone} size="sm" className="bg-blue-600 dark:bg-blue-700 text-white hover:bg-blue-700 dark:hover:bg-blue-600">
-                    <Plus className="h-4 w-4 mr-1" />
-                    Add Milestone
-                  </Button>
-                </div>
-
-                {errors.milestones && <div className="text-red-500 text-sm">{errors.milestones}</div>}
-
-                {/* Milestones List */}
-                {data.milestones.length > 0 && (
-                  <div className="space-y-2">
-                    <h4 className="font-medium text-gray-900 dark:text-white">Milestones:</h4>
-                    {data.milestones.map((milestone) => (
-                      <div key={milestone.id} className="bg-yellow-50 dark:bg-yellow-900/20 p-3 rounded border border-yellow-200 dark:border-yellow-700">
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="flex-1">
-                            <h5 className="font-medium text-gray-900 dark:text-white">{milestone.title}</h5>
-                            <p className="text-sm text-gray-600 dark:text-gray-300">{milestone.description}</p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">Duration: {milestone.duration}</p>
-                          </div>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => removeMilestone(milestone.id)}
-                            className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 border-gray-300 dark:border-gray-600"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-
-                        {/* Budget Items for this milestone */}
-                        {milestone.budgetItems && milestone.budgetItems.length > 0 && (
-                          <div className="mt-3 pt-3 border-t border-yellow-300 dark:border-yellow-600">
-                            <h6 className="font-medium text-gray-900 dark:text-white mb-2">Budget Breakdown:</h6>
-                            <div className="space-y-2">
-                              {milestone.budgetItems.map((item) => (
-                                <div key={item.id} className="flex justify-between items-center bg-white dark:bg-gray-700 p-2 rounded">
-                                  <div>
-                                    <p className="text-sm font-medium text-gray-900 dark:text-white">{item.title}</p>
-                                    <p className="text-xs text-gray-600 dark:text-gray-300">{item.description}</p>
-                                  </div>
-                                  <span className="text-sm font-medium text-green-600 dark:text-green-400">Ksh {item.amount}</span>
+                    <div className="space-y-8">
+                        {/* Basic Information */}
+                        <Card className="border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
+                            <CardHeader>
+                                <CardTitle className="text-gray-900 dark:text-white">Basic Information</CardTitle>
+                                <CardDescription className="text-gray-600 dark:text-gray-300">
+                                    Provide the fundamental details of your proposal
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <div className="space-y-1">
+                                    <Label htmlFor="title" className="text-gray-700 dark:text-gray-300">
+                                        Title *
+                                    </Label>
+                                    <Input
+                                        id="title"
+                                        value={data.title}
+                                        onChange={(e) => setData((prev) => ({ ...prev, title: e.target.value }))}
+                                        placeholder="Enter your proposal title"
+                                        className={`${errors.title ? 'border-red-500' : ''} border-gray-300 bg-white text-gray-900 placeholder-gray-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400`}
+                                    />
+                                    {errors.title && <div className="text-sm text-red-500">{errors.title}</div>}
                                 </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
 
-            {/* Goals */}
-            <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2 text-gray-900 dark:text-white">
-                  <Target className="h-5 w-5" />
-                  <span>Goals</span>
-                </CardTitle>
-                <CardDescription className="text-gray-600 dark:text-gray-300">
-                  Define the main goals of your proposal
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <Label className="text-gray-700 dark:text-gray-300">Title</Label>
-                    <Input
-                      value={newGoal.title}
-                      onChange={e => setNewGoal(prev => ({ ...prev, title: e.target.value }))}
-                      placeholder="Goal title"
-                      className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-gray-700 dark:text-gray-300">Description</Label>
-                    <Input
-                      value={newGoal.description}
-                      onChange={e => setNewGoal(prev => ({ ...prev, description: e.target.value }))}
-                      placeholder="Goal description"
-                      className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
-                    />
-                  </div>
+                                <div className="space-y-1">
+                                    <Label htmlFor="description" className="text-gray-700 dark:text-gray-300">
+                                        Description *
+                                    </Label>
+                                    <Textarea
+                                        id="description"
+                                        value={data.description}
+                                        onChange={(e) => setData((prev) => ({ ...prev, description: e.target.value }))}
+                                        placeholder="Provide a detailed description of your proposal"
+                                        rows={4}
+                                        className={`${errors.description ? 'border-red-500' : ''} border-gray-300 bg-white text-gray-900 placeholder-gray-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400`}
+                                    />
+                                    {errors.description && <div className="text-sm text-red-500">{errors.description}</div>}
+                                </div>
+
+                                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                    <div className="space-y-1">
+                                        <Label htmlFor="duration" className="text-gray-700 dark:text-gray-300">
+                                            Duration *
+                                        </Label>
+                                        <select
+                                            id="duration"
+                                            value={data.duration}
+                                            onChange={(e) => setData((prev) => ({ ...prev, duration: e.target.value }))}
+                                            className={`w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white ${errors.duration ? 'border-red-500' : ''}`}
+                                        >
+                                            {durationOptions.map((option) => (
+                                                <option key={option.value} value={option.value}>
+                                                    {option.label}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        {errors.duration && <div className="text-sm text-red-500">{errors.duration}</div>}
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <Label className="text-gray-700 dark:text-gray-300">Documents</Label>
+                                        <div className="rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 p-4 dark:border-gray-600 dark:bg-gray-700">
+                                            <div className="text-center">
+                                                <Upload className="mx-auto h-8 w-8 text-gray-400 dark:text-gray-500" />
+                                                <div className="mt-2">
+                                                    <Label
+                                                        htmlFor="documents"
+                                                        className={`inline-block cursor-pointer rounded-md px-3 py-1 text-sm transition-colors ${
+                                                            isUploadingDocs
+                                                                ? 'cursor-not-allowed bg-gray-400 text-white dark:bg-gray-600'
+                                                                : 'bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600'
+                                                        }`}
+                                                    >
+                                                        {isUploadingDocs ? 'Uploading...' : 'Choose Files'}
+                                                    </Label>
+                                                    <Input
+                                                        id="documents"
+                                                        type="file"
+                                                        multiple
+                                                        accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.png,.jpg,.jpeg"
+                                                        onChange={handleDocumentUpload}
+                                                        className="hidden"
+                                                        disabled={isUploadingDocs}
+                                                    />
+                                                </div>
+                                                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                                    PDF, Word, Excel, Text, Images (Max 10MB each)
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        {/* Document Previews */}
+                                        {documentPreviews.length > 0 && (
+                                            <div className="space-y-2">
+                                                {documentPreviews.map((fileName, index) => (
+                                                    <div
+                                                        key={index}
+                                                        className="flex items-center justify-between rounded bg-gray-100 p-2 dark:bg-gray-600"
+                                                    >
+                                                        <span className="truncate text-sm text-gray-900 dark:text-white">{fileName}</span>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => removeDocument(index)}
+                                                            className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+                                                        >
+                                                            <X size={16} />
+                                                        </button>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        {/* Objectives */}
+                        <Card className="border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
+                            <CardHeader>
+                                <CardTitle className="flex items-center space-x-2 text-gray-900 dark:text-white">
+                                    <Target className="h-5 w-5" />
+                                    <span>Objectives</span>
+                                </CardTitle>
+                                <CardDescription className="text-gray-600 dark:text-gray-300">
+                                    Define the specific objectives of your proposal
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                    <div className="space-y-1">
+                                        <Label className="text-gray-700 dark:text-gray-300">Title</Label>
+                                        <Input
+                                            value={newObjective.title}
+                                            onChange={(e) => setNewObjective((prev) => ({ ...prev, title: e.target.value }))}
+                                            placeholder="Objective title"
+                                            className="border-gray-300 bg-white text-gray-900 placeholder-gray-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
+                                        />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <Label className="text-gray-700 dark:text-gray-300">Description</Label>
+                                        <Input
+                                            value={newObjective.description}
+                                            onChange={(e) => setNewObjective((prev) => ({ ...prev, description: e.target.value }))}
+                                            placeholder="Brief description"
+                                            className="border-gray-300 bg-white text-gray-900 placeholder-gray-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="flex justify-end">
+                                    <Button
+                                        type="button"
+                                        onClick={addObjective}
+                                        size="sm"
+                                        className="bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600"
+                                    >
+                                        <Plus className="mr-1 h-4 w-4" />
+                                        Add Objective
+                                    </Button>
+                                </div>
+
+                                {errors.objectives && <div className="text-sm text-red-500">{errors.objectives}</div>}
+
+                                {/* Objectives List */}
+                                {data.objectives.length > 0 && (
+                                    <div className="space-y-2">
+                                        <h4 className="font-medium text-gray-900 dark:text-white">Added Objectives:</h4>
+                                        {data.objectives.map((objective) => (
+                                            <div
+                                                key={objective.id}
+                                                className="flex items-center justify-between rounded border border-blue-200 bg-blue-50 p-3 dark:border-blue-700 dark:bg-blue-900/20"
+                                            >
+                                                <div className="flex-1">
+                                                    <h5 className="font-medium text-gray-900 dark:text-white">{objective.title}</h5>
+                                                    <p className="text-sm text-gray-600 dark:text-gray-300">{objective.description}</p>
+                                                </div>
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() => removeObjective(objective.id)}
+                                                    className="border-gray-300 text-red-600 hover:text-red-800 dark:border-gray-600 dark:text-red-400 dark:hover:text-red-300"
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
+
+                        {/* Team Members */}
+                        <Card className="border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
+                            <CardHeader>
+                                <CardTitle className="flex items-center space-x-2 text-gray-900 dark:text-white">
+                                    <User className="h-5 w-5" />
+                                    <span>Team Members</span>
+                                </CardTitle>
+                                <CardDescription className="text-gray-600 dark:text-gray-300">
+                                    Add the team members who will work on this proposal
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                                    <div className="space-y-1">
+                                        <Label className="text-gray-700 dark:text-gray-300">Full Name</Label>
+                                        <Input
+                                            value={newTeamMember.fullName}
+                                            onChange={(e) => setNewTeamMember((prev) => ({ ...prev, fullName: e.target.value }))}
+                                            placeholder="Enter full name"
+                                            className="border-gray-300 bg-white text-gray-900 placeholder-gray-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
+                                        />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <Label className="text-gray-700 dark:text-gray-300">Email</Label>
+                                        <Input
+                                            type="email"
+                                            value={newTeamMember.email}
+                                            onChange={(e) => setNewTeamMember((prev) => ({ ...prev, email: e.target.value }))}
+                                            placeholder="Enter email address"
+                                            className="border-gray-300 bg-white text-gray-900 placeholder-gray-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
+                                        />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <Label className="text-gray-700 dark:text-gray-300">Role</Label>
+                                        <Input
+                                            value={newTeamMember.role}
+                                            onChange={(e) => setNewTeamMember((prev) => ({ ...prev, role: e.target.value }))}
+                                            placeholder="Enter role/position"
+                                            className="border-gray-300 bg-white text-gray-900 placeholder-gray-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="flex justify-end">
+                                    <Button
+                                        type="button"
+                                        onClick={addTeamMember}
+                                        size="sm"
+                                        className="bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600"
+                                    >
+                                        <Plus className="mr-1 h-4 w-4" />
+                                        Add Team Member
+                                    </Button>
+                                </div>
+
+                                {errors.teamMembers && <div className="text-sm text-red-500">{errors.teamMembers}</div>}
+
+                                {/* Team Members List */}
+                                {data.teamMembers.length > 0 && (
+                                    <div className="space-y-2">
+                                        <h4 className="font-medium text-gray-900 dark:text-white">Team Members:</h4>
+                                        {data.teamMembers.map((member) => (
+                                            <div
+                                                key={member.id}
+                                                className="flex items-center justify-between rounded border border-green-200 bg-green-50 p-3 dark:border-green-700 dark:bg-green-900/20"
+                                            >
+                                                <div className="flex-1">
+                                                    <h5 className="font-medium text-gray-900 dark:text-white">{member.fullName}</h5>
+                                                    <p className="text-sm text-gray-600 dark:text-gray-300">
+                                                        {member.email} • {member.role}
+                                                    </p>
+                                                </div>
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() => removeTeamMember(member.id)}
+                                                    className="border-gray-300 text-red-600 hover:text-red-800 dark:border-gray-600 dark:text-red-400 dark:hover:text-red-300"
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
+
+                        {/* Milestones */}
+                        <Card className="border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
+                            <CardHeader>
+                                <CardTitle className="flex items-center space-x-2 text-gray-900 dark:text-white">
+                                    <Flag className="h-5 w-5" />
+                                    <span>Milestones</span>
+                                </CardTitle>
+                                <CardDescription className="text-gray-600 dark:text-gray-300">
+                                    Define key milestones for your proposal with budget breakdown
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                                    <div className="space-y-1">
+                                        <Label className="text-gray-700 dark:text-gray-300">Title</Label>
+                                        <Input
+                                            value={newMilestone.title}
+                                            onChange={(e) => setNewMilestone((prev) => ({ ...prev, title: e.target.value }))}
+                                            placeholder="Milestone title"
+                                            className="border-gray-300 bg-white text-gray-900 placeholder-gray-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
+                                        />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <Label className="text-gray-700 dark:text-gray-300">Duration</Label>
+                                        <Input
+                                            value={newMilestone.duration}
+                                            onChange={(e) => setNewMilestone((prev) => ({ ...prev, duration: e.target.value }))}
+                                            placeholder="e.g., 2 weeks, 1 month"
+                                            className="border-gray-300 bg-white text-gray-900 placeholder-gray-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
+                                        />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <Label className="text-gray-700 dark:text-gray-300">Description</Label>
+                                        <Input
+                                            value={newMilestone.description}
+                                            onChange={(e) => setNewMilestone((prev) => ({ ...prev, description: e.target.value }))}
+                                            placeholder="Brief description"
+                                            className="border-gray-300 bg-white text-gray-900 placeholder-gray-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Budget Items Section */}
+                                <div className="border-t border-gray-200 pt-4 dark:border-gray-600">
+                                    <h4 className="mb-3 font-medium text-gray-900 dark:text-white">Budget Breakdown</h4>
+                                    <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                                        <div className="space-y-1">
+                                            <Label className="text-gray-700 dark:text-gray-300">Item Title</Label>
+                                            <Input
+                                                value={newBudgetItem.title}
+                                                onChange={(e) => setNewBudgetItem((prev) => ({ ...prev, title: e.target.value }))}
+                                                placeholder="e.g., Equipment rental"
+                                                className="border-gray-300 bg-white text-gray-900 placeholder-gray-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
+                                            />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <Label className="text-gray-700 dark:text-gray-300">Description</Label>
+                                            <Input
+                                                value={newBudgetItem.description}
+                                                onChange={(e) => setNewBudgetItem((prev) => ({ ...prev, description: e.target.value }))}
+                                                placeholder="Brief description"
+                                                className="border-gray-300 bg-white text-gray-900 placeholder-gray-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
+                                            />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <Label className="text-gray-700 dark:text-gray-300">Amount (Ksh)</Label>
+                                            <Input
+                                                type="number"
+                                                value={newBudgetItem.amount}
+                                                onChange={(e) => setNewBudgetItem((prev) => ({ ...prev, amount: e.target.value }))}
+                                                placeholder="0.00"
+                                                step="0.01"
+                                                min="0"
+                                                className="border-gray-300 bg-white text-gray-900 placeholder-gray-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="mt-3 flex justify-end">
+                                        <Button
+                                            type="button"
+                                            onClick={addBudgetItem}
+                                            size="sm"
+                                            className="bg-green-600 text-white hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-600"
+                                        >
+                                            <Plus className="mr-1 h-4 w-4" />
+                                            Add Budget Item
+                                        </Button>
+                                    </div>
+
+                                    {/* Budget Items List */}
+                                    {newMilestone.budgetItems && newMilestone.budgetItems.length > 0 && (
+                                        <div className="mt-4 space-y-2">
+                                            <h5 className="font-medium text-gray-900 dark:text-white">Budget Items:</h5>
+                                            {newMilestone.budgetItems.map((item) => (
+                                                <div
+                                                    key={item.id}
+                                                    className="flex items-center justify-between rounded border border-blue-200 bg-blue-50 p-3 dark:border-blue-700 dark:bg-blue-900/20"
+                                                >
+                                                    <div className="flex-1">
+                                                        <h6 className="font-medium text-gray-900 dark:text-white">{item.title}</h6>
+                                                        <p className="text-sm text-gray-600 dark:text-gray-300">{item.description}</p>
+                                                        <p className="text-sm font-medium text-green-600 dark:text-green-400">Ksh {item.amount}</p>
+                                                    </div>
+                                                    <Button
+                                                        type="button"
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={() => removeBudgetItem(item.id)}
+                                                        className="border-gray-300 text-red-600 hover:text-red-800 dark:border-gray-600 dark:text-red-400 dark:hover:text-red-300"
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="flex justify-end">
+                                    <Button
+                                        type="button"
+                                        onClick={addMilestone}
+                                        size="sm"
+                                        className="bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600"
+                                    >
+                                        <Plus className="mr-1 h-4 w-4" />
+                                        Add Milestone
+                                    </Button>
+                                </div>
+
+                                {errors.milestones && <div className="text-sm text-red-500">{errors.milestones}</div>}
+
+                                {/* Milestones List */}
+                                {data.milestones.length > 0 && (
+                                    <div className="space-y-2">
+                                        <h4 className="font-medium text-gray-900 dark:text-white">Milestones:</h4>
+                                        {data.milestones.map((milestone) => (
+                                            <div
+                                                key={milestone.id}
+                                                className="rounded border border-yellow-200 bg-yellow-50 p-3 dark:border-yellow-700 dark:bg-yellow-900/20"
+                                            >
+                                                <div className="mb-2 flex items-center justify-between">
+                                                    <div className="flex-1">
+                                                        <h5 className="font-medium text-gray-900 dark:text-white">{milestone.title}</h5>
+                                                        <p className="text-sm text-gray-600 dark:text-gray-300">{milestone.description}</p>
+                                                        <p className="text-xs text-gray-500 dark:text-gray-400">Duration: {milestone.duration}</p>
+                                                    </div>
+                                                    <Button
+                                                        type="button"
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={() => removeMilestone(milestone.id)}
+                                                        className="border-gray-300 text-red-600 hover:text-red-800 dark:border-gray-600 dark:text-red-400 dark:hover:text-red-300"
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                </div>
+
+                                                {/* Budget Items for this milestone */}
+                                                {milestone.budgetItems && milestone.budgetItems.length > 0 && (
+                                                    <div className="mt-3 border-t border-yellow-300 pt-3 dark:border-yellow-600">
+                                                        <h6 className="mb-2 font-medium text-gray-900 dark:text-white">Budget Breakdown:</h6>
+                                                        <div className="space-y-2">
+                                                            {milestone.budgetItems.map((item) => (
+                                                                <div
+                                                                    key={item.id}
+                                                                    className="flex items-center justify-between rounded bg-white p-2 dark:bg-gray-700"
+                                                                >
+                                                                    <div>
+                                                                        <p className="text-sm font-medium text-gray-900 dark:text-white">
+                                                                            {item.title}
+                                                                        </p>
+                                                                        <p className="text-xs text-gray-600 dark:text-gray-300">{item.description}</p>
+                                                                    </div>
+                                                                    <span className="text-sm font-medium text-green-600 dark:text-green-400">
+                                                                        Ksh {item.amount}
+                                                                    </span>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
+
+                        {/* Goals */}
+                        <Card className="border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
+                            <CardHeader>
+                                <CardTitle className="flex items-center space-x-2 text-gray-900 dark:text-white">
+                                    <Target className="h-5 w-5" />
+                                    <span>Goals</span>
+                                </CardTitle>
+                                <CardDescription className="text-gray-600 dark:text-gray-300">Define the main goals of your proposal</CardDescription>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                    <div className="space-y-1">
+                                        <Label className="text-gray-700 dark:text-gray-300">Title</Label>
+                                        <Input
+                                            value={newGoal.title}
+                                            onChange={(e) => setNewGoal((prev) => ({ ...prev, title: e.target.value }))}
+                                            placeholder="Goal title"
+                                            className="border-gray-300 bg-white text-gray-900 placeholder-gray-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
+                                        />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <Label className="text-gray-700 dark:text-gray-300">Description</Label>
+                                        <Input
+                                            value={newGoal.description}
+                                            onChange={(e) => setNewGoal((prev) => ({ ...prev, description: e.target.value }))}
+                                            placeholder="Goal description"
+                                            className="border-gray-300 bg-white text-gray-900 placeholder-gray-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="flex justify-end">
+                                    <Button
+                                        type="button"
+                                        onClick={addGoal}
+                                        size="sm"
+                                        className="bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600"
+                                    >
+                                        <Plus className="mr-1 h-4 w-4" />
+                                        Add Goal
+                                    </Button>
+                                </div>
+
+                                {errors.goals && <div className="text-sm text-red-500">{errors.goals}</div>}
+
+                                {/* Goals List */}
+                                {data.goals.length > 0 && (
+                                    <div className="space-y-2">
+                                        <h4 className="font-medium text-gray-900 dark:text-white">Goals:</h4>
+                                        {data.goals.map((goal) => (
+                                            <div
+                                                key={goal.id}
+                                                className="flex items-center justify-between rounded border border-purple-200 bg-purple-50 p-3 dark:border-purple-700 dark:bg-purple-900/20"
+                                            >
+                                                <div className="flex-1">
+                                                    <h5 className="font-medium text-gray-900 dark:text-white">{goal.title}</h5>
+                                                    <p className="text-sm text-gray-600 dark:text-gray-300">{goal.description}</p>
+                                                </div>
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() => removeGoal(goal.id)}
+                                                    className="border-gray-300 text-red-600 hover:text-red-800 dark:border-gray-600 dark:text-red-400 dark:hover:text-red-300"
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
+
+                        {/* Submit Buttons */}
+                        <Card className="border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
+                            <CardFooter className="flex justify-end space-x-4">
+                                <Button
+                                    variant="outline"
+                                    type="button"
+                                    onClick={() => window.history.back()}
+                                    disabled={processing}
+                                    className="border-gray-300 text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
+                                >
+                                    Cancel
+                                </Button>
+                                <Button
+                                    type="submit"
+                                    onClick={handleSubmit}
+                                    disabled={processing}
+                                    className="bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600"
+                                >
+                                    {processing ? 'Submitting...' : 'Submit Proposal'}
+                                </Button>
+                            </CardFooter>
+                        </Card>
+                    </div>
                 </div>
-
-                <div className="flex justify-end">
-                  <Button type="button" onClick={addGoal} size="sm" className="bg-blue-600 dark:bg-blue-700 text-white hover:bg-blue-700 dark:hover:bg-blue-600">
-                    <Plus className="h-4 w-4 mr-1" />
-                    Add Goal
-                  </Button>
-                </div>
-
-                {errors.goals && <div className="text-red-500 text-sm">{errors.goals}</div>}
-
-                {/* Goals List */}
-                {data.goals.length > 0 && (
-                  <div className="space-y-2">
-                    <h4 className="font-medium text-gray-900 dark:text-white">Goals:</h4>
-                    {data.goals.map((goal) => (
-                      <div key={goal.id} className="flex items-center justify-between bg-purple-50 dark:bg-purple-900/20 p-3 rounded border border-purple-200 dark:border-purple-700">
-                        <div className="flex-1">
-                          <h5 className="font-medium text-gray-900 dark:text-white">{goal.title}</h5>
-                          <p className="text-sm text-gray-600 dark:text-gray-300">{goal.description}</p>
-                        </div>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => removeGoal(goal.id)}
-                          className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 border-gray-300 dark:border-gray-600"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Submit Buttons */}
-            <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-              <CardFooter className="flex justify-end space-x-4">
-                <Button
-                  variant="outline"
-                  type="button"
-                  onClick={() => window.history.back()}
-                  disabled={processing}
-                  className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  onClick={handleSubmit}
-                  disabled={processing}
-                  className="bg-blue-600 dark:bg-blue-700 text-white hover:bg-blue-700 dark:hover:bg-blue-600"
-                >
-                  {processing ? 'Submitting...' : 'Submit Proposal'}
-                </Button>
-              </CardFooter>
-            </Card>
-          </div>
-        </div>
-      </div>
-    </AppLayout>
-  );
+            </div>
+        </AppLayout>
+    );
 }

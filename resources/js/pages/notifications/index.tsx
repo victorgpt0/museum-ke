@@ -1,50 +1,46 @@
-import React, { useState } from 'react';
-import { router, usePage, Link, Head } from '@inertiajs/react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import AppLayout from '@/layouts/app-layout';
+import { BreadcrumbItem } from '@/types';
+import { Head, router } from '@inertiajs/react';
 import {
     AlertTriangle,
     Bell,
     Check,
+    CheckCheck,
     CheckCircle,
     ExternalLink,
+    Eye,
+    EyeOff,
+    Filter,
     Info,
     MessageSquare,
+    Search,
+    Trash2,
     TrashIcon,
     XCircle,
-    CheckCheck,
-    Trash2,
-    Filter,
-    Search,
-    ArrowLeft,
-    MoreHorizontal,
-    Eye,
-    EyeOff
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
-import { Checkbox } from '@/components/ui/checkbox';
-import { BreadcrumbItem } from '@/types';
-import AppLayout from '@/layouts/app-layout';
+import { useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Notifications',
         href: '/notifications',
-    }
+    },
 ];
 
-export default function Index({notifications_index, unreadCount_index}){
-
+export default function Index({ notifications_index, unreadCount_index }) {
     const notifications = notifications_index;
     const unreadCount = unreadCount_index;
     const filters = {
         search: '',
         type: 'all',
-        status: 'all'
-    }
+        status: 'all',
+    };
 
     const [selectedNotifications, setSelectedNotifications] = useState<Set<number>>(new Set());
     const [searchTerm, setSearchTerm] = useState(filters.search || '');
@@ -71,17 +67,23 @@ export default function Index({notifications_index, unreadCount_index}){
 
     const getTypeColor = (notif_type: string) => {
         switch (notif_type) {
-            case 'info': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
-            case 'success': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
-            case 'warning': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300';
-            case 'error': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
-            case 'message': return 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300';
-            default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
+            case 'info':
+                return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
+            case 'success':
+                return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
+            case 'warning':
+                return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300';
+            case 'error':
+                return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
+            case 'message':
+                return 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300';
+            default:
+                return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
         }
     };
 
     const handleSelectNotification = (id: number) => {
-        setSelectedNotifications(prev => {
+        setSelectedNotifications((prev) => {
             const newSet = new Set(prev);
             if (newSet.has(id)) {
                 newSet.delete(id);
@@ -96,7 +98,7 @@ export default function Index({notifications_index, unreadCount_index}){
         if (selectedNotifications.size === notifications.length) {
             setSelectedNotifications(new Set());
         } else {
-            setSelectedNotifications(new Set(notifications.map(n => n.id)));
+            setSelectedNotifications(new Set(notifications.map((n) => n.id)));
         }
     };
 
@@ -126,16 +128,20 @@ export default function Index({notifications_index, unreadCount_index}){
 
     const markSelectedAsRead = () => {
         const ids = Array.from(selectedNotifications);
-        router.post(route('notifications.mark-bulk-as-read'), {
-            ids: ids,
-        }, {
-            preserveScroll: true,
-            preserveState: true,
-            only: ['notifications', 'unreadCount'],
-            onSuccess: () => {
-                setSelectedNotifications(new Set());
+        router.post(
+            route('notifications.mark-bulk-as-read'),
+            {
+                ids: ids,
             },
-        });
+            {
+                preserveScroll: true,
+                preserveState: true,
+                only: ['notifications', 'unreadCount'],
+                onSuccess: () => {
+                    setSelectedNotifications(new Set());
+                },
+            },
+        );
     };
 
     const deleteNotification = (id: number) => {
@@ -171,24 +177,32 @@ export default function Index({notifications_index, unreadCount_index}){
     };
 
     const applyFilters = () => {
-        router.get(route('notifications.index'), {
-            search: searchTerm || undefined,
-            type: filterType !== 'all' ? filterType : undefined,
-            status: filterStatus !== 'all' ? filterStatus : undefined,
-        }, {
-            preserveState: true,
-            replace: true,
-        });
+        router.get(
+            route('notifications.index'),
+            {
+                search: searchTerm || undefined,
+                type: filterType !== 'all' ? filterType : undefined,
+                status: filterStatus !== 'all' ? filterStatus : undefined,
+            },
+            {
+                preserveState: true,
+                replace: true,
+            },
+        );
     };
 
     const clearFilters = () => {
         setSearchTerm('');
         setFilterType('all');
         setFilterStatus('all');
-        router.get(route('notifications.index'), {}, {
-            preserveState: true,
-            replace: true,
-        });
+        router.get(
+            route('notifications.index'),
+            {},
+            {
+                preserveState: true,
+                replace: true,
+            },
+        );
     };
 
     const handleRedirect = (url: string, id: number, read: boolean) => {
@@ -200,53 +214,44 @@ export default function Index({notifications_index, unreadCount_index}){
         }
     };
 
-
     const hasSelectedNotifications = selectedNotifications.size > 0;
     const allSelected = selectedNotifications.size === notifications.length && notifications.length > 0;
     const hasFilters = searchTerm || filterType !== 'all' || filterStatus !== 'all';
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title={`Notifications`}/>
+            <Head title={`Notifications`} />
 
-            <div className="border-b overflow-auto">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex items-center justify-between h-16">
+            <div className="overflow-auto border-b">
+                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                    <div className="flex h-16 items-center justify-between">
                         <div className="flex items-center gap-4">
                             <div className="flex items-center gap-3">
                                 <Bell size={24} className="text-gray-700 dark:text-gray-300" />
                                 <div>
-                                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                                        Manage all your notifications
-                                    </p>
+                                    <p className="text-sm text-gray-500 dark:text-gray-400">Manage all your notifications</p>
                                 </div>
                             </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                            {unreadCount > 0 && (
-                                <Badge variant="destructive">
-                                    {unreadCount} unread
-                                </Badge>
-                            )}
-                        </div>
+                        <div className="flex items-center gap-2">{unreadCount > 0 && <Badge variant="destructive">{unreadCount} unread</Badge>}</div>
                     </div>
                 </div>
             </div>
 
-            <div className="max-w-7xl min-w-md px-4 sm:px-6 lg:px-8 py-8">
+            <div className="max-w-7xl min-w-md px-4 py-8 sm:px-6 lg:px-8">
                 {/* Filters and Search */}
                 <Card className="mb-6">
                     <CardHeader className="pb-4">
-                        <CardTitle className="text-lg flex items-center gap-2">
+                        <CardTitle className="flex items-center gap-2 text-lg">
                             <Filter size={20} />
                             Filters & Search
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
                             <div className="md:col-span-2">
                                 <div className="relative">
-                                    <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                                    <Search size={16} className="absolute top-1/2 left-3 -translate-y-1/2 transform text-gray-400" />
                                     <Input
                                         placeholder="Search notifications..."
                                         value={searchTerm}
@@ -284,7 +289,7 @@ export default function Index({notifications_index, unreadCount_index}){
                                 </Select>
                             </div>
                         </div>
-                        <div className="flex items-center justify-between mt-4">
+                        <div className="mt-4 flex items-center justify-between">
                             <div className="flex gap-2">
                                 <Button onClick={applyFilters} size="sm">
                                     Apply Filters
@@ -318,8 +323,7 @@ export default function Index({notifications_index, unreadCount_index}){
                                     <span className="text-sm text-gray-600 dark:text-gray-400">
                                         {hasSelectedNotifications
                                             ? `${selectedNotifications.size} of ${notifications.length} selected`
-                                            : `Select all ${notifications.length} notifications`
-                                        }
+                                            : `Select all ${notifications.length} notifications`}
                                     </span>
                                 </div>
                                 <div className="flex items-center gap-2">
@@ -329,7 +333,7 @@ export default function Index({notifications_index, unreadCount_index}){
                                                 onClick={markSelectedAsRead}
                                                 variant="outline"
                                                 size="sm"
-                                                className="text-blue-600 border-blue-200 hover:bg-blue-50"
+                                                className="border-blue-200 text-blue-600 hover:bg-blue-50"
                                             >
                                                 <Check size={16} className="mr-1" />
                                                 Mark Read ({selectedNotifications.size})
@@ -338,7 +342,7 @@ export default function Index({notifications_index, unreadCount_index}){
                                                 onClick={deleteSelectedNotifications}
                                                 variant="outline"
                                                 size="sm"
-                                                className="text-red-600 border-red-200 hover:bg-red-50"
+                                                className="border-red-200 text-red-600 hover:bg-red-50"
                                             >
                                                 <TrashIcon size={16} className="mr-1" />
                                                 Delete ({selectedNotifications.size})
@@ -351,7 +355,7 @@ export default function Index({notifications_index, unreadCount_index}){
                                                     onClick={markAllAsRead}
                                                     variant="outline"
                                                     size="sm"
-                                                    className="text-blue-600 border-blue-200 hover:bg-blue-50"
+                                                    className="border-blue-200 text-blue-600 hover:bg-blue-50"
                                                 >
                                                     <CheckCheck size={16} className="mr-1" />
                                                     Mark All Read
@@ -361,7 +365,7 @@ export default function Index({notifications_index, unreadCount_index}){
                                                 onClick={deleteAllNotifications}
                                                 variant="outline"
                                                 size="sm"
-                                                className="text-red-600 border-red-200 hover:bg-red-50"
+                                                className="border-red-200 text-red-600 hover:bg-red-50"
                                             >
                                                 <Trash2 size={16} className="mr-1" />
                                                 Delete All
@@ -380,14 +384,11 @@ export default function Index({notifications_index, unreadCount_index}){
                         <CardContent className="py-16">
                             <div className="text-center">
                                 <MessageSquare size={48} className="mx-auto mb-4 text-gray-400" />
-                                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                                    No notifications found
-                                </h3>
+                                <h3 className="mb-2 text-lg font-medium text-gray-900 dark:text-white">No notifications found</h3>
                                 <p className="text-gray-500 dark:text-gray-400">
                                     {hasFilters
-                                        ? "Try adjusting your filters to see more notifications."
-                                        : "You're all caught up! No notifications to display."
-                                    }
+                                        ? 'Try adjusting your filters to see more notifications.'
+                                        : "You're all caught up! No notifications to display."}
                                 </p>
                             </div>
                         </CardContent>
@@ -398,53 +399,40 @@ export default function Index({notifications_index, unreadCount_index}){
                             <Card
                                 key={notification.id}
                                 className={`transition-all hover:shadow-md ${
-                                    !notification.read ? 'bg-blue-50 border-blue-200 dark:bg-blue-950/20 dark:border-blue-800' : ''
-                                } ${
-                                    selectedNotifications.has(notification.id) ? 'ring-2 ring-primary' : ''
-                                }`}
+                                    !notification.read ? 'border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/20' : ''
+                                } ${selectedNotifications.has(notification.id) ? 'ring-primary ring-2' : ''}`}
                             >
                                 <CardContent className="p-4">
                                     <div className="flex items-start gap-4">
                                         <Checkbox
                                             checked={selectedNotifications.has(notification.id)}
                                             onCheckedChange={() => handleSelectNotification(notification.id)}
-                                            className="mt-1 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                                            className="data-[state=checked]:bg-primary data-[state=checked]:border-primary mt-1"
                                             onClick={(e) => e.stopPropagation()}
                                         />
 
-                                        <div className="flex-shrink-0 mt-1">
-                                            {getNotifIcon(notification.notif_type)}
-                                        </div>
+                                        <div className="mt-1 flex-shrink-0">{getNotifIcon(notification.notif_type)}</div>
 
                                         <div
-                                            className="flex-1 min-w-0 cursor-pointer"
+                                            className="min-w-0 flex-1 cursor-pointer"
                                             onClick={() => handleRedirect(notification.url, notification.id, notification.read)}
                                         >
                                             <div className="flex items-start justify-between gap-4">
-                                                <div className="flex-1 min-w-0">
-                                                    <div className="flex items-center gap-2 mb-1">
-                                                        <h3 className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                                                <div className="min-w-0 flex-1">
+                                                    <div className="mb-1 flex items-center gap-2">
+                                                        <h3 className="truncate text-sm font-medium text-gray-900 dark:text-white">
                                                             {notification.title}
                                                         </h3>
-                                                        <Badge
-                                                            variant="secondary"
-                                                            className={`text-xs ${getTypeColor(notification.notif_type)}`}
-                                                        >
+                                                        <Badge variant="secondary" className={`text-xs ${getTypeColor(notification.notif_type)}`}>
                                                             {notification.notif_type}
                                                         </Badge>
-                                                        {!notification.read && (
-                                                            <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0" />
-                                                        )}
+                                                        {!notification.read && <div className="h-2 w-2 flex-shrink-0 rounded-full bg-blue-500" />}
                                                     </div>
-                                                    <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
-                                                        {notification.message}
-                                                    </p>
-                                                    <div className="flex items-center gap-4 mt-2">
-                                                        <span className="text-xs text-gray-500 dark:text-gray-400">
-                                                            {notification.timestamp}
-                                                        </span>
+                                                    <p className="line-clamp-2 text-sm text-gray-600 dark:text-gray-400">{notification.message}</p>
+                                                    <div className="mt-2 flex items-center gap-4">
+                                                        <span className="text-xs text-gray-500 dark:text-gray-400">{notification.timestamp}</span>
                                                         {notification.url && (
-                                                            <span className="text-xs text-blue-600 dark:text-blue-400 flex items-center gap-1">
+                                                            <span className="flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400">
                                                                 <ExternalLink size={12} />
                                                                 Click to view
                                                             </span>
@@ -452,10 +440,7 @@ export default function Index({notifications_index, unreadCount_index}){
                                                     </div>
                                                 </div>
 
-                                                <div
-                                                    className="flex items-center gap-1"
-                                                    onClick={(e) => e.stopPropagation()}
-                                                >
+                                                <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
                                                     {!notification.read ? (
                                                         <Button
                                                             onClick={(e) => {
@@ -464,18 +449,13 @@ export default function Index({notifications_index, unreadCount_index}){
                                                             }}
                                                             variant="ghost"
                                                             size="sm"
-                                                            className="text-blue-600 hover:bg-blue-50 h-8 px-2"
+                                                            className="h-8 px-2 text-blue-600 hover:bg-blue-50"
                                                         >
                                                             <Eye size={14} className="mr-1" />
                                                             Mark Read
                                                         </Button>
                                                     ) : (
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="sm"
-                                                            className="text-gray-400 h-8 px-2"
-                                                            disabled
-                                                        >
+                                                        <Button variant="ghost" size="sm" className="h-8 px-2 text-gray-400" disabled>
                                                             <EyeOff size={14} className="mr-1" />
                                                             Read
                                                         </Button>
@@ -487,7 +467,7 @@ export default function Index({notifications_index, unreadCount_index}){
                                                         }}
                                                         variant="ghost"
                                                         size="sm"
-                                                        className="text-red-600 hover:bg-red-50 h-8 px-2"
+                                                        className="h-8 px-2 text-red-600 hover:bg-red-50"
                                                     >
                                                         <Trash2 size={14} />
                                                     </Button>
@@ -512,10 +492,12 @@ export default function Index({notifications_index, unreadCount_index}){
                                 <div className="flex gap-2">
                                     {notifications.current_page > 1 && (
                                         <Button
-                                            onClick={() => router.get(route('notifications.index'), {
-                                                ...filters,
-                                                page: notifications.current_page - 1
-                                            })}
+                                            onClick={() =>
+                                                router.get(route('notifications.index'), {
+                                                    ...filters,
+                                                    page: notifications.current_page - 1,
+                                                })
+                                            }
                                             variant="outline"
                                             size="sm"
                                         >
@@ -524,10 +506,12 @@ export default function Index({notifications_index, unreadCount_index}){
                                     )}
                                     {notifications.current_page < notifications.last_page && (
                                         <Button
-                                            onClick={() => router.get(route('notifications.index'), {
-                                                ...filters,
-                                                page: notifications.current_page + 1
-                                            })}
+                                            onClick={() =>
+                                                router.get(route('notifications.index'), {
+                                                    ...filters,
+                                                    page: notifications.current_page + 1,
+                                                })
+                                            }
                                             variant="outline"
                                             size="sm"
                                         >
@@ -540,8 +524,6 @@ export default function Index({notifications_index, unreadCount_index}){
                     </Card>
                 )}
             </div>
-
-
         </AppLayout>
     );
 }

@@ -1,5 +1,5 @@
-import { usePage } from '@inertiajs/react';
 import { Alert } from '@/components/ui/alert';
+import { usePage } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 
 const FLASH_TYPES = ['success', 'error', 'info', 'warning'] as const;
@@ -20,12 +20,12 @@ const AlertComponent = () => {
 
         const timeouts = Object.keys(newVisibleAlerts).map((type) =>
             setTimeout(() => {
-                setVisibleAlerts(prev => {
-                    const updated = {...prev};
+                setVisibleAlerts((prev) => {
+                    const updated = { ...prev };
                     delete updated[type];
                     return updated;
                 });
-            }, 5000)
+            }, 5000),
         );
 
         return () => timeouts.forEach(clearTimeout);
@@ -35,13 +35,11 @@ const AlertComponent = () => {
         <>
             {Object.entries(visibleAlerts).map(([type, message]) => (
                 <div key={type} className="p-6">
-                    <Alert variant={type as string}>
-                        {message}
-                    </Alert>
+                    <Alert variant={type as string}>{message}</Alert>
                 </div>
             ))}
         </>
     );
-}
+};
 
 export default AlertComponent;

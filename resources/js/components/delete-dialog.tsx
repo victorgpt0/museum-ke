@@ -15,18 +15,21 @@ interface Props {
     deleteRoute: string;
 }
 
-export default function DeleteConfirm({
-    itemName,
-    itemType = 'item',
-    deleteRoute, } : Props) {
-
+export default function DeleteConfirm({ itemName, itemType = 'item', deleteRoute }: Props) {
     const [open, setOpen] = useState(false);
 
     const passwordInput = useRef<HTMLInputElement>(null);
-    const { data, setData, delete: destroy, processing, reset, errors, clearErrors } = useForm({
-        password: '' ,
+    const {
+        data,
+        setData,
+        delete: destroy,
+        processing,
+        reset,
+        errors,
+        clearErrors,
+    } = useForm({
+        password: '',
     });
-
 
     const handleDelete: FormEventHandler = (e) => {
         e.preventDefault();
@@ -38,10 +41,10 @@ export default function DeleteConfirm({
                 closeModal();
             },
             onError: () => {
-                passwordInput.current?.focus()
+                passwordInput.current?.focus();
             },
             onFinish: () => {
-                reset()
+                reset();
             },
         });
     };
@@ -52,11 +55,10 @@ export default function DeleteConfirm({
         setOpen(false);
     };
 
-
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button variant="destructive" className={`flex items-center cursor-pointer`}>
+                <Button variant="destructive" className={`flex cursor-pointer items-center`}>
                     <Trash2 className="h-3 w-3" />
                 </Button>
             </DialogTrigger>
@@ -77,24 +79,24 @@ export default function DeleteConfirm({
                     <span className="mt-2 block">Please enter your password to confirm this deletion.</span>
                 </DialogDescription>
                 <form className="space-y-6" onSubmit={handleDelete}>
-                                            <div className="grid gap-2">
-                            <Label htmlFor="password" className="sr-only">
-                                Password
-                            </Label>
+                    <div className="grid gap-2">
+                        <Label htmlFor="password" className="sr-only">
+                            Password
+                        </Label>
 
-                            <Input
-                                id="password"
-                                type="password"
-                                name="password"
-                                ref={passwordInput}
-                                value={data.password}
-                                onChange={(e) => setData('password', e.target.value)}
-                                placeholder="Password"
-                                autoComplete="current-password"
-                            />
+                        <Input
+                            id="password"
+                            type="password"
+                            name="password"
+                            ref={passwordInput}
+                            value={data.password}
+                            onChange={(e) => setData('password', e.target.value)}
+                            placeholder="Password"
+                            autoComplete="current-password"
+                        />
 
-                            <InputError message={errors.password} />
-                        </div>
+                        <InputError message={errors.password} />
+                    </div>
 
                     <DialogFooter className="gap-2">
                         <DialogClose asChild>
@@ -106,7 +108,6 @@ export default function DeleteConfirm({
                         <Button variant="destructive" disabled={processing} asChild>
                             <button type="submit">Delete {itemType}</button>
                         </Button>
-
                     </DialogFooter>
                 </form>
             </DialogContent>

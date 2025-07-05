@@ -1,23 +1,10 @@
-import React from 'react';
-import { Head, Link, router } from '@inertiajs/react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem } from '@/types';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-    ArrowLeft,
-    User,
-    Mail,
-    Phone,
-    Calendar,
-    FileText,
-    Image as ImageIcon,
-    CheckCircle,
-    XCircle,
-    Clock,
-    Eye
-} from 'lucide-react';
+import { Head, router } from '@inertiajs/react';
+import { Calendar, CheckCircle, Clock, Eye, FileText, Image as ImageIcon, Mail, Phone, User, XCircle } from 'lucide-react';
 import toast, { Toaster } from 'react-hot-toast';
 
 interface Media {
@@ -59,7 +46,7 @@ export default function AcquisitionShow({ proposal }: Props) {
     ];
 
     const getStatusBadge = (status: string) => {
-        const baseClasses = "inline-flex items-center px-3 py-1 rounded-full text-sm font-medium";
+        const baseClasses = 'inline-flex items-center px-3 py-1 rounded-full text-sm font-medium';
         switch (status) {
             case 'approved':
                 return `${baseClasses} bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300`;
@@ -95,42 +82,50 @@ export default function AcquisitionShow({ proposal }: Props) {
             month: 'long',
             day: 'numeric',
             hour: '2-digit',
-            minute: '2-digit'
+            minute: '2-digit',
         });
     };
 
     const handleApprove = () => {
-        router.post(route('acquisitions.approve',proposal.id), {}, {
-            preserveScroll: true,
-            onSuccess: () => {
-                toast.success('Proposal approved successfully!');
-                setTimeout(() => window.location.reload(), 1000);
+        router.post(
+            route('acquisitions.approve', proposal.id),
+            {},
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    toast.success('Proposal approved successfully!');
+                    setTimeout(() => window.location.reload(), 1000);
+                },
+                onError: (errors) => {
+                    if (errors.error) {
+                        toast.error(errors.error);
+                    } else {
+                        toast.error('Failed to approve proposal.');
+                    }
+                },
             },
-            onError: (errors) => {
-                if (errors.error) {
-                    toast.error(errors.error);
-                } else {
-                    toast.error('Failed to approve proposal.');
-                }
-            }
-        });
+        );
     };
 
     const handleReject = () => {
-        router.post(route('acquisitions.reject',proposal.id), {}, {
-            preserveScroll: true,
-            onSuccess: () => {
-                toast.success('Proposal rejected successfully!');
-                setTimeout(() => window.location.reload(), 1000);
+        router.post(
+            route('acquisitions.reject', proposal.id),
+            {},
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    toast.success('Proposal rejected successfully!');
+                    setTimeout(() => window.location.reload(), 1000);
+                },
+                onError: (errors) => {
+                    if (errors.error) {
+                        toast.error(errors.error);
+                    } else {
+                        toast.error('Failed to reject proposal.');
+                    }
+                },
             },
-            onError: (errors) => {
-                if (errors.error) {
-                    toast.error(errors.error);
-                } else {
-                    toast.error('Failed to reject proposal.');
-                }
-            }
-        });
+        );
     };
 
     return (
@@ -168,27 +163,23 @@ export default function AcquisitionShow({ proposal }: Props) {
                 }}
             />
 
-            <div className="bg-gray-50 dark:bg-gray-900 py-8">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="bg-gray-50 py-8 dark:bg-gray-900">
+                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     {/* Header */}
                     <div className="mb-8">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center space-x-4">
                                 <div>
-                                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                                        {proposal.title}
-                                    </h1>
-                                    <div className="flex items-center space-x-2 mt-2">
+                                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{proposal.title}</h1>
+                                    <div className="mt-2 flex items-center space-x-2">
                                         <Badge className={getStatusBadge(proposal.proposal_status)}>
                                             {getStatusIcon(proposal.proposal_status)}
                                             <span className="ml-1">
                                                 {proposal.proposal_status.charAt(0).toUpperCase() +
-                                                 proposal.proposal_status.slice(1).replace('_', ' ')}
+                                                    proposal.proposal_status.slice(1).replace('_', ' ')}
                                             </span>
                                         </Badge>
-                                        <span className="text-sm text-gray-500 dark:text-gray-400">
-                                            Submitted: {formatDate(proposal.created_at)}
-                                        </span>
+                                        <span className="text-sm text-gray-500 dark:text-gray-400">Submitted: {formatDate(proposal.created_at)}</span>
                                     </div>
                                 </div>
                             </div>
@@ -196,18 +187,12 @@ export default function AcquisitionShow({ proposal }: Props) {
                             {/* Action Buttons */}
                             {proposal.proposal_status === 'pending' && (
                                 <div className="flex space-x-2">
-                                    <Button
-                                        onClick={handleApprove}
-                                        className="bg-green-600 hover:bg-green-700 text-white"
-                                    >
-                                        <CheckCircle className="h-4 w-4 mr-2" />
+                                    <Button onClick={handleApprove} className="bg-green-600 text-white hover:bg-green-700">
+                                        <CheckCircle className="mr-2 h-4 w-4" />
                                         Approve
                                     </Button>
-                                    <Button
-                                        onClick={handleReject}
-                                        variant="destructive"
-                                    >
-                                        <XCircle className="h-4 w-4 mr-2" />
+                                    <Button onClick={handleReject} variant="destructive">
+                                        <XCircle className="mr-2 h-4 w-4" />
                                         Reject
                                     </Button>
                                 </div>
@@ -215,9 +200,9 @@ export default function AcquisitionShow({ proposal }: Props) {
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
                         {/* Main Content */}
-                        <div className="lg:col-span-2 space-y-6">
+                        <div className="space-y-6 lg:col-span-2">
                             {/* Artifact Information */}
                             <Card className="border border-gray-200 dark:border-gray-700">
                                 <CardHeader>
@@ -228,16 +213,12 @@ export default function AcquisitionShow({ proposal }: Props) {
                                 </CardHeader>
                                 <CardContent className="space-y-4">
                                     <div>
-                                        <h3 className="font-medium text-gray-900 dark:text-white mb-2">Description</h3>
-                                        <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-                                            {proposal.description}
-                                        </p>
+                                        <h3 className="mb-2 font-medium text-gray-900 dark:text-white">Description</h3>
+                                        <p className="leading-relaxed text-gray-700 dark:text-gray-300">{proposal.description}</p>
                                     </div>
                                     <div>
-                                        <h3 className="font-medium text-gray-900 dark:text-white mb-2">Source/Origin</h3>
-                                        <p className="text-gray-700 dark:text-gray-300">
-                                            {proposal.source}
-                                        </p>
+                                        <h3 className="mb-2 font-medium text-gray-900 dark:text-white">Source/Origin</h3>
+                                        <p className="text-gray-700 dark:text-gray-300">{proposal.source}</p>
                                     </div>
                                 </CardContent>
                             </Card>
@@ -252,13 +233,16 @@ export default function AcquisitionShow({ proposal }: Props) {
                                         </CardTitle>
                                     </CardHeader>
                                     <CardContent>
-                                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                                        <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
                                             {proposal.media.map((image, index) => (
-                                                <div key={image.id} className="aspect-square rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
+                                                <div
+                                                    key={image.id}
+                                                    className="aspect-square overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700"
+                                                >
                                                     <img
                                                         src={image.original_url}
                                                         alt={`${proposal.title} - Image ${index + 1}`}
-                                                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
+                                                        className="h-full w-full object-cover transition-transform duration-200 hover:scale-105"
                                                         onError={(e) => {
                                                             e.currentTarget.src = '/images/placeholder.jpg';
                                                         }}
@@ -283,58 +267,61 @@ export default function AcquisitionShow({ proposal }: Props) {
                                 </CardHeader>
                                 <CardContent className="space-y-4">
                                     <div>
-                                        <h3 className="font-medium text-gray-900 dark:text-white mb-2">Contact Details</h3>
+                                        <h3 className="mb-2 font-medium text-gray-900 dark:text-white">Contact Details</h3>
                                         <div className="space-y-2">
-                                            <div className="flex items-start space-x-2 text-gray-700 dark:text-gray-300 min-w-0">
-                                                <User className="h-4 w-4 text-gray-500 flex-shrink-0 mt-0.5" />
-                                                <span className="break-words min-w-0 flex-1 overflow-hidden">{proposal.donor.fullname}</span>
+                                            <div className="flex min-w-0 items-start space-x-2 text-gray-700 dark:text-gray-300">
+                                                <User className="mt-0.5 h-4 w-4 flex-shrink-0 text-gray-500" />
+                                                <span className="min-w-0 flex-1 overflow-hidden break-words">{proposal.donor.fullname}</span>
                                             </div>
-                                            <div className="flex items-start space-x-2 text-gray-700 dark:text-gray-300 min-w-0">
-                                                <Mail className="h-4 w-4 text-gray-500 flex-shrink-0 mt-0.5" />
-                                                <span className="break-words min-w-0 flex-1 overflow-hidden">
-                                                    <a
-                                                        href={`mailto:${proposal.donor.email}`}
-                                                        className="text-blue-600 hover:text-blue-800"
-                                                    >
+                                            <div className="flex min-w-0 items-start space-x-2 text-gray-700 dark:text-gray-300">
+                                                <Mail className="mt-0.5 h-4 w-4 flex-shrink-0 text-gray-500" />
+                                                <span className="min-w-0 flex-1 overflow-hidden break-words">
+                                                    <a href={`mailto:${proposal.donor.email}`} className="text-blue-600 hover:text-blue-800">
                                                         {proposal.donor.email}
                                                     </a>
                                                 </span>
                                             </div>
-                                            <div className="flex items-start space-x-2 text-gray-700 dark:text-gray-300 min-w-0">
-                                                <Phone className="h-4 w-4 text-gray-500 flex-shrink-0 mt-0.5" />
-                                                <span className="break-words min-w-0 flex-1 overflow-hidden">{proposal.donor.contact}</span>
+                                            <div className="flex min-w-0 items-start space-x-2 text-gray-700 dark:text-gray-300">
+                                                <Phone className="mt-0.5 h-4 w-4 flex-shrink-0 text-gray-500" />
+                                                <span className="min-w-0 flex-1 overflow-hidden break-words">{proposal.donor.contact}</span>
                                             </div>
                                         </div>
                                     </div>
 
                                     {/* Next of Kin Information */}
-                                    {(proposal.donor.next_of_kin_fullname || proposal.donor.next_of_kin_email || proposal.donor.next_of_kin_contact) && (
+                                    {(proposal.donor.next_of_kin_fullname ||
+                                        proposal.donor.next_of_kin_email ||
+                                        proposal.donor.next_of_kin_contact) && (
                                         <div>
-                                            <h3 className="font-medium text-gray-900 dark:text-white mb-2">Next of Kin</h3>
+                                            <h3 className="mb-2 font-medium text-gray-900 dark:text-white">Next of Kin</h3>
                                             <div className="space-y-2">
                                                 {proposal.donor.next_of_kin_fullname && (
-                                                    <div className="flex items-start space-x-2 text-gray-700 dark:text-gray-300 min-w-0">
-                                                        <User className="h-4 w-4 text-gray-500 flex-shrink-0 mt-0.5" />
-                                                        <span className="break-words min-w-0 flex-1 overflow-hidden">{proposal.donor.next_of_kin_fullname}</span>
+                                                    <div className="flex min-w-0 items-start space-x-2 text-gray-700 dark:text-gray-300">
+                                                        <User className="mt-0.5 h-4 w-4 flex-shrink-0 text-gray-500" />
+                                                        <span className="min-w-0 flex-1 overflow-hidden break-words">
+                                                            {proposal.donor.next_of_kin_fullname}
+                                                        </span>
                                                     </div>
                                                 )}
                                                 {proposal.donor.next_of_kin_email && (
-                                                    <div className="flex items-start space-x-2 text-gray-700 dark:text-gray-300 min-w-0">
-                                                        <Mail className="h-4 w-4 text-gray-500 flex-shrink-0 mt-0.5" />
-                                                        <span className="break-words min-w-0 flex-1 overflow-hidden">
+                                                    <div className="flex min-w-0 items-start space-x-2 text-gray-700 dark:text-gray-300">
+                                                        <Mail className="mt-0.5 h-4 w-4 flex-shrink-0 text-gray-500" />
+                                                        <span className="min-w-0 flex-1 overflow-hidden break-words">
                                                             <a
                                                                 href={`mailto:${proposal.donor.next_of_kin_email}`}
                                                                 className="text-blue-600 hover:text-blue-800"
                                                             >
                                                                 {proposal.donor.next_of_kin_email}
-                                                              </a>
+                                                            </a>
                                                         </span>
                                                     </div>
                                                 )}
                                                 {proposal.donor.next_of_kin_contact && (
-                                                    <div className="flex items-start space-x-2 text-gray-700 dark:text-gray-300 min-w-0">
-                                                        <Phone className="h-4 w-4 text-gray-500 flex-shrink-0 mt-0.5" />
-                                                        <span className="break-words min-w-0 flex-1 overflow-hidden">{proposal.donor.next_of_kin_contact}</span>
+                                                    <div className="flex min-w-0 items-start space-x-2 text-gray-700 dark:text-gray-300">
+                                                        <Phone className="mt-0.5 h-4 w-4 flex-shrink-0 text-gray-500" />
+                                                        <span className="min-w-0 flex-1 overflow-hidden break-words">
+                                                            {proposal.donor.next_of_kin_contact}
+                                                        </span>
                                                     </div>
                                                 )}
                                             </div>
@@ -354,15 +341,11 @@ export default function AcquisitionShow({ proposal }: Props) {
                                 <CardContent className="space-y-3">
                                     <div>
                                         <p className="text-sm text-gray-500 dark:text-gray-400">Submitted</p>
-                                        <p className="font-medium text-gray-900 dark:text-white">
-                                            {formatDate(proposal.created_at)}
-                                        </p>
+                                        <p className="font-medium text-gray-900 dark:text-white">{formatDate(proposal.created_at)}</p>
                                     </div>
                                     <div>
                                         <p className="text-sm text-gray-500 dark:text-gray-400">Last Updated</p>
-                                        <p className="font-medium text-gray-900 dark:text-white">
-                                            {formatDate(proposal.updated_at)}
-                                        </p>
+                                        <p className="font-medium text-gray-900 dark:text-white">{formatDate(proposal.updated_at)}</p>
                                     </div>
                                 </CardContent>
                             </Card>

@@ -1,8 +1,8 @@
 import { Icon } from '@/components/icon';
 import { SidebarGroup, SidebarGroupContent, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
+import Can from '@/lib/can';
 import { type NavItem } from '@/types';
 import { type ComponentPropsWithoutRef } from 'react';
-import Can from '@/lib/can';
 
 export function NavFooter({
     items,

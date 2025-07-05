@@ -1,19 +1,9 @@
+import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { router, usePage } from '@inertiajs/react';
 import { echo } from '@laravel/echo-react';
-import {
-    AlertTriangle,
-    Bell,
-    BellRing, Check,
-    CheckCircle,
-    ExternalLink,
-    Info,
-    MessageSquare,
-    TrashIcon,
-    XCircle
-} from 'lucide-react';
+import { AlertTriangle, Bell, BellRing, Check, CheckCircle, ExternalLink, Info, MessageSquare, TrashIcon, XCircle } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
-import { Button } from '@/components/ui/button';
 
 interface Notification {
     id: number;
@@ -45,9 +35,9 @@ const Notifications: React.FC = () => {
     const getNotifIcon = (notif_type) => {
         const iconProps = { size: 16, className: 'flex-shrink-0 mr-2' };
 
-        switch (notif_type){
+        switch (notif_type) {
             case 'info':
-                return <Info {...iconProps} className={`text-blue-500`}/>;
+                return <Info {...iconProps} className={`text-blue-500`} />;
             case 'success':
                 return <CheckCircle {...iconProps} className="text-green-500" />;
             case 'warning':
@@ -59,7 +49,7 @@ const Notifications: React.FC = () => {
             default:
                 return <Info {...iconProps} className="text-gray-500" />;
         }
-    }
+    };
 
     useEffect(() => {
         echo()
@@ -67,7 +57,6 @@ const Notifications: React.FC = () => {
             .listen('.notification.created', (notification) => {
                 console.log('Full notification object:', notification);
                 console.log('Notification keys:', Object.keys(notification));
-
 
                 const newNotification: Notification = {
                     id: notification.id || Date.now(),
@@ -125,7 +114,7 @@ const Notifications: React.FC = () => {
                     },
                     onError: () => {
                         resolve();
-                    }
+                    },
                 },
             );
         });
@@ -164,14 +153,14 @@ const Notifications: React.FC = () => {
         });
     };
 
-    const handleRedirect = async (redirect:string, id, e) => {
+    const handleRedirect = async (redirect: string, id, e) => {
         if (redirect) {
             await markAsRead(id, e);
             router.visit(redirect);
         } else {
             await markAsRead(id, e);
         }
-    }
+    };
 
     return (
         <DropdownMenu>
@@ -218,17 +207,19 @@ const Notifications: React.FC = () => {
                                     <div className="mt-0.5">{getNotifIcon(notification.notif_type)}</div>
 
                                     {/* Content */}
-                                    <div className="flex-1 min-w-0">
+                                    <div className="min-w-0 flex-1">
                                         <div className="flex justify-between gap-2">
                                             <div className="flex-1">
-                                                <p className={`text-sm font-medium ${!notification.read ? 'text-foreground' : 'text-muted-foreground'}`}>
+                                                <p
+                                                    className={`text-sm font-medium ${!notification.read ? 'text-foreground' : 'text-muted-foreground'}`}
+                                                >
                                                     {notification.title}
                                                 </p>
                                                 <p className={`mt-1 text-sm ${!notification.read ? 'text-foreground/80' : 'text-muted-foreground'}`}>
                                                     {notification.message}
                                                 </p>
                                                 <div className="mt-2 flex items-center gap-2">
-                                                    <p className="text-xs text-muted-foreground">{notification.timestamp}</p>
+                                                    <p className="text-muted-foreground text-xs">{notification.timestamp}</p>
                                                     {notification.url && <ExternalLink size={12} className="text-muted-foreground/50" />}
                                                 </div>
                                             </div>
@@ -252,7 +243,7 @@ const Notifications: React.FC = () => {
                                                 variant="ghost"
                                                 size="sm"
                                                 onClick={(e) => deleteNotification(notification.id, e)}
-                                                className="h-8 px-2 text-xs text-destructive hover:text-destructive/80 hover:bg-destructive/10"
+                                                className="text-destructive hover:text-destructive/80 hover:bg-destructive/10 h-8 px-2 text-xs"
                                             >
                                                 <TrashIcon size={12} className="mr-1" />
                                                 Delete
@@ -269,7 +260,9 @@ const Notifications: React.FC = () => {
                         variant={`ghost`}
                         className="text-primary text-sm hover:underline"
                         onClick={() => router.visit(route('notifications.index'))}
-                    >View all notifications</Button>
+                    >
+                        View all notifications
+                    </Button>
                 </div>
             </DropdownMenuContent>
         </DropdownMenu>

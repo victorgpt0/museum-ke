@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { Head, useForm, usePage } from '@inertiajs/react';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Upload, X, CheckCircle, AlertCircle } from 'lucide-react';
-import toast, { Toaster } from 'react-hot-toast';
 import AppLogo from '@/components/app-logo';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Head, useForm, usePage } from '@inertiajs/react';
+import { Upload, X } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
 
 interface DonationFormData {
     title: string;
@@ -33,7 +33,7 @@ interface PageProps {
 }
 
 export default function DonationForm() {
-    const { errors, flash } = (usePage().props as any) as PageProps;
+    const { errors, flash } = usePage().props as any as PageProps;
     const [selectedImages, setSelectedImages] = useState<File[]>([]);
     const [imagePreviews, setImagePreviews] = useState<string[]>([]);
     const [uploadedMediaIds, setUploadedMediaIds] = useState<string[]>([]);
@@ -48,13 +48,13 @@ export default function DonationForm() {
         donor_phone: '',
         next_of_kin_name: '',
         next_of_kin_email: '',
-        next_of_kin_phone: ''
+        next_of_kin_phone: '',
     });
 
     // Clean up object URLs on component unmount
     useEffect(() => {
         return () => {
-            imagePreviews.forEach(url => URL.revokeObjectURL(url));
+            imagePreviews.forEach((url) => URL.revokeObjectURL(url));
         };
     }, [imagePreviews]);
 
@@ -88,21 +88,21 @@ export default function DonationForm() {
 
         // Validate file types
         const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-        const invalidFiles = files.filter(file => !allowedTypes.includes(file.type));
+        const invalidFiles = files.filter((file) => !allowedTypes.includes(file.type));
         if (invalidFiles.length > 0) {
             alert(`Please upload only image files (JPEG, JPG, PNG, WebP).`);
             return;
         }
 
         // Validate file sizes (5MB max per file)
-        const oversizedFiles = files.filter(file => file.size > 5 * 1024 * 1024);
+        const oversizedFiles = files.filter((file) => file.size > 5 * 1024 * 1024);
         if (oversizedFiles.length > 0) {
             alert(`Some files are too large. Maximum file size is 5MB. Please choose smaller files.`);
             return;
         }
 
         // Create preview URLs
-        const previews = files.map(file => URL.createObjectURL(file));
+        const previews = files.map((file) => URL.createObjectURL(file));
 
         const newImages = [...selectedImages, ...files];
         const newPreviews = [...imagePreviews, ...previews];
@@ -140,7 +140,7 @@ export default function DonationForm() {
 
                 // Store the temporary media IDs or file paths
                 if (result.media_ids) {
-                    setUploadedMediaIds(prev => [...prev, ...result.media_ids]);
+                    setUploadedMediaIds((prev) => [...prev, ...result.media_ids]);
                 }
             } else {
                 console.error('Temporary upload failed:', response.statusText);
@@ -229,7 +229,7 @@ export default function DonationForm() {
 
             const formData = {
                 ...data,
-                images: selectedImages
+                images: selectedImages,
             };
 
             // Use Inertia's post method with FormData
@@ -246,7 +246,6 @@ export default function DonationForm() {
                     setTimeout(() => {
                         toast.success('Donation submitted successfully');
                         // If Inertia provides a redirect URL, use it; otherwise reload
-                    
                     }, 3000);
                 },
                 onError: (errors: any) => {
@@ -257,7 +256,7 @@ export default function DonationForm() {
                 },
                 onFinish: () => {
                     console.log('Request finished');
-                }
+                },
             });
 
             // APPROACH 2: Alternative - Send form data first, then attach images
@@ -283,7 +282,6 @@ export default function DonationForm() {
                 onFinish: () => console.log('Request finished')
             });
             */
-
         } catch (error) {
             console.error('Error during form submission:', error);
         }
@@ -321,39 +319,43 @@ export default function DonationForm() {
     return (
         <>
             <Head title="Artifact Donation Form" />
-            
 
             {/* Left Logo Bar */}
-            <div className="fixed top-0 left-0 h-full w-16 flex flex-col items-center justify-center bg-white dark:bg-gray-900 shadow-lg z-40">
-                <a href="#logo-section" className="flex items-center justify-center w-full h-16">
+            <div className="fixed top-0 left-0 z-40 flex h-full w-16 flex-col items-center justify-center bg-white shadow-lg dark:bg-gray-900">
+                <a href="#logo-section" className="flex h-16 w-full items-center justify-center">
                     <AppLogo />
                 </a>
             </div>
 
             {/* Right Navigation Bar */}
-            <div className="fixed top-0 right-0 h-full w-24 flex flex-col items-center justify-center bg-white dark:bg-gray-900 shadow-lg z-40">
-                <nav className="flex flex-col gap-6 mt-24">
-                    <a href="#about-section" className="px-4 py-2 rounded-md text-center font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">About</a>
-                    <a href="#art-culture-section" className="px-4 py-2 rounded-md text-center font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">Art & Culture</a>
+            <div className="fixed top-0 right-0 z-40 flex h-full w-24 flex-col items-center justify-center bg-white shadow-lg dark:bg-gray-900">
+                <nav className="mt-24 flex flex-col gap-6">
+                    <a
+                        href="#about-section"
+                        className="rounded-md px-4 py-2 text-center font-semibold text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
+                    >
+                        About
+                    </a>
+                    <a
+                        href="#art-culture-section"
+                        className="rounded-md px-4 py-2 text-center font-semibold text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
+                    >
+                        Art & Culture
+                    </a>
                 </nav>
             </div>
-            
 
             {/* Main Content (with padding to avoid nav bars) */}
-            <div className="min-h-screen bg-gray-50 py-8 pl-20 pr-28 transition-all">
-                <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="min-h-screen bg-gray-50 py-8 pr-28 pl-20 transition-all">
+                <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
                     <div className="mb-8 text-center">
-                        <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                            Artifact Donation Form
-                        </h1>
-                        <p className="text-gray-600">
-                            Thank you for your interest in donating to Nairobi National Museum
-                        </p>
+                        <h1 className="mb-2 text-3xl font-bold text-gray-900">Artifact Donation Form</h1>
+                        <p className="text-gray-600">Thank you for your interest in donating to Nairobi National Museum</p>
                     </div>
-                   
+
                     {/* Debug Information - Remove in production */}
                     {process.env.NODE_ENV === 'development' && (
-                        <div className="mb-6 border border-blue-200 bg-blue-50 p-4 rounded-md">
+                        <div className="mb-6 rounded-md border border-blue-200 bg-blue-50 p-4">
                             <h3 className="font-semibold text-blue-800">Debug Info:</h3>
                             <p className="text-blue-700">Processing: {processing ? 'Yes' : 'No'}</p>
                             <p className="text-blue-700">Uploading Images: {isUploadingImages ? 'Yes' : 'No'}</p>
@@ -369,9 +371,7 @@ export default function DonationForm() {
                         <Card>
                             <CardHeader>
                                 <CardTitle>Artifact Information</CardTitle>
-                                <CardDescription>
-                                    Please provide details about the artifact you wish to donate
-                                </CardDescription>
+                                <CardDescription>Please provide details about the artifact you wish to donate</CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 <div className="space-y-1">
@@ -379,12 +379,12 @@ export default function DonationForm() {
                                     <Input
                                         id="title"
                                         value={data.title}
-                                        onChange={e => setData('title', e.target.value)}
+                                        onChange={(e) => setData('title', e.target.value)}
                                         placeholder="Enter the name or title of the artifact"
                                         required
                                         className={errors?.title ? 'border-red-500' : ''}
                                     />
-                                    {errors?.title && <div className="text-red-500 text-sm">{errors.title}</div>}
+                                    {errors?.title && <div className="text-sm text-red-500">{errors.title}</div>}
                                 </div>
 
                                 <div className="space-y-1">
@@ -392,13 +392,13 @@ export default function DonationForm() {
                                     <Textarea
                                         id="description"
                                         value={data.description}
-                                        onChange={e => setData('description', e.target.value)}
+                                        onChange={(e) => setData('description', e.target.value)}
                                         placeholder="Describe the artifact, its history, significance, and any other relevant details"
                                         rows={4}
                                         required
                                         className={errors?.description ? 'border-red-500' : ''}
                                     />
-                                    {errors?.description && <div className="text-red-500 text-sm">{errors.description}</div>}
+                                    {errors?.description && <div className="text-sm text-red-500">{errors.description}</div>}
                                 </div>
 
                                 <div className="space-y-1">
@@ -406,26 +406,26 @@ export default function DonationForm() {
                                     <Input
                                         id="source"
                                         value={data.source}
-                                        onChange={e => setData('source', e.target.value)}
+                                        onChange={(e) => setData('source', e.target.value)}
                                         placeholder="Where did this artifact originate from? (e.g., Family collection, specific location, etc.)"
                                         required
                                         className={errors?.source ? 'border-red-500' : ''}
                                     />
-                                    {errors?.source && <div className="text-red-500 text-sm">{errors.source}</div>}
+                                    {errors?.source && <div className="text-sm text-red-500">{errors.source}</div>}
                                 </div>
 
                                 {/* Image Upload Section */}
                                 <div className="space-y-2">
                                     <Label>Artifact Images</Label>
-                                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6">
+                                    <div className="rounded-lg border-2 border-dashed border-gray-300 p-6">
                                         <div className="text-center">
                                             <Upload className="mx-auto h-12 w-12 text-gray-400" />
                                             <div className="mt-4">
                                                 <Label
                                                     htmlFor="images"
-                                                    className={`cursor-pointer px-4 py-2 rounded-md inline-block transition-colors ${
+                                                    className={`inline-block cursor-pointer rounded-md px-4 py-2 transition-colors ${
                                                         isUploadingImages
-                                                            ? 'bg-gray-400 text-white cursor-not-allowed'
+                                                            ? 'cursor-not-allowed bg-gray-400 text-white'
                                                             : 'bg-blue-600 text-white hover:bg-blue-700'
                                                     }`}
                                                 >
@@ -446,30 +446,28 @@ export default function DonationForm() {
                                             </p>
                                         </div>
                                     </div>
-                                    {errors?.images && <div className="text-red-500 text-sm">{errors.images}</div>}
+                                    {errors?.images && <div className="text-sm text-red-500">{errors.images}</div>}
 
                                     {/* Image Previews */}
                                     {imagePreviews.length > 0 && (
-                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+                                        <div className="mt-4 grid grid-cols-2 gap-4 md:grid-cols-4">
                                             {imagePreviews.map((preview, index) => (
-                                                <div key={index} className="relative group">
+                                                <div key={index} className="group relative">
                                                     <img
                                                         src={preview}
                                                         alt={`Preview ${index + 1}`}
-                                                        className="w-full h-24 object-cover rounded-lg border"
+                                                        className="h-24 w-full rounded-lg border object-cover"
                                                     />
                                                     <button
                                                         type="button"
                                                         onClick={() => removeImage(index)}
-                                                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                        className="absolute -top-2 -right-2 rounded-full bg-red-500 p-1 text-white opacity-0 transition-opacity group-hover:opacity-100"
                                                         disabled={isUploadingImages}
                                                     >
                                                         <X size={16} />
                                                     </button>
                                                     {uploadedMediaIds[index] && (
-                                                        <div className="absolute bottom-1 left-1 bg-green-500 text-white text-xs px-1 rounded">
-                                                            ✓
-                                                        </div>
+                                                        <div className="absolute bottom-1 left-1 rounded bg-green-500 px-1 text-xs text-white">✓</div>
                                                     )}
                                                 </div>
                                             ))}
@@ -483,9 +481,7 @@ export default function DonationForm() {
                         <Card>
                             <CardHeader>
                                 <CardTitle>Donor Information</CardTitle>
-                                <CardDescription>
-                                    Your contact information for our records
-                                </CardDescription>
+                                <CardDescription>Your contact information for our records</CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 <div className="space-y-1">
@@ -493,27 +489,27 @@ export default function DonationForm() {
                                     <Input
                                         id="donor_full_name"
                                         value={data.donor_full_name}
-                                        onChange={e => setData('donor_full_name', e.target.value)}
+                                        onChange={(e) => setData('donor_full_name', e.target.value)}
                                         placeholder="Enter your full name"
                                         required
                                         className={errors?.donor_full_name ? 'border-red-500' : ''}
                                     />
-                                    {errors?.donor_full_name && <div className="text-red-500 text-sm">{errors.donor_full_name}</div>}
+                                    {errors?.donor_full_name && <div className="text-sm text-red-500">{errors.donor_full_name}</div>}
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                     <div className="space-y-1">
                                         <Label htmlFor="donor_email">Email Address *</Label>
                                         <Input
                                             id="donor_email"
                                             type="email"
                                             value={data.donor_email}
-                                            onChange={e => setData('donor_email', e.target.value)}
+                                            onChange={(e) => setData('donor_email', e.target.value)}
                                             placeholder="your.email@example.com"
                                             required
                                             className={errors?.donor_email ? 'border-red-500' : ''}
                                         />
-                                        {errors?.donor_email && <div className="text-red-500 text-sm">{errors.donor_email}</div>}
+                                        {errors?.donor_email && <div className="text-sm text-red-500">{errors.donor_email}</div>}
                                     </div>
 
                                     <div className="space-y-1">
@@ -522,12 +518,12 @@ export default function DonationForm() {
                                             id="donor_phone"
                                             type="tel"
                                             value={data.donor_phone}
-                                            onChange={e => setData('donor_phone', e.target.value)}
+                                            onChange={(e) => setData('donor_phone', e.target.value)}
                                             placeholder="+254 xxx xxx xxx"
                                             required
                                             className={errors?.donor_phone ? 'border-red-500' : ''}
                                         />
-                                        {errors?.donor_phone && <div className="text-red-500 text-sm">{errors.donor_phone}</div>}
+                                        {errors?.donor_phone && <div className="text-sm text-red-500">{errors.donor_phone}</div>}
                                     </div>
                                 </div>
                             </CardContent>
@@ -537,9 +533,7 @@ export default function DonationForm() {
                         <Card>
                             <CardHeader>
                                 <CardTitle>Next of Kin Information</CardTitle>
-                                <CardDescription>
-                                    Emergency contact information (optional but recommended)
-                                </CardDescription>
+                                <CardDescription>Emergency contact information (optional but recommended)</CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 <div className="space-y-1">
@@ -547,25 +541,25 @@ export default function DonationForm() {
                                     <Input
                                         id="next_of_kin_name"
                                         value={data.next_of_kin_name}
-                                        onChange={e => setData('next_of_kin_name', e.target.value)}
+                                        onChange={(e) => setData('next_of_kin_name', e.target.value)}
                                         placeholder="Enter next of kin's full name"
                                         className={errors?.next_of_kin_name ? 'border-red-500' : ''}
                                     />
-                                    {errors?.next_of_kin_name && <div className="text-red-500 text-sm">{errors.next_of_kin_name}</div>}
+                                    {errors?.next_of_kin_name && <div className="text-sm text-red-500">{errors.next_of_kin_name}</div>}
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                     <div className="space-y-1">
                                         <Label htmlFor="next_of_kin_email">Email Address</Label>
                                         <Input
                                             id="next_of_kin_email"
                                             type="email"
                                             value={data.next_of_kin_email}
-                                            onChange={e => setData('next_of_kin_email', e.target.value)}
+                                            onChange={(e) => setData('next_of_kin_email', e.target.value)}
                                             placeholder="nextofkin@example.com"
                                             className={errors?.next_of_kin_email ? 'border-red-500' : ''}
                                         />
-                                        {errors?.next_of_kin_email && <div className="text-red-500 text-sm">{errors.next_of_kin_email}</div>}
+                                        {errors?.next_of_kin_email && <div className="text-sm text-red-500">{errors.next_of_kin_email}</div>}
                                     </div>
 
                                     <div className="space-y-1">
@@ -574,11 +568,11 @@ export default function DonationForm() {
                                             id="next_of_kin_phone"
                                             type="tel"
                                             value={data.next_of_kin_phone}
-                                            onChange={e => setData('next_of_kin_phone', e.target.value)}
+                                            onChange={(e) => setData('next_of_kin_phone', e.target.value)}
                                             placeholder="+254 xxx xxx xxx"
                                             className={errors?.next_of_kin_phone ? 'border-red-500' : ''}
                                         />
-                                        {errors?.next_of_kin_phone && <div className="text-red-500 text-sm">{errors.next_of_kin_phone}</div>}
+                                        {errors?.next_of_kin_phone && <div className="text-sm text-red-500">{errors.next_of_kin_phone}</div>}
                                     </div>
                                 </div>
                             </CardContent>
