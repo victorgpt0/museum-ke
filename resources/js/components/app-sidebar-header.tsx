@@ -1,7 +1,7 @@
 import { Breadcrumbs } from '@/components/breadcrumbs';
+import Notifications from '@/components/notifications';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { type BreadcrumbItem as BreadcrumbItemType } from '@/types';
-import Notifications from '@/components/notifications';
 
 export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: BreadcrumbItemType[] }) {
     return (
@@ -11,7 +11,7 @@ export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: Breadcrum
                 <Breadcrumbs breadcrumbs={breadcrumbs} />
             </div>
             <div className={`ml-auto`}>
-                <Notifications/>
+                <Notifications />
             </div>
         </header>
     );

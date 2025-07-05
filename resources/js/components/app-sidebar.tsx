@@ -1,28 +1,28 @@
 import { NavFooter } from '@/components/nav-footer';
 import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
-import { NavGroup, type NavItem } from '@/types';
+import { type NavItem } from '@/types';
 import { Link, router } from '@inertiajs/react';
 import {
-    LayoutGrid,
-    Map,
-    Plus,
+    Archive,
     ChevronDown,
     ChevronRight,
-    MessageSquareText,
-    UsersRound,
-    View, 
-    Archive, 
-    Folder, 
-    FileText, 
-    Shield,
-    Package,
+    FileCheck,
+    FileText,
+    Folder,
     History,
-    FileCheck
+    LayoutGrid,
+    Map,
+    MessageSquareText,
+    Package,
+    Plus,
+    Shield,
+    UsersRound,
+    View,
 } from 'lucide-react';
 import AppLogo from './app-logo';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 // Extend NavItem type to include children for submenus
 interface ExtendedNavItem extends NavItem {
@@ -37,7 +37,7 @@ const mainNavItems: ExtendedNavItem[] = [
         href: '/dashboard',
         icon: LayoutGrid,
         children: [
-             {
+            {
                 title: 'full dashboard',
                 href: '/dashboard',
                 icon: View,
@@ -47,11 +47,11 @@ const mainNavItems: ExtendedNavItem[] = [
                 href: '/dashboard/new-artifact',
                 icon: Plus,
             },
-        ]
+        ],
     },
     {
         title: 'Maps',
-        href: '/map',  // This is now the default URL when clicked
+        href: '/map', // This is now the default URL when clicked
         icon: Map,
         children: [
             {
@@ -63,31 +63,31 @@ const mainNavItems: ExtendedNavItem[] = [
                 title: 'Museums Map',
                 href: '/map/museums',
                 icon: Map,
-            }
-        ]
+            },
+        ],
     },
-   {
-    title: 'Acquisitions',
-    href: '/curator/acquisition-history',  // Changed to lowercase and consistent path
-    icon: Package,
-    children: [
-        {
-            title: 'Acquisition History',
-            href: '/curator/acquisition-history',  // Added leading slash and made consistent
-            icon: History,
-        },
-         {
-            title: 'Acquisition Proposal',
-            href: '/curator/acquisition-portal',
-            icon: FileCheck,
-        },
-        {
-            title: 'New Proposal',
-            href: '/curator/new-proposal',
-            icon: FileCheck,
-        }
-    ]
-},
+    {
+        title: 'Acquisitions',
+        href: '/curator/acquisition-history', // Changed to lowercase and consistent path
+        icon: Package,
+        children: [
+            {
+                title: 'Acquisition History',
+                href: '/curator/acquisition-history', // Added leading slash and made consistent
+                icon: History,
+            },
+            {
+                title: 'Acquisition Proposal',
+                href: '/curator/acquisition-portal',
+                icon: FileCheck,
+            },
+            {
+                title: 'New Proposal',
+                href: '/curator/new-proposal',
+                icon: FileCheck,
+            },
+        ],
+    },
     {
         title: 'Users',
         href: '/users',
@@ -100,7 +100,7 @@ const mainNavItems: ExtendedNavItem[] = [
     },
     {
         title: 'Archives',
-        href: '/archives',  // Default URL when Archives is clicked
+        href: '/archives', // Default URL when Archives is clicked
         icon: Archive,
         children: [
             {
@@ -112,15 +112,15 @@ const mainNavItems: ExtendedNavItem[] = [
                 title: 'New File',
                 href: '/archives/new-file',
                 icon: FileText,
-            }
-        ]
+            },
+        ],
     },
     //FOR THE PROJECTS ITS GOING TO BEE TRICKY
-    //HERES MY IDEA, Ill separate menu options into proposal which will have submenus for both HOD and Initiator but authentication filter  these options according to role. 
+    //HERES MY IDEA, Ill separate menu options into proposal which will have submenus for both HOD and Initiator but authentication filter  these options according to role.
     //Projectproposal. projectoverview
-      {
+    {
         title: 'Project Proposal',
-        href: '/myproposal/dashboard',  // Default URL when Archives is clicked
+        href: '/myproposal/dashboard', // Default URL when Archives is clicked
         icon: Archive,
         children: [
             {
@@ -129,16 +129,15 @@ const mainNavItems: ExtendedNavItem[] = [
                 icon: FileCheck,
             },
             {
-                title: 'View Proposal',   //this is for HOD and initiator, filter on role
+                title: 'View Proposal', //this is for HOD and initiator, filter on role
                 href: '/myproposal/dashboard',
                 icon: FileText,
             },
-           
-        ]
+        ],
     },
     {
         title: 'Project Milestone',
-        href: '/project/milestone',  // Default URL when Archives is clicked
+        href: '/project/milestone', // Default URL when Archives is clicked
         icon: Archive,
         children: [
             {
@@ -150,12 +149,12 @@ const mainNavItems: ExtendedNavItem[] = [
                 title: 'View Milestones', //dashboard of milestones with completion rate
                 href: '/project/milestone',
                 icon: FileText,
-            }
-        ]
+            },
+        ],
     },
-     {
+    {
         title: 'Project Report',
-        href: '/project/report',  // Default URL when Archives is clicked
+        href: '/project/report', // Default URL when Archives is clicked
         icon: Archive,
         children: [
             {
@@ -167,8 +166,8 @@ const mainNavItems: ExtendedNavItem[] = [
                 title: 'View Reports', //dashboard of milestones with completion rate
                 href: '/project/report',
                 icon: FileText,
-            }
-        ]
+            },
+        ],
     },
 ];
 
@@ -177,7 +176,7 @@ const footerNavItems: NavItem[] = [
         title: 'AI Assistant',
         href: '/ai',
         icon: MessageSquareText,
-    }
+    },
 ];
 
 // Create a new NavMainWithDropdowns component with a soft navigation approach
@@ -187,7 +186,7 @@ function NavMainWithDropdowns({ items }: { items: ExtendedNavItem[] }) {
     const toggleExpand = (title: string) => {
         setExpandedItems((prev) => ({
             ...prev,
-            [title]: !prev[title]
+            [title]: !prev[title],
         }));
     };
 
@@ -199,7 +198,7 @@ function NavMainWithDropdowns({ items }: { items: ExtendedNavItem[] }) {
             router.visit(href, {
                 preserveScroll: true,
                 preserveState: true,
-                replace: true
+                replace: true,
             });
         }
         // External links will navigate normally
@@ -211,7 +210,7 @@ function NavMainWithDropdowns({ items }: { items: ExtendedNavItem[] }) {
                 <div key={item.title}>
                     <SidebarMenuItem>
                         {item.children ? (
-                            <div className="flex items-center justify-between w-full cursor-pointer" onClick={() => toggleExpand(item.title)}>
+                            <div className="flex w-full cursor-pointer items-center justify-between" onClick={() => toggleExpand(item.title)}>
                                 <SidebarMenuButton>
                                     {item.icon && <item.icon className="mr-2" size={18} />}
                                     <span>{item.title}</span>
@@ -260,7 +259,7 @@ export function AppSidebar() {
         if (path.startsWith('/map')) {
             setExpandedItems((prev) => ({
                 ...prev,
-                'Maps': true
+                Maps: true,
             }));
         }
 
@@ -268,7 +267,7 @@ export function AppSidebar() {
         if (path.startsWith('/archives')) {
             setExpandedItems((prev) => ({
                 ...prev,
-                'Archives': true
+                Archives: true,
             }));
         }
 
@@ -276,7 +275,7 @@ export function AppSidebar() {
         if (path.startsWith('/dashboard')) {
             setExpandedItems((prev) => ({
                 ...prev,
-                'Dashboard': true
+                Dashboard: true,
             }));
         }
 
@@ -284,11 +283,10 @@ export function AppSidebar() {
         if (path.startsWith('/Curator')) {
             setExpandedItems((prev) => ({
                 ...prev,
-                'Acquisitions': true
+                Acquisitions: true,
             }));
         }
     }, []);
-
 
     return (
         <Sidebar collapsible="icon" variant="inset">
@@ -296,13 +294,16 @@ export function AppSidebar() {
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton size="lg" asChild>
-                            <Link href="/dashboard" onClick={(e) => {
-                                e.preventDefault();
-                                router.visit('/dashboard', {
-                                    preserveScroll: true,
-                                    preserveState: true
-                                });
-                            }}>
+                            <Link
+                                href="/dashboard"
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    router.visit('/dashboard', {
+                                        preserveScroll: true,
+                                        preserveState: true,
+                                    });
+                                }}
+                            >
                                 <AppLogo />
                             </Link>
                         </SidebarMenuButton>

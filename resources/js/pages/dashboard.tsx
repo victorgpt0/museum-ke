@@ -36,16 +36,14 @@ export default function Dashboard() {
     useEffect(() => {
         setIsLoading(true);
         fetch(`/artifacts?page=${currentPage}&per_page=${perPage}${searchTerm ? `&search=${searchTerm}` : ''}`)
-            .then(response => response.json())
-            .then(data => {
+            .then((response) => response.json())
+            .then((data) => {
                 setArtifacts(data.artifacts);
                 setTotalArtifacts(data.total);
                 setTotalPages(data.total_pages);
 
                 // Calculate condition counts
-                const goodCount = data.artifacts.filter(
-                    (a: Artifact) => a.condition === 'good'
-                ).length;
+                const goodCount = data.artifacts.filter((a: Artifact) => a.condition === 'good').length;
                 const poorCount = data.total - goodCount;
 
                 setGoodConditionCount(goodCount);
@@ -80,12 +78,8 @@ export default function Dashboard() {
                             <PlaceholderPattern className="mt-2 h-8 w-1/2 stroke-neutral-900/20 dark:stroke-neutral-100/20" />
                         ) : (
                             <div className="mt-2 space-y-1">
-                                <p className="text-green-600 dark:text-green-400">
-                                    Good: {goodConditionCount}
-                                </p>
-                                <p className="text-red-600 dark:text-red-400">
-                                    Poor: {poorConditionCount}
-                                </p>
+                                <p className="text-green-600 dark:text-green-400">Good: {goodConditionCount}</p>
+                                <p className="text-red-600 dark:text-red-400">Poor: {poorConditionCount}</p>
                             </div>
                         )}
                     </div>
@@ -95,9 +89,7 @@ export default function Dashboard() {
                         {isLoading ? (
                             <PlaceholderPattern className="mt-2 h-8 w-1/2 stroke-neutral-900/20 dark:stroke-neutral-100/20" />
                         ) : (
-                            <p className="text-3xl font-bold">
-                                {new Set(artifacts.map(a => a.category.name)).size}
-                            </p>
+                            <p className="text-3xl font-bold">{new Set(artifacts.map((a) => a.category.name)).size}</p>
                         )}
                     </div>
                 </div>
@@ -109,7 +101,7 @@ export default function Dashboard() {
                         <input
                             type="text"
                             placeholder="Search artifacts..."
-                            className="rounded-md border px-3 py-2 dark:bg-gray-800 dark:border-gray-700"
+                            className="rounded-md border px-3 py-2 dark:border-gray-700 dark:bg-gray-800"
                             value={searchTerm}
                             onChange={handleSearch}
                         />
@@ -124,42 +116,30 @@ export default function Dashboard() {
                             <table className="min-w-full divide-y dark:divide-gray-700">
                                 <thead className="bg-gray-50 dark:bg-gray-800">
                                     <tr>
-                                        <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                                            Title
-                                        </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                                            Condition
-                                        </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                                            Category
-                                        </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                                            Location
-                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium tracking-wider uppercase">Title</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium tracking-wider uppercase">Condition</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium tracking-wider uppercase">Category</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium tracking-wider uppercase">Location</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y dark:divide-gray-700">
                                     {artifacts.length > 0 ? (
                                         artifacts.map((artifact) => (
                                             <tr key={artifact.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
-                                                <td className="whitespace-nowrap px-6 py-4">
-                                                    {artifact.title}
-                                                </td>
-                                                <td className="whitespace-nowrap px-6 py-4">
-                                                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                                                        artifact.condition === 'good'
-                                                            ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                                                            : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                                                    }`}>
+                                                <td className="px-6 py-4 whitespace-nowrap">{artifact.title}</td>
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    <span
+                                                        className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${
+                                                            artifact.condition === 'good'
+                                                                ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                                                                : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                                                        }`}
+                                                    >
                                                         {artifact.condition}
                                                     </span>
                                                 </td>
-                                                <td className="whitespace-nowrap px-6 py-4">
-                                                    {artifact.category.title}
-                                                </td>
-                                                <td className="whitespace-nowrap px-6 py-4">
-                                                    {artifact.location}
-                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap">{artifact.category.title}</td>
+                                                <td className="px-6 py-4 whitespace-nowrap">{artifact.location}</td>
                                             </tr>
                                         ))
                                     ) : (
@@ -175,14 +155,14 @@ export default function Dashboard() {
                             {/* Pagination Controls */}
                             <div className="mt-4 flex items-center justify-between px-4 py-3">
                                 <div className="flex items-center">
-        <span className="text-sm text-gray-700 dark:text-gray-300">
-            Showing <span className="font-medium">{artifacts.length}</span> of{' '}
-            <span className="font-medium">{totalArtifacts}</span> results
-        </span>
+                                    <span className="text-sm text-gray-700 dark:text-gray-300">
+                                        Showing <span className="font-medium">{artifacts.length}</span> of{' '}
+                                        <span className="font-medium">{totalArtifacts}</span> results
+                                    </span>
                                 </div>
                                 <div className="flex justify-end">
                                     <button
-                                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                                        onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
                                         disabled={currentPage === 1}
                                         className="mr-2 rounded-md border px-2 py-1 text-sm disabled:opacity-50 dark:border-gray-700"
                                     >
@@ -191,11 +171,8 @@ export default function Dashboard() {
                                     <div className="flex items-center space-x-1">
                                         {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                                             // Logic to show current page and nearby pages
-                                            const pageToShow = currentPage <= 3
-                                                ? i + 1
-                                                : currentPage >= totalPages - 2
-                                                    ? totalPages - 4 + i
-                                                    : currentPage - 2 + i;
+                                            const pageToShow =
+                                                currentPage <= 3 ? i + 1 : currentPage >= totalPages - 2 ? totalPages - 4 + i : currentPage - 2 + i;
 
                                             if (pageToShow > 0 && pageToShow <= totalPages) {
                                                 return (
@@ -203,9 +180,7 @@ export default function Dashboard() {
                                                         key={pageToShow}
                                                         onClick={() => setCurrentPage(pageToShow)}
                                                         className={`rounded-md px-2 py-1 text-sm ${
-                                                            currentPage === pageToShow
-                                                                ? 'bg-blue-500 text-white'
-                                                                : 'border dark:border-gray-700'
+                                                            currentPage === pageToShow ? 'bg-blue-500 text-white' : 'border dark:border-gray-700'
                                                         }`}
                                                     >
                                                         {pageToShow}
@@ -216,7 +191,7 @@ export default function Dashboard() {
                                         })}
                                     </div>
                                     <button
-                                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                                        onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
                                         disabled={currentPage === totalPages}
                                         className="ml-2 rounded-md border px-2 py-1 text-sm disabled:opacity-50 dark:border-gray-700"
                                     >

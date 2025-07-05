@@ -1,13 +1,12 @@
-import { Head } from '@inertiajs/react';
-import { useForm } from '@inertiajs/react';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
+import { Head, useForm } from '@inertiajs/react';
 
 // Define breadcrumbs
 const breadcrumbs: BreadcrumbItem[] = [
@@ -27,7 +26,7 @@ export default function NewArtifact({ categories }) {
         description: '',
         category_id: '',
         condition: 'good',
-        location: ''
+        location: '',
     });
 
     const handleSubmit = (e) => {
@@ -39,28 +38,21 @@ export default function NewArtifact({ categories }) {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="New Artifact" />
             <div className="py-6">
-                <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <h1 className="text-2xl font-semibold mb-6">Add New Artifact</h1>
+                <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+                    <h1 className="mb-6 text-2xl font-semibold">Add New Artifact</h1>
 
                     <Card>
                         <CardHeader>
                             <CardTitle>Artifact Details</CardTitle>
-                            <CardDescription>
-                                Enter information about the artifact for the collection
-                            </CardDescription>
+                            <CardDescription>Enter information about the artifact for the collection</CardDescription>
                         </CardHeader>
 
                         <form onSubmit={handleSubmit}>
                             <CardContent className="space-y-4">
                                 <div className="space-y-1">
                                     <Label htmlFor="title">Title</Label>
-                                    <Input
-                                        id="title"
-                                        value={data.title}
-                                        onChange={e => setData('title', e.target.value)}
-                                        required
-                                    />
-                                    {errors.title && <div className="text-red-500 text-sm">{errors.title}</div>}
+                                    <Input id="title" value={data.title} onChange={(e) => setData('title', e.target.value)} required />
+                                    {errors.title && <div className="text-sm text-red-500">{errors.title}</div>}
                                 </div>
 
                                 <div className="space-y-1">
@@ -68,19 +60,16 @@ export default function NewArtifact({ categories }) {
                                     <Textarea
                                         id="description"
                                         value={data.description}
-                                        onChange={e => setData('description', e.target.value)}
+                                        onChange={(e) => setData('description', e.target.value)}
                                         rows={4}
                                     />
-                                    {errors.description && <div className="text-red-500 text-sm">{errors.description}</div>}
+                                    {errors.description && <div className="text-sm text-red-500">{errors.description}</div>}
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                                     <div className="space-y-1">
                                         <Label htmlFor="category">Category</Label>
-                                        <Select
-                                            value={data.category_id}
-                                            onValueChange={(value) => setData('category_id', value)}
-                                        >
+                                        <Select value={data.category_id} onValueChange={(value) => setData('category_id', value)}>
                                             <SelectTrigger>
                                                 <SelectValue placeholder="Select category" />
                                             </SelectTrigger>
@@ -92,15 +81,12 @@ export default function NewArtifact({ categories }) {
                                                 ))}
                                             </SelectContent>
                                         </Select>
-                                        {errors.category_id && <div className="text-red-500 text-sm">{errors.category_id}</div>}
+                                        {errors.category_id && <div className="text-sm text-red-500">{errors.category_id}</div>}
                                     </div>
 
                                     <div className="space-y-1">
                                         <Label htmlFor="condition">Condition</Label>
-                                        <Select
-                                            value={data.condition}
-                                            onValueChange={(value) => setData('condition', value)}
-                                        >
+                                        <Select value={data.condition} onValueChange={(value) => setData('condition', value)}>
                                             <SelectTrigger>
                                                 <SelectValue placeholder="Select condition" />
                                             </SelectTrigger>
@@ -109,39 +95,34 @@ export default function NewArtifact({ categories }) {
                                                 <SelectItem value="poor">Poor</SelectItem>
                                             </SelectContent>
                                         </Select>
-                                        {errors.condition && <div className="text-red-500 text-sm">{errors.condition}</div>}
+                                        {errors.condition && <div className="text-sm text-red-500">{errors.condition}</div>}
                                     </div>
 
                                     <div className="space-y-1">
                                         <Label htmlFor="location">Location</Label>
-                                        <Input
-                                            id="location"
-                                            value={data.location}
-                                            onChange={e => setData('location', e.target.value)}
-                                        />
-                                        {errors.location && <div className="text-red-500 text-sm">{errors.location}</div>}
+                                        <Input id="location" value={data.location} onChange={(e) => setData('location', e.target.value)} />
+                                        {errors.location && <div className="text-sm text-red-500">{errors.location}</div>}
                                     </div>
                                 </div>
                             </CardContent>
 
                             <CardFooter className="flex justify-end space-x-2">
-    <Button 
-        variant="outline" 
-        type="button" 
-        onClick={() => window.history.back()}
-        className="dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700"
-    >
-        Cancel
-    </Button>
-    <Button 
-        type="submit" 
-        disabled={processing}
-        className="bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-900 dark:text-white dark:hover:bg-gray-800"
-    >
-        {processing ? 'Saving...' : 'Save Artifact'}
-    </Button>
-</CardFooter>
-
+                                <Button
+                                    variant="outline"
+                                    type="button"
+                                    onClick={() => window.history.back()}
+                                    className="dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700"
+                                >
+                                    Cancel
+                                </Button>
+                                <Button
+                                    type="submit"
+                                    disabled={processing}
+                                    className="bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-900 dark:text-white dark:hover:bg-gray-800"
+                                >
+                                    {processing ? 'Saving...' : 'Save Artifact'}
+                                </Button>
+                            </CardFooter>
                         </form>
                     </Card>
                 </div>

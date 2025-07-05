@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import AppLayout from '@/layouts/app-layout';
 import { Head } from '@inertiajs/react';
 import axios from 'axios';
-import AppLayout from '@/layouts/app-layout';
+import React, { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 
 export default function AI() {
@@ -12,16 +12,16 @@ export default function AI() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
-        
+
         try {
             const aiResponse = await axios.post('/api/ai/query', {
-                query: query
+                query: query,
             });
-            
+
             setResponse(aiResponse.data.content);
         } catch (error) {
-            console.error("Error:", error);
-            setResponse("An error occurred while processing your request.");
+            console.error('Error:', error);
+            setResponse('An error occurred while processing your request.');
         } finally {
             setLoading(false);
         }
@@ -31,19 +31,19 @@ export default function AI() {
         <AppLayout>
             <Head title="AI Assistant" />
             <div className="py-6">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                        <div className="p-6 bg-white border-b border-gray-200">
-                            <h1 className="text-2xl font-semibold mb-4">AI Assistant</h1>
-                            
+                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                    <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg">
+                        <div className="border-b border-gray-200 bg-white p-6">
+                            <h1 className="mb-4 text-2xl font-semibold">AI Assistant</h1>
+
                             <form onSubmit={handleSubmit} className="mb-6">
                                 <div className="mb-4">
-                                    <label htmlFor="query" className="block text-gray-700 text-sm font-bold mb-2">
+                                    <label htmlFor="query" className="mb-2 block text-sm font-bold text-gray-700">
                                         Ask anything:
                                     </label>
                                     <textarea
                                         id="query"
-                                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                        className="focus:shadow-outline w-full appearance-none rounded border px-3 py-2 leading-tight text-gray-700 shadow focus:outline-none"
                                         value={query}
                                         onChange={(e) => setQuery(e.target.value)}
                                         rows={4}
@@ -54,17 +54,17 @@ export default function AI() {
                                 <div>
                                     <button
                                         type="submit"
-                                        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                                        className="focus:shadow-outline rounded bg-blue-500 px-4 py-2 font-bold text-white hover:bg-blue-700 focus:outline-none"
                                         disabled={loading}
                                     >
                                         {loading ? 'Processing...' : 'Submit'}
                                     </button>
                                 </div>
                             </form>
-                            
+
                             {response && (
-                                <div className="bg-gray-100 p-4 rounded-lg">
-                                    <h2 className="text-lg font-semibold mb-2">Response:</h2>
+                                <div className="rounded-lg bg-gray-100 p-4">
+                                    <h2 className="mb-2 text-lg font-semibold">Response:</h2>
                                     <div className="prose max-w-none">
                                         <ReactMarkdown>{response}</ReactMarkdown>
                                     </div>

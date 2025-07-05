@@ -1,31 +1,22 @@
-import { BreadcrumbItem, User } from '@/types';
-import AppLayout from '@/layouts/app-layout';
-import { Head, useForm } from '@inertiajs/react';
+import InputError from '@/components/input-error';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
+import AppLayout from '@/layouts/app-layout';
+import { BreadcrumbItem, User } from '@/types';
+import { Head, useForm } from '@inertiajs/react';
 import { FormEvent } from 'react';
-import { Button } from '@/components/ui/button';
-import InputError from '@/components/input-error';
-import {
-    Select,
-    SelectContent,
-    SelectGroup,
-    SelectItem,
-    SelectLabel,
-    SelectTrigger,
-    SelectValue
-} from '@/components/ui/select';
 
 interface Props {
     roles: Array<{
-        value: string,
-        label: string,
-    }>
-    user: User,
-    userRoles: string,
-
+        value: string;
+        label: string;
+    }>;
+    user: User;
+    userRoles: string;
 }
-export default function Edit({ roles, user, userRoles }: Props){
+export default function Edit({ roles, user, userRoles }: Props) {
     const breadcrumbs: BreadcrumbItem[] = [
         {
             title: 'Users',
@@ -37,7 +28,7 @@ export default function Edit({ roles, user, userRoles }: Props){
         },
     ];
 
-    const {data, setData, errors, put, processing} = useForm({
+    const { data, setData, errors, put, processing } = useForm({
         name: user.name || '',
         email: user.email || '',
         role: userRoles || '',
@@ -48,13 +39,13 @@ export default function Edit({ roles, user, userRoles }: Props){
         put(route('users.update', user.id), {
             preserveScroll: true,
         });
-    }
+    };
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title={`Edit User`}/>
+            <Head title={`Edit User`} />
 
-            <form onSubmit={submit} className={`p-6 space-y-6 mt-4 max-w-md mx-auto`}>
+            <form onSubmit={submit} className={`mx-auto mt-4 max-w-md space-y-6 p-6`}>
                 <div className={`grid gap-2`}>
                     <Label>Name</Label>
                     <Input
@@ -62,11 +53,10 @@ export default function Edit({ roles, user, userRoles }: Props){
                         id={`name`}
                         name={`name`}
                         value={data.name}
-                        onChange={(e)=>setData('name', e.target.value)}
+                        onChange={(e) => setData('name', e.target.value)}
                         placeholder={`Enter User Name`}
                     />
                     <InputError message={errors.name} />
-
                 </div>
                 <div className={`grid gap-2`}>
                     <Label>Email</Label>
@@ -75,18 +65,15 @@ export default function Edit({ roles, user, userRoles }: Props){
                         id={`email`}
                         name={`email`}
                         value={data.email}
-                        onChange={(e)=>setData('email', e.target.value)}
+                        onChange={(e) => setData('email', e.target.value)}
                         placeholder={`Enter Email`}
                     />
                     <InputError message={errors.email} />
                 </div>
 
                 <div className={`grid gap-2`}>
-                    <Label className="block mb-2">Role</Label>
-                    <Select
-                        value={data.role}
-                        onValueChange={(value) => setData('role', value)}
-                    >
+                    <Label className="mb-2 block">Role</Label>
+                    <Select value={data.role} onValueChange={(value) => setData('role', value)}>
                         <SelectTrigger>
                             <SelectValue placeholder="Select a role" />
                         </SelectTrigger>
@@ -94,10 +81,7 @@ export default function Edit({ roles, user, userRoles }: Props){
                             <SelectGroup>
                                 <SelectLabel>Roles</SelectLabel>
                                 {roles.map((role) => (
-                                    <SelectItem
-                                        key={role.value}
-                                        value={role.label}
-                                    >
+                                    <SelectItem key={role.value} value={role.label}>
                                         {role.label}
                                     </SelectItem>
                                 ))}
@@ -107,9 +91,9 @@ export default function Edit({ roles, user, userRoles }: Props){
                     <InputError message={errors.role} />
                 </div>
 
-                <Button type="submit"
-                        disabled={processing}
-                >Edit</Button>
+                <Button type="submit" disabled={processing}>
+                    Edit
+                </Button>
             </form>
         </AppLayout>
     );
