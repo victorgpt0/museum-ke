@@ -24,7 +24,7 @@ Route::middleware('guest')->group(function () {
     })->name('home');
 
     Route::get('/landingpage', function () {
-        return Inertia::render('LandingPage');
+        return Inertia::render('theDashboard');
     })->name('landingpage');
 
     Route::prefix('acquisitions')
