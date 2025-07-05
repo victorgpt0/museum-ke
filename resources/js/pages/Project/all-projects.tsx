@@ -18,7 +18,15 @@ interface Project {
   project_progress: number;
   status: string;
   completed: boolean;
-  proposal?: any;
+  proposal?: {
+    id: number;
+    title: string;
+    description: string;
+    user_id: number;
+    user_name?: string;
+    all_image_urls?: string[];
+    all_documents_urls?: string[];
+  };
   creator_name?: string;
   all_image_urls?: string[];
 }
@@ -115,26 +123,37 @@ const AllProjects: React.FC<AllProjectsProps> = ({ projects }) => {
                     {/* Images */}
                     <div className="lg:col-span-1">
                       <h4 className="font-medium text-gray-900 dark:text-white mb-2">Project Images</h4>
-                      {project.all_image_urls && project.all_image_urls.length > 0 ? (
-                        <div className="grid grid-cols-2 gap-2">
-                          {project.all_image_urls.slice(0, 4).map((image: string, index) => (
-                            <div key={index} className="aspect-square rounded-lg overflow-hidden">
-                              <img
-                                src={image || `https://placehold.co/600x400?text=Project`}
-                                alt={`${project.title} - Image ${index + 1}`}
-                                className="w-full h-full object-cover"
-                                onError={(e) => {
-                                  e.currentTarget.src = 'https://placehold.co/600x400?text=Project';
-                                }}
-                              />
+                      {(() => {
+                        // Priority: 1. Project images, 2. Proposal images, 3. Placeholder
+                        const projectImages = project.all_image_urls || [];
+                        const proposalImages = project.proposal?.all_image_urls || [];
+                        const allImages = [...projectImages, ...proposalImages];
+                        
+                        if (allImages.length > 0) {
+                          return (
+                            <div className="grid grid-cols-2 gap-2">
+                              {allImages.slice(0, 4).map((image: string, index) => (
+                                <div key={index} className="aspect-square rounded-lg overflow-hidden">
+                                  <img
+                                    src={image || `https://placehold.co/600x400?text=Project`}
+                                    alt={`${project.title} - Image ${index + 1}`}
+                                    className="w-full h-full object-cover"
+                                    onError={(e) => {
+                                      e.currentTarget.src = 'https://placehold.co/600x400?text=Project';
+                                    }}
+                                  />
+                                </div>
+                              ))}
                             </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="aspect-square bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center text-gray-400 dark:text-gray-500 text-sm">
-                          No images uploaded
-                        </div>
-                      )}
+                          );
+                        } else {
+                          return (
+                            <div className="aspect-square bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center text-gray-400 dark:text-gray-500 text-sm">
+                              No images uploaded
+                            </div>
+                          );
+                        }
+                      })()}
                     </div>
 
                     {/* Details */}
