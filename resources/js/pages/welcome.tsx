@@ -1,7 +1,7 @@
 import { type SharedData } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/react';
-import toast, { Toaster } from 'react-hot-toast';
 import { useEffect } from 'react';
+import toast, { Toaster } from 'react-hot-toast';
 
 export default function Welcome() {
     const { auth, flash } = usePage<SharedData & { flash?: { success?: string; error?: string } }>().props;
@@ -53,7 +53,7 @@ export default function Welcome() {
                             color: '#1e40af',
                             border: '1px solid #bfdbfe',
                         },
-                    }
+                    },
                 }}
             />
             <div className="flex min-h-screen flex-col items-center bg-[#FDFDFC] p-6 text-[#1b1b18] lg:justify-center lg:p-8 dark:bg-[#0a0a0a]">

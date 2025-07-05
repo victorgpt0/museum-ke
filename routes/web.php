@@ -23,6 +23,10 @@ Route::middleware('guest')->group(function () {
         return Inertia::render('welcome');
     })->name('home');
 
+    Route::get('/landingpage', function () {
+        return Inertia::render('LandingPage');
+    })->name('landingpage');
+
     Route::prefix('acquisitions')
         ->controller(AcquisitionController::class)
         ->name('acquisitions.')

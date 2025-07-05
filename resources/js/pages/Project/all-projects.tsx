@@ -1,9 +1,8 @@
-import React from 'react';
-import { Head, Link } from '@inertiajs/react';
-import AppLayout from '@/layouts/app-layout';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem } from '@/types';
+import { Head, Link } from '@inertiajs/react';
+import React from 'react';
 
 interface Project {
   id: number;
@@ -25,15 +24,15 @@ interface Project {
 }
 
 interface AllProjectsProps {
-  projects: Project[];
+    projects: Project[];
 }
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Project Dashboard',
         href: '/project/all-projects',
-    }
-]
+    },
+];
 const AllProjects: React.FC<AllProjectsProps> = ({ projects }) => {
   // Truncate text to 50 words
   const truncateText = (text: string, maxWords: number = 50) => {

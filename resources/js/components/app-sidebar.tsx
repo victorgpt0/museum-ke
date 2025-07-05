@@ -1,18 +1,11 @@
 import { NavFooter } from '@/components/nav-footer';
+import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import {
-    LayoutGrid,
-    MessageSquareText,
-    UsersRound,
-    Archive,
-    Shield,
-    Package,
-} from 'lucide-react';
+import { Archive, LayoutGrid, MessageSquareText, Package, Shield, UsersRound } from 'lucide-react';
 import AppLogo from './app-logo';
-import { NavMain } from '@/components/nav-main';
 
 const mainNavItems: NavItem[] = [
     {
@@ -27,7 +20,7 @@ const mainNavItems: NavItem[] = [
         icon: LayoutGrid,
         permission: 'dashboard.view',
     },
-     {
+    {
         title: 'Project Dashboard',
         href: '/project/all-projects',
         icon: LayoutGrid,
@@ -103,7 +96,7 @@ const footerNavItems: NavItem[] = [
         href: '/ai',
         icon: MessageSquareText,
         permission: 'ai.view',
-    }
+    },
 ];
 
 export function AppSidebar() {
