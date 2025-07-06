@@ -4,7 +4,7 @@ import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { Archive, LayoutGrid, MessageSquareText, Package, Shield, UsersRound } from 'lucide-react';
+import { Archive, LayoutGrid, MessageSquareText, Package, Shield, UsersRound, Image, FileText, Video, Music } from 'lucide-react';
 import AppLogo from './app-logo';
 
 const mainNavItems: NavItem[] = [
@@ -15,13 +15,25 @@ const mainNavItems: NavItem[] = [
         permission: 'dashboard.view',
     },
     {
+        title: 'Acquisitions',
+        href: '/acquisitions',
+        icon: Package,
+        permission: 'acquisitions.view',
+    },
+    {
         title: 'Artifacts',
         href: '/artifacts',
         icon: Archive,
         permission: 'artifacts.view',
     },
     {
-        title: 'Project Dashboard',
+        title: 'Archives',
+        href: '/archives',
+        icon: Archive,
+        permission: 'archives.view',
+    },
+    {
+        title: 'Projects',
         href: '/project/all-projects',
         icon: LayoutGrid,
         permission: 'projects.view',
@@ -32,24 +44,8 @@ const mainNavItems: NavItem[] = [
     //     icon: Map,
     //     permission: 'maps.view',
     // },
-    {
-        title: 'Acquisitions',
-        href: '/acquisitions',
-        icon: Package,
-        permission: 'acquisitions.view',
-    },
-    {
-        title: 'Users',
-        href: '/users',
-        icon: UsersRound,
-        permission: 'users.view',
-    },
-    {
-        title: 'Roles',
-        href: '/roles',
-        icon: Shield,
-        permission: 'roles.view',
-    },
+
+
     // {
     //     title: 'Logs',
     //     href: route('activity-logs.index'),
@@ -57,40 +53,32 @@ const mainNavItems: NavItem[] = [
     //     permission: 'logs.view',
     // },
     {
-        title: 'Archives',
-        href: '/archives',
-        icon: Archive,
-        permission: 'archives.view',
-    },
-    {
         title: 'Project Proposal',
         href: '/project/viewproposals',
         icon: Archive,
         permission: 'proposals.view',
     },
     {
-        title: 'Project Report',
-        href: '/project/report',
-        icon: Archive,
-        permission: 'reports.view',
-        // children: [
-        //     {
-        //         title: 'Upload your Project Report',
-        //         href: '/project/new-report',
-        //         icon: Folder,
-        //         permission: 'reports.create',
-        //     },
-        //     {
-        //         title: 'View Reports',
-        //         href: '/project/report',
-        //         icon: FileText,
-        //         permission: 'reports.view',
-        //     }
-        // ]
+        title: 'Roles',
+        href: '/roles',
+        icon: Shield,
+        permission: 'roles.view',
+    },
+    {
+        title: 'Users',
+        href: '/users',
+        icon: UsersRound,
+        permission: 'users.view',
     },
 ];
 
 const footerNavItems: NavItem[] = [
+    {
+        title: 'Media Library',
+        href: '/media-library',
+        icon: Image,
+        permission: 'media.view',
+    },
     {
         title: 'AI Assistant',
         href: '/ai',
