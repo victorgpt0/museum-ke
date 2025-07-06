@@ -3,6 +3,7 @@ import { BreadcrumbItem } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { ArrowLeft, FileText, Save, Upload, X } from 'lucide-react';
 import React, { useRef, useState } from 'react';
+import { Button } from '@/components/ui/button';
 
 interface FormData {
     title: string;
@@ -182,13 +183,12 @@ function NewArchive() {
                                             </p>
                                             <p className="text-xs text-gray-500 dark:text-gray-500">Maximum file size: 10MB</p>
                                         </div>
-                                        <button
+                                        <Button
                                             type="button"
                                             onClick={openFileExplorer}
-                                            className="mt-4 rounded-lg bg-blue-600 px-6 py-2 font-medium text-white transition-colors hover:bg-blue-700"
                                         >
                                             Browse Files
-                                        </button>
+                                        </Button>
                                     </div>
                                 ) : (
                                     <div className="rounded-lg border border-gray-300 bg-gray-50 p-4 dark:border-gray-600 dark:bg-gray-800">
@@ -313,10 +313,9 @@ function NewArchive() {
                                 >
                                     Cancel
                                 </Link>
-                                <button
+                                <Button
                                     type="submit"
                                     disabled={processing}
-                                    className="flex items-center gap-2 rounded-lg bg-blue-600 px-6 py-2 font-medium text-white transition-colors hover:bg-blue-700 disabled:bg-blue-400"
                                 >
                                     {processing ? (
                                         <>
@@ -329,7 +328,7 @@ function NewArchive() {
                                             Save Archive
                                         </>
                                     )}
-                                </button>
+                                </Button>
                             </div>
                         </form>
                     </div>

@@ -68,12 +68,12 @@ const AllProjects: React.FC<AllProjectsProps> = ({ projects }) => {
   return (
     <AppLayout breadcrumbs={breadcrumbs}>
       <Head title="All Projects" />
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="flex h-full flex-1 flex-col gap-6 rounded-xl p-6">
+        <div className="max-w-7xl mx-auto w-full">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">My Projects</h1>
-            <p className="mt-2 text-gray-600 dark:text-gray-400">
+            <h1 className="text-3xl font-bold text-foreground">My Projects</h1>
+            <p className="mt-2 text-muted-foreground">
               View and manage your project portfolio
             </p>
           </div>
@@ -81,19 +81,19 @@ const AllProjects: React.FC<AllProjectsProps> = ({ projects }) => {
           {/* Projects List */}
           <div className="space-y-6">
             {projects.length === 0 ? (
-              <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow text-center">
-                <p className="text-gray-600 dark:text-gray-300">You have no projects yet.</p>
+              <div className="museum-gradient rounded-xl border border-border p-8 shadow-sm text-center">
+                <p className="text-muted-foreground">You have no projects yet.</p>
               </div>
             ) : (
               projects.map((project) => (
                 <Link
                   key={project.id}
                   href={`/project/dashboard/${project.id}`}
-                  className="block bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-shadow"
+                  className="block museum-gradient rounded-xl border border-border p-6 shadow-sm hover:shadow-md transition-shadow"
                 >
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex-1">
-                      <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                      <h3 className="text-xl font-semibold text-foreground mb-2">
                         {project.title}
                       </h3>
                                              <div className="flex items-center gap-2 mb-1">
@@ -106,15 +106,15 @@ const AllProjects: React.FC<AllProjectsProps> = ({ projects }) => {
                              Ongoing
                            </Badge>
                          )}
-                         <span className="text-sm text-gray-500 dark:text-gray-300">
+                         <span className="text-sm text-muted-foreground">
                            Progress: {project.project_progress}%
                          </span>
                        </div>
-                       <div className="text-sm text-gray-500 dark:text-gray-300">
-                         Created by: <span className="font-medium text-gray-700 dark:text-gray-100">{project.creator_name || 'Unknown'}</span>
+                       <div className="text-sm text-muted-foreground">
+                         Created by: <span className="font-medium text-foreground">{project.creator_name || 'Unknown'}</span>
                        </div>
                     </div>
-                                         <div className="text-right text-sm text-gray-500 dark:text-gray-300">
+                                         <div className="text-right text-sm text-muted-foreground">
                        Created: {formatDate(project.created_at)}
                      </div>
                   </div>
@@ -122,7 +122,7 @@ const AllProjects: React.FC<AllProjectsProps> = ({ projects }) => {
                   <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     {/* Images */}
                     <div className="lg:col-span-1">
-                      <h4 className="font-medium text-gray-900 dark:text-white mb-2">Project Images</h4>
+                      <h4 className="font-medium text-foreground mb-2">Project Images</h4>
                       {(() => {
                         // Priority: 1. Project images, 2. Proposal images, 3. Placeholder
                         const projectImages = project.all_image_urls || [];
@@ -148,7 +148,7 @@ const AllProjects: React.FC<AllProjectsProps> = ({ projects }) => {
                           );
                         } else {
                           return (
-                            <div className="aspect-square bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center text-gray-400 dark:text-gray-500 text-sm">
+                            <div className="aspect-square bg-muted rounded-lg flex items-center justify-center text-muted-foreground text-sm">
                               No images uploaded
                             </div>
                           );
@@ -159,16 +159,16 @@ const AllProjects: React.FC<AllProjectsProps> = ({ projects }) => {
                     {/* Details */}
                     <div className="lg:col-span-2 space-y-4">
                       <div>
-                        <h4 className="font-medium text-gray-900 dark:text-white mb-1">Description</h4>
+                        <h4 className="font-medium text-foreground mb-1">Description</h4>
                         {(() => {
                           const { text, truncated } = truncateText(project.description);
                           return (
                             <div>
-                                                             <p className="text-gray-600 dark:text-gray-200 text-sm leading-relaxed">
+                                                             <p className="text-muted-foreground text-sm leading-relaxed">
                                  {text}
                                </p>
                                {truncated && (
-                                 <span className="mt-2 text-blue-600 dark:text-blue-300 text-sm font-medium">
+                                 <span className="mt-2 text-primary text-sm font-medium">
                                    Read more →
                                  </span>
                                )}
@@ -179,16 +179,16 @@ const AllProjects: React.FC<AllProjectsProps> = ({ projects }) => {
 
                                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                            <div>
-                             <h4 className="font-medium text-gray-900 dark:text-white mb-1">Duration</h4>
-                             <p className="text-gray-600 dark:text-gray-200 text-sm">{project.duration || 'Not specified'}</p>
+                             <h4 className="font-medium text-foreground mb-1">Duration</h4>
+                             <p className="text-muted-foreground text-sm">{project.duration || 'Not specified'}</p>
                            </div>
                            <div>
-                             <h4 className="font-medium text-gray-900 dark:text-white mb-1">Milestones</h4>
-                             <p className="text-gray-600 dark:text-gray-200 text-sm">{project.milestones_count}</p>
+                             <h4 className="font-medium text-foreground mb-1">Milestones</h4>
+                             <p className="text-muted-foreground text-sm">{project.milestones_count}</p>
                            </div>
                            <div>
-                             <h4 className="font-medium text-gray-900 dark:text-white mb-1">Goals</h4>
-                             <p className="text-gray-600 dark:text-gray-200 text-sm">{project.completed_goals_count}/{project.goals_count} completed</p>
+                             <h4 className="font-medium text-foreground mb-1">Goals</h4>
+                             <p className="text-muted-foreground text-sm">{project.completed_goals_count}/{project.goals_count} completed</p>
                            </div>
                          </div>
                     </div>

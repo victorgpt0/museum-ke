@@ -1,5 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { Upload, X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface FileUploadProps {
   label?: string;
@@ -102,9 +103,9 @@ export const FileUpload: React.FC<FileUploadProps> = ({
         <div className="text-center">
           <Upload className="mx-auto h-12 w-12 text-gray-400" />
           <div className="mt-4">
-            <span className="px-4 py-2 rounded-md inline-block bg-blue-600 text-white hover:bg-blue-700 transition-colors">
+            <Button variant="default">
               Upload
-            </span>
+            </Button>
             <input
               ref={inputRef}
               id={name}

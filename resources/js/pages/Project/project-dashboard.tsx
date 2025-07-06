@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import AppLayout from '@/layouts/app-layout';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -466,13 +467,13 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ project }) => {
     actionLink: string;
     isEmpty?: boolean;
   }) => (
-    <div className={`bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border-l-4 ${color} border border-gray-200 dark:border-gray-700`}>
+    <div className={`museum-gradient rounded-xl border border-border p-6 shadow-sm`}>
       <div className="flex items-center justify-between mb-4">
         <div>
-          <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{title}</p>
-          <p className="text-2xl font-bold text-gray-900 dark:text-white">{value}</p>
+          <p className="text-sm font-medium text-muted-foreground">{title}</p>
+          <p className="text-2xl font-bold text-foreground">{value}</p>
         </div>
-        <Icon className="h-8 w-8 text-gray-400 dark:text-gray-500" />
+        <Icon className="h-8 w-8 text-muted-foreground" />
       </div>
       {(isEmpty || actionLink.startsWith('#')) && (
         actionLink.startsWith('#') ? (
@@ -483,7 +484,7 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ project }) => {
                 element.scrollIntoView({ behavior: 'smooth' });
               }
             }}
-            className="inline-flex items-center text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium"
+            className="inline-flex items-center text-sm text-primary hover:text-primary/80 font-medium"
           >
             {actionText}
             <ArrowRight className="h-4 w-4 ml-1" />
@@ -491,7 +492,7 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ project }) => {
         ) : (
           <Link
             href={actionLink}
-            className="inline-flex items-center text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium"
+            className="inline-flex items-center text-sm text-primary hover:text-primary/80 font-medium"
           >
             {actionText}
             <ArrowRight className="h-4 w-4 ml-1" />
@@ -515,16 +516,15 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ project }) => {
     actionLink: string; 
   }) => (
     <div className="text-center py-8">
-      <Icon className="h-12 w-12 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
-      <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">{title}</h3>
-      <p className="text-gray-600 dark:text-gray-300 mb-4">{description}</p>
-      <Link
-        href={actionLink}
-        className="inline-flex items-center px-4 py-2 bg-blue-600 dark:bg-blue-700 text-white rounded-md hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors"
-      >
-        <Plus className="h-4 w-4 mr-2" />
-        {actionText}
-      </Link>
+      <Icon className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+      <h3 className="text-lg font-medium text-foreground mb-2">{title}</h3>
+      <p className="text-muted-foreground mb-4">{description}</p>
+      <Button asChild>
+        <Link href={actionLink}>
+          <Plus className="h-4 w-4 mr-2" />
+          {actionText}
+        </Link>
+      </Button>
     </div>
   );
 
@@ -683,20 +683,19 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ project }) => {
                 }}
             />
 
-            <div className="min-h-screen bg-gray-50 py-8 dark:bg-gray-900">
-                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="flex h-full flex-1 flex-col gap-6 rounded-xl p-6">
+                <div className="mx-auto max-w-7xl w-full">
                     {/* Project Header */}
                     <div className="mb-8">
                         <div className="flex items-center justify-between mb-4">
-                            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{project.title}</h1>
-                            <button
+                            <h1 className="text-3xl font-bold text-foreground">{project.title}</h1>
+                            <Button
                                 onClick={handleDownloadPDF}
-                                className="inline-flex items-center rounded-md bg-gray-600 px-4 py-2 text-white transition-colors hover:bg-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600"
                                 type="button"
                             >
                                 <FileText className="mr-2 h-4 w-4" />
                                 Download Project PDF
-                            </button>
+                            </Button>
                         </div>
                         
                         {/* Structured Project Description - Full Width */}
@@ -705,13 +704,13 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ project }) => {
                                 const descriptionSections = parseProjectDescription(project.description);
                                 
                                 return (
-                                    <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
-                                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Project Details</h3>
+                                    <div className="museum-gradient rounded-xl border border-border p-6 shadow-sm">
+                                        <h3 className="text-lg font-semibold text-foreground mb-4">Project Details</h3>
                                         <div className="space-y-6">
                                             {/* Overview Section */}
                                             {descriptionSections.overview.length > 0 && (
                                                 <div>
-                                                    <h4 className="text-md font-medium text-gray-900 dark:text-white mb-2">Overview</h4>
+                                                    <h4 className="text-md font-medium text-foreground mb-2">Overview</h4>
                                                     <div className="space-y-2">
                                                         {descriptionSections.overview.map((line, index) => {
                                                             const wordCount = countWords(line);
@@ -719,17 +718,18 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ project }) => {
                                                             
                                                             return (
                                                                 <div key={index}>
-                                                                    <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
+                                                                    <p className="text-muted-foreground text-sm leading-relaxed">
                                                                         {displayText}
                                                                     </p>
                                                                     {wordCount > 100 && (
-                                                                        <button
+                                                                        <Button
                                                                             onClick={() => setShowFullDescription(!showFullDescription)}
-                                                                            className="text-blue-600 dark:text-blue-400 text-sm hover:underline mt-1"
+                                                                            variant="link"
+                                                                            className="text-primary text-sm mt-1 p-0 h-auto"
                                                                             type="button"
                                                                         >
                                                                             {showFullDescription ? 'Show Less' : 'Show More'}
-                                                                        </button>
+                                                                        </Button>
                                                                     )}
                                                                 </div>
                                                             );
@@ -741,14 +741,14 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ project }) => {
                                             {/* Objectives Section */}
                                             {descriptionSections.objectives.length > 0 && (
                                                 <div>
-                                                    <h4 className="text-md font-medium text-gray-900 dark:text-white mb-2">Objectives</h4>
+                                                    <h4 className="text-md font-medium text-foreground mb-2">Objectives</h4>
                                                     <div className="space-y-2">
                                                         {descriptionSections.objectives.map((line, index) => (
                                                             <div key={index} className="flex items-start space-x-2">
-                                                                <span className="text-blue-600 dark:text-blue-400 font-medium text-sm min-w-0 flex-shrink-0">
+                                                                <span className="text-primary font-medium text-sm min-w-0 flex-shrink-0">
                                                                     {line.split(':')[0]}:
                                                                 </span>
-                                                                <span className="text-gray-600 dark:text-gray-300 text-sm">
+                                                                <span className="text-muted-foreground text-sm">
                                                                     {line.split(':').slice(1).join(':').trim()}
                                                                 </span>
                                                             </div>
@@ -760,14 +760,14 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ project }) => {
                                             {/* Milestones Section */}
                                             {descriptionSections.milestones.length > 0 && (
                                                 <div>
-                                                    <h4 className="text-md font-medium text-gray-900 dark:text-white mb-2">Milestones</h4>
+                                                    <h4 className="text-md font-medium text-foreground mb-2">Milestones</h4>
                                                     <div className="space-y-2">
                                                         {descriptionSections.milestones.map((line, index) => (
                                                             <div key={index} className="flex items-start space-x-2">
                                                                 <span className="text-green-600 dark:text-green-400 font-medium text-sm min-w-0 flex-shrink-0">
                                                                     {line.split(':')[0]}:
                                                                 </span>
-                                                                <span className="text-gray-600 dark:text-gray-300 text-sm">
+                                                                <span className="text-muted-foreground text-sm">
                                                                     {line.split(':').slice(1).join(':').trim()}
                                                                 </span>
                                                             </div>
@@ -779,11 +779,11 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ project }) => {
                                             {/* Budget Breakdown Section */}
                                             {descriptionSections.budgetBreakdown.length > 0 && (
                                                 <div>
-                                                    <h4 className="text-md font-medium text-gray-900 dark:text-white mb-2">Budget Breakdown</h4>
+                                                    <h4 className="text-md font-medium text-foreground mb-2">Budget Breakdown</h4>
                                                     <div className="space-y-2">
                                                         {descriptionSections.budgetBreakdown.map((line, index) => (
                                                             <div key={index} className="flex items-center justify-between">
-                                                                <span className="text-gray-600 dark:text-gray-300 text-sm">
+                                                                <span className="text-muted-foreground text-sm">
                                                                     {line.split('–')[0].trim()}
                                                                 </span>
                                                                 <span className="text-purple-600 dark:text-purple-400 font-medium text-sm">
@@ -798,18 +798,18 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ project }) => {
                                             {/* Team Members Section */}
                                             {descriptionSections.teamMembers.length > 0 && (
                                                 <div>
-                                                    <h4 className="text-md font-medium text-gray-900 dark:text-white mb-2">Team Members</h4>
+                                                    <h4 className="text-md font-medium text-foreground mb-2">Team Members</h4>
                                                     <div className="space-y-2">
                                                         {descriptionSections.teamMembers.map((line, index) => (
                                                             <div key={index} className="flex items-start space-x-2">
                                                                 <span className="text-orange-600 dark:text-orange-400 font-medium text-sm min-w-0 flex-shrink-0">
                                                                     {line.split('(')[0].trim()}:
                                                                 </span>
-                                                                <span className="text-gray-600 dark:text-gray-300 text-sm">
+                                                                <span className="text-muted-foreground text-sm">
                                                                     {line.includes('(') ? line.split('(')[1].split(')')[0] : ''}
                                                                 </span>
                                                                 {line.includes('–') && (
-                                                                    <span className="text-blue-600 dark:text-blue-400 text-sm">
+                                                                    <span className="text-primary text-sm">
                                                                         – {line.split('–')[1].trim()}
                                                                     </span>
                                                                 )}
@@ -824,7 +824,7 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ project }) => {
                             })()}
                         </div>
 
-                        <div className="mt-4 flex items-center space-x-6 text-sm text-gray-500 dark:text-gray-400">
+                        <div className="mt-4 flex items-center space-x-6 text-sm text-muted-foreground">
                             <div className="flex items-center">
                                 <Calendar className="mr-1 h-4 w-4" />
                                 Started: {new Date(project.start_date).toLocaleDateString()}
@@ -888,23 +888,23 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ project }) => {
           </div>
 
           {/* Progress Overview */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6 mb-8">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Project Progress</h3>
+          <div className="museum-gradient rounded-xl border border-border p-6 shadow-sm mb-8">
+            <h3 className="text-lg font-semibold text-foreground mb-4">Project Progress</h3>
             <div className="space-y-4">
               <div>
                 <div className="flex justify-between items-center mb-2">
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Overall Completion</span>
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <span className="text-sm font-medium text-foreground">Overall Completion</span>
+                  <span className="text-sm font-medium text-foreground">
                     {project.project_progress}%
                   </span>
                 </div>
-                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                <div className="w-full bg-muted rounded-full h-2">
                   <div 
-                    className="bg-green-500 h-2 rounded-full transition-all duration-300" 
+                    className="bg-primary h-2 rounded-full transition-all duration-300" 
                     style={{ width: `${project.project_progress}%` }}
                   ></div>
                 </div>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                <p className="text-sm text-muted-foreground mt-2">
                   {project.completed_goals_count} of {project.goals_count} goals completed
                   {project.goals_count === 0 && ' - Set up goals and milestones to track progress'}
                 </p>
@@ -914,8 +914,8 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ project }) => {
 
           {/* Financial Overview */}
           {financialData && (
-            <div id="financial-section" className="bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 p-6 mb-12">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-8">Financial Overview</h3>
+            <div id="financial-section" className="museum-gradient rounded-xl border border-border p-6 shadow-sm mb-12">
+              <h3 className="text-lg font-semibold text-foreground mb-8">Financial Overview</h3>
               {/* Financial Statistics Cards */}
               <div className="flex flex-wrap gap-6 mb-10">
                 <div className="flex-1 min-w-[220px] max-w-xs bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg p-5 flex flex-col justify-between shadow-sm">
@@ -1056,20 +1056,19 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ project }) => {
                         {/* Team Members Section */}
                         <div
                             id="team-section"
-                            className="max-h-100 overflow-y-auto rounded-lg border border-gray-200 bg-white p-6 shadow-md dark:border-gray-700 dark:bg-gray-800"
+                            className="max-h-100 overflow-y-auto museum-gradient rounded-xl border border-border p-6 shadow-sm"
                         >
                             <div className="mb-6 flex items-center justify-between">
-                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Team Members</h3>
-                                <Link
-                                    href={`/projects/${project.id}/team-members/create`}
-                                    className="flex items-center rounded-md bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600"
-                                    style={project.completed ? { pointerEvents: 'none', opacity: 0.5 } : {}}
-                                    tabIndex={project.completed ? -1 : 0}
-                                    aria-disabled={project.completed}
+                                <h3 className="text-lg font-semibold text-foreground">Team Members</h3>
+                                <Button
+                                    asChild
+                                    disabled={project.completed}
                                 >
-                                    <Plus className="mr-2 h-4 w-4" />
-                                    Add Member
-                                </Link>
+                                    <Link href={`/projects/${project.id}/team-members/create`}>
+                                        <Plus className="mr-2 h-4 w-4" />
+                                        Add Member
+                                    </Link>
+                                </Button>
                             </div>
 
                             {!project.team_members || project.team_members.length === 0 ? (
@@ -1105,19 +1104,18 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ project }) => {
                         </div>
 
                         {/* Goals Section */}
-                        <div className="max-h-100 overflow-y-auto rounded-lg border border-gray-200 bg-white p-6 shadow-md dark:border-gray-700 dark:bg-gray-800">
+                        <div className="max-h-100 overflow-y-auto museum-gradient rounded-xl border border-border p-6 shadow-sm">
                             <div className="mb-6 flex items-center justify-between">
-                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Goals</h3>
-                                <Link
-                                    href={`/projects/${project.id}/goals`}
-                                    className="flex items-center rounded-md bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600"
-                                    style={project.completed ? { pointerEvents: 'none', opacity: 0.5 } : {}}
-                                    tabIndex={project.completed ? -1 : 0}
-                                    aria-disabled={project.completed}
+                                <h3 className="text-lg font-semibold text-foreground">Goals</h3>
+                                <Button
+                                    asChild
+                                    disabled={project.completed}
                                 >
-                                    <Plus className="mr-2 h-4 w-4" />
-                                    Add Goal
-                                </Link>
+                                    <Link href={`/projects/${project.id}/goals`}>
+                                        <Plus className="mr-2 h-4 w-4" />
+                                        Add Goal
+                                    </Link>
+                                </Button>
                             </div>
 
                             {!project.goals || project.goals.length === 0 ? (
@@ -1209,19 +1207,18 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ project }) => {
                     </div>
 
                     {/* Milestones Section - Full Width */}
-                    <div className="mb-8 rounded-lg border border-gray-200 bg-white p-6 shadow-md dark:border-gray-700 dark:bg-gray-800">
+                    <div className="mb-8 museum-gradient rounded-xl border border-border p-6 shadow-sm">
                         <div className="mb-6 flex items-center justify-between">
-                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Milestones</h3>
-                            <Link
-                                href={`/projects/${project.id}/milestones/create`}
-                                className="flex items-center rounded-md bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600"
-                                style={project.completed ? { pointerEvents: 'none', opacity: 0.5 } : {}}
-                                tabIndex={project.completed ? -1 : 0}
-                                aria-disabled={project.completed}
+                            <h3 className="text-lg font-semibold text-foreground">Milestones</h3>
+                            <Button
+                                asChild
+                                disabled={project.completed}
                             >
-                                <Plus className="mr-2 h-4 w-4" />
-                                Add Milestone
-                            </Link>
+                                <Link href={`/projects/${project.id}/milestones/create`}>
+                                    <Plus className="mr-2 h-4 w-4" />
+                                    Add Milestone
+                                </Link>
+                            </Button>
                         </div>
 
                         {project.milestones.length === 0 ? (
@@ -1278,9 +1275,11 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ project }) => {
                                             <div className="flex items-center space-x-3">
                                                 {/* Budget Dropdown Toggle */}
                                                 {milestone.budgets && milestone.budgets.length > 0 && (
-                                                    <button
+                                                    <Button
                                                         onClick={() => toggleBudgetDropdown(milestone.id)}
-                                                        className="flex items-center text-sm text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        className="text-sm text-muted-foreground hover:text-foreground"
                                                         type="button"
                                                     >
                                                         <DollarSign className="mr-1 h-4 w-4" />
@@ -1290,7 +1289,7 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ project }) => {
                                                         ) : (
                                                             <ChevronDown className="ml-1 h-4 w-4" />
                                                         )}
-                                                    </button>
+                                                    </Button>
                                                 )}
 
                                                 <Link
@@ -1343,19 +1342,18 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ project }) => {
                     </div>
 
                     {/* Findings Section */}
-                    <div className="mb-8 rounded-lg border border-gray-200 bg-white p-6 shadow-md dark:border-gray-700 dark:bg-gray-800">
+                    <div className="mb-8 museum-gradient rounded-xl border border-border p-6 shadow-sm">
                         <div className="mb-6 flex items-center justify-between">
-                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Key Findings</h3>
-                            <Link
-                                href={`/projects/${project.id}/findings/create`}
-                                className="flex items-center rounded-md bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600"
-                                style={project.completed ? { pointerEvents: 'none', opacity: 0.5 } : {}}
-                                tabIndex={project.completed ? -1 : 0}
-                                aria-disabled={project.completed}
+                            <h3 className="text-lg font-semibold text-foreground">Key Findings</h3>
+                            <Button
+                                asChild
+                                disabled={project.completed}
                             >
-                                <Plus className="mr-2 h-4 w-4" />
-                                Add Finding
-                            </Link>
+                                <Link href={`/projects/${project.id}/findings/create`}>
+                                    <Plus className="mr-2 h-4 w-4" />
+                                    Add Finding
+                                </Link>
+                            </Button>
                         </div>
 
                         {!project.findings || project.findings.length === 0 ? (
@@ -1432,22 +1430,21 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ project }) => {
             </div>
 
             {/* Project Proposal Section */}
-            <div className="mb-8 rounded-lg border border-gray-200 bg-white p-6 shadow-md dark:border-gray-700 dark:bg-gray-800">
+            <div className="mb-8 museum-gradient rounded-xl border border-border p-6 shadow-sm">
                 <div className="mb-6 flex items-center justify-between">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Project Proposal</h3>
-                    <Link
-                        href={`/proposals/${project.proposal.id}`}
-                        className="flex items-center rounded-md bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600"
-                    >
-                        <FileText className="mr-2 h-4 w-4" />
-                        View Full Proposal
-                    </Link>
+                    <h3 className="text-lg font-semibold text-foreground">Project Proposal</h3>
+                    <Button asChild>
+                        <Link href={`/proposals/${project.proposal.id}`}>
+                            <FileText className="mr-2 h-4 w-4" />
+                            View Full Proposal
+                        </Link>
+                    </Button>
                 </div>
 
                 <div className="space-y-4">
                     <div>
-                        <h4 className="mb-2 text-md font-medium text-gray-900 dark:text-white">{project.proposal.title}</h4>
-                        <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
+                        <h4 className="mb-2 text-md font-medium text-foreground">{project.proposal.title}</h4>
+                        <p className="text-sm text-muted-foreground leading-relaxed">
                             {project.proposal.description.length > 300 
                                 ? `${project.proposal.description.substring(0, 300)}...` 
                                 : project.proposal.description
@@ -1456,7 +1453,7 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ project }) => {
                         {project.proposal.description.length > 300 && (
                             <Link
                                 href={`/proposals/${project.proposal.id}`}
-                                className="inline-flex items-center text-sm text-blue-600 hover:underline dark:text-blue-400 mt-2"
+                                className="inline-flex items-center text-sm text-primary hover:underline mt-2"
                             >
                                 Read more
                                 <ArrowRight className="ml-1 h-4 w-4" />
@@ -1470,14 +1467,15 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ project }) => {
 
             {/* Mark Project as Complete Button */}
             {!project.completed && (
-                <button
+                <Button
                     onClick={handleMarkComplete}
-                    className="mr-2 inline-flex items-center rounded-md bg-green-600 px-4 py-2 text-white transition-colors hover:bg-green-700"
+                    variant="default"
+                    className="mr-2 bg-green-600 hover:bg-green-700"
                     type="button"
                 >
                     <CheckCircle className="mr-2 h-4 w-4" />
                     Mark Project as Complete
-                </button>
+                </Button>
             )}
             {project.completed && (
                 <Badge variant="secondary" className="ml-2">
