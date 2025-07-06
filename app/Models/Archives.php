@@ -59,6 +59,9 @@ class Archives extends Model implements HasMedia
         return [
             self::CATEGORY_RESEARCH => 'Research',
             self::CATEGORY_CONTEXT => 'Context',
+            'documentation' => 'Documentation',
+            'historical' => 'Historical',
+            'cultural' => 'Cultural',
         ];
     }
 
@@ -162,5 +165,68 @@ class Archives extends Model implements HasMedia
     public function user()
     {
         return $this->belongsTo(\App\Models\User::class, 'user_id');
+    }
+
+    /**
+     * Get the artifacts related to this archive.
+     */
+    public function artifacts()
+    {
+        return $this->belongsToMany(
+            Artifact::class,
+            'artifact_archives',
+            'archive_id',
+            'artifact_id'
+        )->withPivot([
+            'relationship_type',
+            'notes',
+            'document_date',
+            'document_author',
+            'is_primary'
+        ])->withTimestamps();
+    }
+
+    /**
+     * Get relationship types for museum documentation.
+     */
+    public static function getRelationshipTypes(): array
+    {
+        return [
+            'conservation_report' => 'Conservation Report',
+            'excavation_notes' => 'Excavation Notes',
+            'research_paper' => 'Research Paper',
+            'exhibition_catalog' => 'Exhibition Catalog',
+            'provenance_document' => 'Provenance Document',
+            'condition_assessment' => 'Condition Assessment',
+            'acquisition_document' => 'Acquisition Document',
+            'photographic_record' => 'Photographic Record',
+            'technical_analysis' => 'Technical Analysis',
+            'other' => 'Other'
+        ];
+    }
+
+    /**
+     * Get the display name for a relationship type.
+     */
+    public function getRelationshipTypeDisplayName($type): string
+    {
+        $types = self::getRelationshipTypes();
+        return $types[$type] ?? $type;
+    }
+
+    /**
+     * Check if this archive is linked to any artifacts.
+     */
+    public function hasLinkedArtifacts(): bool
+    {
+        return $this->artifacts()->exists();
+    }
+
+    /**
+     * Get the primary artifact for this archive.
+     */
+    public function getPrimaryArtifact()
+    {
+        return $this->artifacts()->wherePivot('is_primary', true)->first();
     }
 }

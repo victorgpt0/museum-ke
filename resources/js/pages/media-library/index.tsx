@@ -43,7 +43,6 @@ export default function MediaLibraryIndex() {
     const [selectedItems, setSelectedItems] = useState<number[]>([]);
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
-    console.log(media);
     const getFileIcon = (mimeType: string) => {
         if (mimeType.startsWith('image/')) return Image;
         if (mimeType.startsWith('video/')) return Video;

@@ -31,21 +31,27 @@ export const FileUpload: React.FC<FileUploadProps> = ({
   const [dragActive, setDragActive] = useState(false);
   const [previews, setPreviews] = useState<string[]>([]);
   const [progress, setProgress] = useState<number[]>([]);
+  const previewsRef = useRef<string[]>([]);
 
   React.useEffect(() => {
     // Clean up previews on unmount
     return () => {
-      previews.forEach((url) => URL.revokeObjectURL(url));
+      previewsRef.current.forEach((url) => URL.revokeObjectURL(url));
     };
-  }, [previews]);
+  }, []);
 
   React.useEffect(() => {
+    // Clean up previous previews
+    previewsRef.current.forEach((url) => URL.revokeObjectURL(url));
+    
     // Generate previews for current value
     if (previewType === 'image') {
       const urls = value.map((file) => URL.createObjectURL(file));
       setPreviews(urls);
+      previewsRef.current = urls;
     } else {
       setPreviews([]);
+      previewsRef.current = [];
     }
   }, [value, previewType]);
 

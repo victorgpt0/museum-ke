@@ -9,6 +9,7 @@ use App\Models\Donor;
 use App\Models\Tag;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use App\Models\Archives;
 
 class ArtifactController extends Controller
 {
@@ -112,17 +113,90 @@ class ArtifactController extends Controller
     public function show(string $id)
     {
         try {
-            $artifact = Artifact::with(['category', 'donor', 'tags'])->findOrFail($id);
+            $artifact = Artifact::with(['category', 'donor', 'tags', 'archives.user'])->findOrFail($id);
             $images = $artifact->getMedia('images');
             $documents = $artifact->getMedia('documents');
+
+            // Group archives by relationship type
+            $archivesByType = $artifact->archives->groupBy('pivot.relationship_type');
 
             return Inertia::render('artifacts/show', [
                 'artifact' => $artifact,
                 'images' => $images,
                 'documents' => $documents,
+                'archivesByType' => $archivesByType,
+                'relationshipTypes' => Archives::getRelationshipTypes(),
             ]);
         } catch (\Exception $e) {
             return redirect()->route('artifacts.index')->withErrors(['error' => 'Artifact not found.']);
+        }
+    }
+
+    /**
+     * Link an archive to an artifact.
+     */
+    public function linkArchive(Request $request, string $id)
+    {
+        $request->validate([
+            'archive_id' => 'required|exists:archives,id',
+            'relationship_type' => 'required|in:' . implode(',', array_keys(Archives::getRelationshipTypes())),
+            'notes' => 'nullable|string|max:1000',
+            'is_primary' => 'boolean',
+        ]);
+
+        try {
+            $artifact = Artifact::findOrFail($id);
+            $artifact->linkArchive(
+                $request->archive_id,
+                $request->relationship_type,
+                $request->notes,
+                $request->is_primary ?? false
+            );
+
+            return back()->with('success', 'Archive linked successfully.');
+        } catch (\Exception $e) {
+            return back()->withErrors(['error' => 'Failed to link archive: ' . $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Unlink an archive from an artifact.
+     */
+    public function unlinkArchive(Request $request, string $id)
+    {
+        $request->validate([
+            'archive_id' => 'required|exists:archives,id',
+        ]);
+
+        try {
+            $artifact = Artifact::findOrFail($id);
+            $artifact->unlinkArchive($request->archive_id);
+
+            return back()->with('success', 'Archive unlinked successfully.');
+        } catch (\Exception $e) {
+            return back()->withErrors(['error' => 'Failed to unlink archive: ' . $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Get available archives for linking to an artifact.
+     */
+    public function getAvailableArchives(Request $request, string $id)
+    {
+        try {
+            $artifact = Artifact::findOrFail($id);
+            
+            // Get archives that are not already linked to this artifact
+            $linkedArchiveIds = $artifact->archives->pluck('id')->toArray();
+            
+            $availableArchives = Archives::whereNotIn('id', $linkedArchiveIds)
+                ->select('id', 'title', 'author', 'category', 'created_at')
+                ->orderBy('title')
+                ->get();
+
+            return response()->json($availableArchives);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to fetch available archives'], 500);
         }
     }
 

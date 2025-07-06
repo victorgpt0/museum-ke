@@ -54,7 +54,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     Route::resource('acquisitions', AcquisitionController::class)->except(['create', 'store']);
-    Route::resource('artifacts', \App\Http\Controllers\ArtifactController::class);
+    Route::resource('artifacts', ArtifactController::class);
+    Route::post('/artifacts/{id}/link-archive', [ArtifactController::class, 'linkArchive'])->name('artifacts.link-archive');
+    Route::delete('/artifacts/{id}/unlink-archive', [ArtifactController::class, 'unlinkArchive'])->name('artifacts.unlink-archive');
+    Route::get('/artifacts/{id}/available-archives', [ArtifactController::class, 'getAvailableArchives'])->name('artifacts.available-archives');
 
     // Approve and reject artifact proposals
     Route::post('/acquisition/{artifactProposal}/approve', [AcquisitionController::class, 'approve'])->name('acquisitions.approve');

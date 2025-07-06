@@ -95,28 +95,23 @@ class ArchivesController extends Controller
     }
 
     /**
-     * Display the specified Archives.
+     * Display the specified archive.
      */
     public function show(Archives $archive)
     {
-        $documentUrls = $archive->getMedia('documents')->map(function ($media) {
-            return [
-                'url' => $media->getUrl(),
-                'name' => $media->name,
-                'file_name' => $media->file_name,
-            ];
-        });
-        $imageUrls = $archive->getMedia('images')->map(function ($media) {
-            return [
-                'url' => $media->getUrl(),
-                'name' => $media->name,
-                'file_name' => $media->file_name,
-            ];
-        });
+        // Get media collections using Spatie MediaLibrary
+        $documents = $archive->getMedia('documents');
+        $images = $archive->getMedia('images');
+        
+        // Load related artifacts with pivot data
+        $archive->load(['artifacts' => function ($query) {
+            $query->withPivot(['relationship_type', 'notes', 'document_date', 'document_author', 'is_primary']);
+        }]);
+        
         return Inertia::render('Archive/Show', [
             'archive' => $archive,
-            'documentUrls' => $documentUrls,
-            'imageUrls' => $imageUrls,
+            'documents' => $documents,
+            'images' => $images,
         ]);
     }
 
@@ -125,11 +120,14 @@ class ArchivesController extends Controller
      */
     public function edit(Archives $archive)
     {
-        $categories = Category::all();
+        // Get media collections using Spatie MediaLibrary
+        $documents = $archive->getMedia('documents');
+        $images = $archive->getMedia('images');
         
         return Inertia::render('Archive/Edit', [
             'archive' => $archive,
-            'categories' => $categories
+            'documents' => $documents,
+            'images' => $images,
         ]);
     }
 
@@ -138,26 +136,38 @@ class ArchivesController extends Controller
      */
     public function update(Request $request, Archives $archive)
     {
-        $validated = $request->validate([
+        $request->validate([
             'title' => 'required|string|max:255',
-            'author' => 'required|string|max:255',
-            'category' => 'required|string|max:255',
-            'document' => 'nullable|file|mimes:pdf,doc,docx,txt,xlsx,xls,ppt,pptx|max:10240',
+            'author' => 'nullable|string|max:255',
+            'category' => 'nullable|string|max:255',
+            'documents.*' => 'nullable|file|mimes:pdf,doc,docx,txt,xlsx,xls,ppt,pptx|max:10240',
+            'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         ]);
 
-        // If a new document is uploaded, store it and delete the old one
-        if ($request->hasFile('document')) {
-            // Delete old file
-            Storage::disk('public')->delete($archive->documentpath);
-            
-            // Store new file
-            $validated['documentpath'] = $request->file('document')->store('archives', 'public');
+        $archive->update([
+            'title' => $request->title,
+            'author' => $request->author,
+            'category' => $request->category,
+        ]);
+
+        // Handle document uploads
+        if ($request->hasFile('documents')) {
+            foreach ($request->file('documents') as $document) {
+                $archive->addMedia($document)
+                    ->toMediaCollection('documents');
+            }
         }
 
-        $archive->update($validated);
+        // Handle image uploads
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $image) {
+                $archive->addMedia($image)
+                    ->toMediaCollection('images');
+            }
+        }
 
-        return redirect()->route('archives.index')
-                        ->with('success', 'Archive updated successfully!');
+        return redirect()->route('archives.show', $archive)
+            ->with('success', 'Archive updated successfully.');
     }
 
     /**

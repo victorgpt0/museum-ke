@@ -152,6 +152,63 @@ class Artifact extends Model implements HasMedia
     }
 
     /**
+     * Get the archives related to this artifact.
+     */
+    public function archives()
+    {
+        return $this->belongsToMany(
+            Archives::class,
+            'artifact_archives',
+            'artifact_id',
+            'archive_id'
+        )->withPivot([
+            'relationship_type',
+            'notes',
+            'document_date',
+            'document_author',
+            'is_primary'
+        ])->withTimestamps();
+    }
+
+    /**
+     * Get archives by relationship type.
+     */
+    public function getArchivesByType($type)
+    {
+        return $this->archives()->wherePivot('relationship_type', $type);
+    }
+
+    /**
+     * Get the primary archive for this artifact.
+     */
+    public function getPrimaryArchive()
+    {
+        return $this->archives()->wherePivot('is_primary', true)->first();
+    }
+
+    /**
+     * Link an archive to this artifact.
+     */
+    public function linkArchive($archiveId, $relationshipType = 'other', $notes = null, $isPrimary = false)
+    {
+        $this->archives()->attach($archiveId, [
+            'relationship_type' => $relationshipType,
+            'notes' => $notes,
+            'is_primary' => $isPrimary,
+            'document_date' => now()->toDateString(),
+            'document_author' => auth()->user()->name ?? 'Unknown'
+        ]);
+    }
+
+    /**
+     * Unlink an archive from this artifact.
+     */
+    public function unlinkArchive($archiveId)
+    {
+        $this->archives()->detach($archiveId);
+    }
+
+    /**
      * Get the images for the artifact.
      */
     public function getImagesAttribute()
