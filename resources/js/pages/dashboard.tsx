@@ -24,7 +24,7 @@ import {
     Shield,
     BookOpen,
     Search,
-    Database, Landmark
+    Database, Landmark, Package, UserPlus, FolderOpen
 } from 'lucide-react';
 import AppLogoIcon from '@/components/app-logo-icon';
 import can from '@/lib/can';
@@ -37,33 +37,8 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function Dashboard() {
-    const { flash, auth } = usePage().props as {
-        flash?: { success?: string; error?: string },
-        auth: { user: any }
-    };
-
-    // Mock data - replace with actual API calls
-    const [stats, setStats] = useState({
-        totalArtifacts: 1247,
-        pendingDonations: 8,
-        activeProjects: 12,
-        recentAcquisitions: 23,
-        totalUsers: 45,
-        totalProjects: 28,
-        totalReports: 156
-    });
-
-    const [recentProposals, setRecentProposals] = useState([
-        { id: 1, title: "Ancient Pottery Fragment", donor: "John Doe", status: "pending", date: "2024-01-15" },
-        { id: 2, title: "Traditional Beaded Necklace", donor: "Jane Smith", status: "under_review", date: "2024-01-14" },
-        { id: 3, title: "Colonial Era Documents", donor: "Robert Johnson", status: "approved", date: "2024-01-13" }
-    ]);
-
-    const [activeProjects, setActiveProjects] = useState([
-        { id: 1, title: "Conservation of Tribal Artifacts", progress: 75, team: 4, dueDate: "2024-03-15" },
-        { id: 2, title: "Digital Archive Project", progress: 45, team: 6, dueDate: "2024-04-20" },
-        { id: 3, title: "Exhibition Planning", progress: 90, team: 3, dueDate: "2024-02-28" }
-    ]);
+    const pageProps = usePage().props as any;
+    const { flash, auth, stats, recentActivities, quickActions, recentArtifacts, recentAcquisitions, activeProjects, pendingProposals, upcomingMilestones, recentFindings, budgetOverview, userRole } = pageProps;
 
     useEffect(() => {
         if (flash?.success) {
@@ -80,12 +55,46 @@ export default function Dashboard() {
         }
     };
 
-    // Get user's primary role for display
-    const getUserRole = () => {
-        if (auth.user?.roles?.length > 0) {
-            return auth.user.roles[0].name;
-        }
-        return 'User';
+    const getIconComponent = (iconName: string) => {
+        const icons: { [key: string]: any } = {
+            'Plus': Plus,
+            'FileText': FileText,
+            'FolderOpen': FolderOpen,
+            'Package': Package,
+            'UserPlus': UserPlus,
+            'Archive': Archive,
+            'Gift': Gift,
+            'TrendingUp': TrendingUp,
+            'Users': Users,
+            'BarChart3': BarChart3,
+            'Calendar': Calendar,
+            'Eye': Eye,
+            'Search': Search,
+            'Database': Database,
+            'BookOpen': BookOpen,
+            'Shield': Shield,
+            'UserCheck': UserCheck,
+            'MapPin': MapPin,
+            'Star': Star,
+            'Settings': Settings,
+            'AlertTriangle': AlertTriangle,
+            'Clock': Clock,
+            'LampWallUp': LampWallUp,
+        };
+        return icons[iconName] || Plus;
+    };
+
+    const getColorClasses = (color: string) => {
+        const colors: { [key: string]: string } = {
+            'blue': 'bg-blue-500/10 text-blue-600',
+            'green': 'bg-green-500/10 text-green-600',
+            'purple': 'bg-purple-500/10 text-purple-600',
+            'orange': 'bg-orange-500/10 text-orange-600',
+            'indigo': 'bg-indigo-500/10 text-indigo-600',
+            'red': 'bg-red-500/10 text-red-600',
+            'yellow': 'bg-yellow-500/10 text-yellow-600',
+        };
+        return colors[color] || 'bg-primary/10 text-primary';
     };
 
     return (
@@ -138,7 +147,7 @@ export default function Dashboard() {
                         <p className="text-muted-foreground">
                             Here's what's happening at the National Museum today.
                             <span className="ml-2 inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-1 text-xs font-medium text-primary">
-                                {getUserRole()}
+                                {userRole}
                             </span>
                         </p>
                     </div>
@@ -153,13 +162,15 @@ export default function Dashboard() {
                     gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))'
                 }}>
                     {/* Artifacts Stats - Show if user can view artifacts */}
-                    {can('artifacts.view') && (
+                    {can('artifacts.view') && stats?.totalArtifacts !== undefined && (
                         <div className="museum-gradient rounded-xl border border-border p-6 shadow-sm">
                             <div className="flex items-center justify-between">
                                 <div>
                                     <p className="text-sm font-medium text-muted-foreground">Total Artifacts</p>
                                     <p className="text-3xl font-bold text-foreground">{stats.totalArtifacts.toLocaleString()}</p>
-                                    <p className="text-xs text-muted-foreground mt-1">+12 this month</p>
+                                    <p className="text-xs text-muted-foreground mt-1">
+                                        +{stats.artifactsThisMonth || 0} this month
+                                    </p>
                                 </div>
                                 <div className="rounded-full bg-primary/10 p-3">
                                     <Archive className="h-6 w-6 text-primary" />
@@ -169,7 +180,7 @@ export default function Dashboard() {
                     )}
 
                     {/* Acquisitions Stats - Show if user can view acquisitions */}
-                    {can('acquisitions.view') && (
+                    {can('acquisitions.view') && stats?.pendingDonations !== undefined && (
                         <div className="museum-gradient rounded-xl border border-border p-6 shadow-sm">
                             <div className="flex items-center justify-between">
                                 <div>
@@ -185,7 +196,7 @@ export default function Dashboard() {
                     )}
 
                     {/* Projects Stats - Show if user can view projects */}
-                    {can('projects.view') && (
+                    {can('projects.view') && stats?.activeProjects !== undefined && (
                         <div className="museum-gradient rounded-xl border border-border p-6 shadow-sm">
                             <div className="flex items-center justify-between">
                                 <div>
@@ -201,64 +212,52 @@ export default function Dashboard() {
                     )}
 
                     {/* Users Stats - Show if user can view users */}
-                    {can('users.view') && (
+                    {can('users.view') && stats?.totalUsers !== undefined && (
                         <div className="museum-gradient rounded-xl border border-border p-6 shadow-sm">
                             <div className="flex items-center justify-between">
                                 <div>
                                     <p className="text-sm font-medium text-muted-foreground">Total Users</p>
                                     <p className="text-3xl font-bold text-foreground">{stats.totalUsers}</p>
-                                    <p className="text-xs text-muted-foreground mt-1">Active accounts</p>
-                                </div>
-                                <div className="rounded-full bg-purple-500/10 p-3">
-                                    <UserCheck className="h-6 w-6 text-purple-600" />
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Reports Stats - Show if user can view reports */}
-                    {can('reports.view') && (
-                        <div className="museum-gradient rounded-xl border border-border p-6 shadow-sm">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-sm font-medium text-muted-foreground">Total Reports</p>
-                                    <p className="text-3xl font-bold text-foreground">{stats.totalReports}</p>
-                                    <p className="text-xs text-muted-foreground mt-1">Research documents</p>
+                                    <p className="text-xs text-muted-foreground mt-1">
+                                        {stats.activeUsers || 0} active this month
+                                    </p>
                                 </div>
                                 <div className="rounded-full bg-green-500/10 p-3">
-                                    <FileText className="h-6 w-6 text-green-600" />
+                                    <Users className="h-6 w-6 text-green-600" />
                                 </div>
                             </div>
                         </div>
                     )}
 
                     {/* Archives Stats - Show if user can view archives */}
-                    {can('archives.view') && (
+                    {can('archives.view') && stats?.totalArchives !== undefined && (
                         <div className="museum-gradient rounded-xl border border-border p-6 shadow-sm">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <p className="text-sm font-medium text-muted-foreground">Archives</p>
-                                    <p className="text-3xl font-bold text-foreground">342</p>
-                                    <p className="text-xs text-muted-foreground mt-1">Digital records</p>
+                                    <p className="text-sm font-medium text-muted-foreground">Total Archives</p>
+                                    <p className="text-3xl font-bold text-foreground">{stats.totalArchives}</p>
+                                    <p className="text-xs text-muted-foreground mt-1">
+                                        +{stats.archivesThisMonth || 0} this month
+                                    </p>
                                 </div>
-                                <div className="rounded-full bg-indigo-500/10 p-3">
-                                    <Database className="h-6 w-6 text-indigo-600" />
+                                <div className="rounded-full bg-purple-500/10 p-3">
+                                    <Database className="h-6 w-6 text-purple-600" />
                                 </div>
                             </div>
                         </div>
                     )}
 
-                    {/* Recent Acquisitions - Show if user can view acquisitions */}
-                    {can('acquisitions.view') && (
+                    {/* Proposals Stats - Show if user can view proposals */}
+                    {can('proposals.view') && stats?.pendingProposals !== undefined && (
                         <div className="museum-gradient rounded-xl border border-border p-6 shadow-sm">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <p className="text-sm font-medium text-muted-foreground">Recent Acquisitions</p>
-                                    <p className="text-3xl font-bold text-foreground">{stats.recentAcquisitions}</p>
-                                    <p className="text-xs text-muted-foreground mt-1">Last 30 days</p>
+                                    <p className="text-sm font-medium text-muted-foreground">Pending Proposals</p>
+                                    <p className="text-3xl font-bold text-foreground">{stats.pendingProposals}</p>
+                                    <p className="text-xs text-muted-foreground mt-1">Awaiting approval</p>
                                 </div>
-                                <div className="rounded-full bg-green-500/10 p-3">
-                                    <Clock className="h-6 w-6 text-green-600" />
+                                <div className="rounded-full bg-indigo-500/10 p-3">
+                                    <FileText className="h-6 w-6 text-indigo-600" />
                                 </div>
                             </div>
                         </div>
@@ -269,152 +268,254 @@ export default function Dashboard() {
                 <div className="grid gap-4 sm:gap-6" style={{
                     gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))'
                 }}>
-                    {/* Recent Donation Proposals - Show if user can view acquisitions */}
-                    {can('acquisitions.view') && (
+                    {/* Quick Actions */}
+                    {quickActions && quickActions.length > 0 && (
+                        <div className="museum-gradient rounded-xl border border-border p-6 shadow-sm">
+                            <h2 className="text-xl font-semibold text-foreground mb-4">Quick Actions</h2>
+                            <div className="grid gap-3">
+                                {quickActions.map((action: any, index: number) => {
+                                    const IconComponent = getIconComponent(action.icon);
+                                    return (
+                                        <Link
+                                            key={index}
+                                            href={action.route}
+                                            className="flex items-center gap-3 rounded-lg border border-border p-3 transition-colors hover:bg-muted/50"
+                                        >
+                                            <div className={`rounded-full p-2 ${getColorClasses(action.color)}`}>
+                                                <IconComponent className="h-4 w-4" />
+                                            </div>
+                                            <div className="flex-1">
+                                                <h3 className="font-medium text-foreground">{action.title}</h3>
+                                                <p className="text-sm text-muted-foreground">{action.description}</p>
+                                            </div>
+                                        </Link>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Recent Artifacts */}
+                    {can('artifacts.view') && recentArtifacts && recentArtifacts.length > 0 && (
                         <div className="museum-gradient rounded-xl border border-border p-6 shadow-sm">
                             <div className="flex items-center justify-between mb-4">
-                                <h2 className="text-xl font-semibold text-foreground">Recent Donation Proposals</h2>
-                                <Link
-                                    href={route('acquisitions.index')}
-                                    className="text-sm text-primary hover:underline"
-                                >
+                                <h2 className="text-xl font-semibold text-foreground">Recent Artifacts</h2>
+                                <Link href="/artifacts" className="text-sm text-primary hover:underline">
                                     View all
                                 </Link>
                             </div>
-                            <div className="space-y-4">
-                                {recentProposals.map((proposal) => (
-                                    <div key={proposal.id} className="flex items-center justify-between rounded-lg border border-border p-4 bg-background/50">
+                            <div className="space-y-3">
+                                {recentArtifacts.map((artifact: any) => (
+                                    <Link
+                                        key={artifact.id}
+                                        href={artifact.route}
+                                        className="flex items-center gap-3 rounded-lg border border-border p-3 transition-colors hover:bg-muted/50"
+                                    >
+                                        <div className="rounded-full bg-primary/10 p-2">
+                                            <Archive className="h-4 w-4 text-primary" />
+                                        </div>
+                                        <div className="flex-1">
+                                            <h3 className="font-medium text-foreground">{artifact.title}</h3>
+                                            <p className="text-sm text-muted-foreground">
+                                                {artifact.category} • {artifact.condition}
+                                            </p>
+                                        </div>
+                                        <span className="text-xs text-muted-foreground">{artifact.created_at}</span>
+                                    </Link>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Recent Acquisitions */}
+                    {can('acquisitions.view') && recentAcquisitions && recentAcquisitions.length > 0 && (
+                        <div className="museum-gradient rounded-xl border border-border p-6 shadow-sm">
+                            <div className="flex items-center justify-between mb-4">
+                                <h2 className="text-xl font-semibold text-foreground">Recent Acquisitions</h2>
+                                <Link href="/acquisitions" className="text-sm text-primary hover:underline">
+                                    View all
+                                </Link>
+                            </div>
+                            <div className="space-y-3">
+                                {recentAcquisitions.map((acquisition: any) => (
+                                    <Link
+                                        key={acquisition.id}
+                                        href={acquisition.route}
+                                        className="flex items-center gap-3 rounded-lg border border-border p-3 transition-colors hover:bg-muted/50"
+                                    >
+                                        <div className="rounded-full bg-yellow-500/10 p-2">
+                                            <Gift className="h-4 w-4 text-yellow-600" />
+                                        </div>
+                                        <div className="flex-1">
+                                            <h3 className="font-medium text-foreground">{acquisition.title}</h3>
+                                            <p className="text-sm text-muted-foreground">
+                                                {acquisition.donor} • {acquisition.status}
+                                            </p>
+                                        </div>
+                                        <span className="text-xs text-muted-foreground">{acquisition.created_at}</span>
+                                    </Link>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Active Projects */}
+                    {can('projects.view') && activeProjects && activeProjects.length > 0 && (
+                        <div className="museum-gradient rounded-xl border border-border p-6 shadow-sm">
+                            <div className="flex items-center justify-between mb-4">
+                                <h2 className="text-xl font-semibold text-foreground">Active Projects</h2>
+                                <Link href="/project/all-projects" className="text-sm text-primary hover:underline">
+                                    View all
+                                </Link>
+                            </div>
+                            <div className="space-y-3">
+                                {activeProjects.map((project: any) => (
+                                    <Link
+                                        key={project.id}
+                                        href={project.route}
+                                        className="flex items-center gap-3 rounded-lg border border-border p-3 transition-colors hover:bg-muted/50"
+                                    >
+                                        <div className="rounded-full bg-blue-500/10 p-2">
+                                            <TrendingUp className="h-4 w-4 text-blue-600" />
+                                        </div>
+                                        <div className="flex-1">
+                                            <h3 className="font-medium text-foreground">{project.title}</h3>
+                                            <p className="text-sm text-muted-foreground">
+                                                {project.progress}% complete • {project.team_count} members
+                                            </p>
+                                        </div>
+                                        <span className="text-xs text-muted-foreground">{project.created_at}</span>
+                                    </Link>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Pending Proposals */}
+                    {can('proposals.view') && pendingProposals && pendingProposals.length > 0 && (
+                        <div className="museum-gradient rounded-xl border border-border p-6 shadow-sm">
+                            <div className="flex items-center justify-between mb-4">
+                                <h2 className="text-xl font-semibold text-foreground">Pending Proposals</h2>
+                                <Link href="/project/viewproposals" className="text-sm text-primary hover:underline">
+                                    View all
+                                </Link>
+                            </div>
+                            <div className="space-y-3">
+                                {pendingProposals.map((proposal: any) => (
+                                    <Link
+                                        key={proposal.id}
+                                        href={proposal.route}
+                                        className="flex items-center gap-3 rounded-lg border border-border p-3 transition-colors hover:bg-muted/50"
+                                    >
+                                        <div className="rounded-full bg-indigo-500/10 p-2">
+                                            <FileText className="h-4 w-4 text-indigo-600" />
+                                        </div>
                                         <div className="flex-1">
                                             <h3 className="font-medium text-foreground">{proposal.title}</h3>
-                                            <p className="text-sm text-muted-foreground">Donor: {proposal.donor}</p>
-                                            <p className="text-xs text-muted-foreground">{new Date(proposal.date).toLocaleDateString()}</p>
+                                            <p className="text-sm text-muted-foreground">
+                                                Proposed by {proposal.proposer}
+                                            </p>
                                         </div>
-                                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(proposal.status)}`}>
-                                            {proposal.status.replace('_', ' ')}
+                                        <span className="text-xs text-muted-foreground">{proposal.created_at}</span>
+                                    </Link>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Upcoming Milestones */}
+                    {can('projects.view') && upcomingMilestones && upcomingMilestones.length > 0 && (
+                        <div className="museum-gradient rounded-xl border border-border p-6 shadow-sm">
+                            <div className="flex items-center justify-between mb-4">
+                                <h2 className="text-xl font-semibold text-foreground">Upcoming Milestones</h2>
+                                <Link href="/project/all-projects" className="text-sm text-primary hover:underline">
+                                    View all
+                                </Link>
+                            </div>
+                            <div className="space-y-3">
+                                {upcomingMilestones.map((milestone: any) => (
+                                    <Link
+                                        key={milestone.id}
+                                        href={milestone.route}
+                                        className="flex items-center gap-3 rounded-lg border border-border p-3 transition-colors hover:bg-muted/50"
+                                    >
+                                        <div className="rounded-full bg-orange-500/10 p-2">
+                                            <Calendar className="h-4 w-4 text-orange-600" />
+                                        </div>
+                                        <div className="flex-1">
+                                            <h3 className="font-medium text-foreground">{milestone.title}</h3>
+                                            <p className="text-sm text-muted-foreground">
+                                                {milestone.project} • Due {milestone.due_date}
+                                            </p>
+                                        </div>
+                                        <span className="text-xs text-muted-foreground">
+                                            {milestone.days_remaining > 0 ? `${milestone.days_remaining}d left` : 'Due today'}
                                         </span>
+                                    </Link>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Recent Activities */}
+                    {can('logs.view') && recentActivities && recentActivities.length > 0 && (
+                        <div className="museum-gradient rounded-xl border border-border p-6 shadow-sm">
+                            <div className="flex items-center justify-between mb-4">
+                                <h2 className="text-xl font-semibold text-foreground">Recent Activities</h2>
+                                <Link href="/activity-logs" className="text-sm text-primary hover:underline">
+                                    View all
+                                </Link>
+                            </div>
+                            <div className="space-y-3">
+                                {recentActivities.map((activity: any) => (
+                                    <div key={activity.id} className="flex items-center gap-3 rounded-lg border border-border p-3">
+                                        <div className="rounded-full bg-gray-500/10 p-2">
+                                            <Clock className="h-4 w-4 text-gray-600" />
+                                        </div>
+                                        <div className="flex-1">
+                                            <p className="text-sm text-foreground">{activity.description}</p>
+                                            <p className="text-xs text-muted-foreground">
+                                                by {activity.causer_name} • {activity.created_at}
+                                            </p>
+                                        </div>
                                     </div>
                                 ))}
                             </div>
                         </div>
                     )}
 
-                    {/* Quick Actions - Permission-based */}
-                    <div className="museum-gradient rounded-xl border border-border p-6 shadow-sm">
-                        <h2 className="text-xl font-semibold text-foreground mb-4">Quick Actions</h2>
-                        <div className="space-y-3">
-                            {/* Submit Donation - Show if user can create acquisitions */}
-                            {can('acquisitions.create') && (
-                                <Link
-                                    href={route('acquisitions.create')}
-                                    className="flex items-center gap-3 rounded-lg border border-border p-3 hover:bg-accent transition-colors"
-                                >
-                                    <Plus className="h-5 w-5 text-primary" />
-                                    <span className="text-sm font-medium">Submit Donation</span>
-                                </Link>
-                            )}
-
-                            {/* Create Project - Show if user can create proposals */}
-                            {can('proposals.create') && (
-                                <Link
-                                    href={route('projectproposal.new')}
-                                    className="flex items-center gap-3 rounded-lg border border-border p-3 hover:bg-accent transition-colors"
-                                >
-                                    <FileText className="h-5 w-5 text-primary" />
-                                    <span className="text-sm font-medium">Create Project</span>
-                                </Link>
-                            )}
-
-                            {/* Browse Collections - Show if user can view artifacts */}
-                            {can('artifacts.view') && (
-                                <Link
-                                    href={route('artifacts.index')}
-                                    className="flex items-center gap-3 rounded-lg border border-border p-3 hover:bg-accent transition-colors"
-                                >
-                                    <Eye className="h-5 w-5 text-primary" />
-                                    <span className="text-sm font-medium">Browse Collections</span>
-                                </Link>
-                            )}
-
-                            {/* Manage Acquisitions - Show if user can view acquisitions */}
-                            {can('acquisitions.view') && (
-                                <Link
-                                    href={route('acquisitions.index')}
-                                    className="flex items-center gap-3 rounded-lg border border-border p-3 hover:bg-accent transition-colors"
-                                >
-                                    <Settings className="h-5 w-5 text-primary" />
-                                    <span className="text-sm font-medium">Manage Acquisitions</span>
-                                </Link>
-                            )}
-
-                            {/* View Archives - Show if user can view archives */}
-                            {can('archives.view') && (
-                                <Link
-                                    href={route('archives.index')}
-                                    className="flex items-center gap-3 rounded-lg border border-border p-3 hover:bg-accent transition-colors"
-                                >
-                                    <Database className="h-5 w-5 text-primary" />
-                                    <span className="text-sm font-medium">View Archives</span>
-                                </Link>
-                            )}
-
-                            {/* AI Assistant - Show if user can view AI */}
-                            {can('ai.view') && (
-                                <Link
-                                    href={route('ai')}
-                                    className="flex items-center gap-3 rounded-lg border border-border p-3 hover:bg-accent transition-colors"
-                                >
-                                    <Search className="h-5 w-5 text-primary" />
-                                    <span className="text-sm font-medium">AI Assistant</span>
-                                </Link>
-                            )}
-
-                            {/* User Management - Show if user can view users */}
-                            {can('users.view') && (
-                                <Link
-                                    href={route('users.index')}
-                                    className="flex items-center gap-3 rounded-lg border border-border p-3 hover:bg-accent transition-colors"
-                                >
-                                    <UserCheck className="h-5 w-5 text-primary" />
-                                    <span className="text-sm font-medium">Manage Users</span>
-                                </Link>
-                            )}
-
-                            {/* Activity Logs - Show if user can view logs */}
-                            {can('logs.view') && (
-                                <Link
-                                    href={route('activity-logs.index')}
-                                    className="flex items-center gap-3 rounded-lg border border-border p-3 hover:bg-accent transition-colors"
-                                >
-                                    <BarChart3 className="h-5 w-5 text-primary" />
-                                    <span className="text-sm font-medium">Activity Logs</span>
-                                </Link>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Active Projects - Show if user can view projects */}
-                    {can('projects.view') && (
+                    {/* Budget Overview */}
+                    {can('projects.view') && budgetOverview && (
                         <div className="museum-gradient rounded-xl border border-border p-6 shadow-sm">
-                            <h2 className="text-xl font-semibold text-foreground mb-4">Active Projects</h2>
+                            <h2 className="text-xl font-semibold text-foreground mb-4">Budget Overview</h2>
                             <div className="space-y-4">
-                                {activeProjects.map((project) => (
-                                    <div key={project.id} className="space-y-2">
-                                        <div className="flex items-center justify-between">
-                                            <h3 className="text-sm font-medium text-foreground">{project.title}</h3>
-                                            <span className="text-xs text-muted-foreground">{project.progress}%</span>
-                                        </div>
-                                        <div className="w-full bg-muted rounded-full h-2">
-                                            <div
-                                                className="bg-primary h-2 rounded-full transition-all duration-300"
-                                                style={{ width: `${project.progress}%` }}
-                                            ></div>
-                                        </div>
-                                        <div className="flex items-center justify-between text-xs text-muted-foreground">
-                                            <span>{project.team} team members</span>
-                                            <span>Due: {new Date(project.dueDate).toLocaleDateString()}</span>
-                                        </div>
-                                    </div>
-                                ))}
+                                <div className="flex justify-between items-center">
+                                    <span className="text-sm text-muted-foreground">Total Budget</span>
+                                    <span className="font-semibold text-foreground">
+                                        ${budgetOverview.total_budget?.toLocaleString() || 0}
+                                    </span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                    <span className="text-sm text-muted-foreground">Total Spent</span>
+                                    <span className="font-semibold text-foreground">
+                                        ${budgetOverview.total_spent?.toLocaleString() || 0}
+                                    </span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                    <span className="text-sm text-muted-foreground">Remaining</span>
+                                    <span className="font-semibold text-foreground">
+                                        ${budgetOverview.remaining_budget?.toLocaleString() || 0}
+                                    </span>
+                                </div>
+                                <div className="w-full bg-gray-200 rounded-full h-2">
+                                    <div 
+                                        className="bg-primary h-2 rounded-full" 
+                                        style={{ width: `${budgetOverview.spent_percentage || 0}%` }}
+                                    ></div>
+                                </div>
+                                <p className="text-xs text-muted-foreground text-center">
+                                    {budgetOverview.spent_percentage || 0}% of budget used
+                                </p>
                             </div>
                         </div>
                     )}
@@ -429,61 +530,24 @@ export default function Dashboard() {
                                 <Star className="h-6 w-6 text-primary" />
                             </div>
                             <h3 className="font-medium text-foreground mb-1">Featured Exhibit</h3>
-                            <p className="text-sm text-muted-foreground">Ancient Tribal Artifacts Collection</p>
-                        </div>
-                        <div className="text-center">
-                            <div className="mx-auto mb-3 rounded-full bg-blue-500/10 p-3 w-fit">
-                                <Calendar className="h-6 w-6 text-blue-600" />
-                            </div>
-                            <h3 className="font-medium text-foreground mb-1">Upcoming Event</h3>
-                            <p className="text-sm text-muted-foreground">Cultural Heritage Workshop - Feb 15</p>
+                            <p className="text-sm text-muted-foreground">Discover our latest curated collection</p>
                         </div>
                         <div className="text-center">
                             <div className="mx-auto mb-3 rounded-full bg-green-500/10 p-3 w-fit">
-                                <MapPin className="h-6 w-6 text-green-600" />
+                                <BookOpen className="h-6 w-6 text-green-600" />
                             </div>
-                            <h3 className="font-medium text-foreground mb-1">Location</h3>
-                            <p className="text-sm text-muted-foreground">Nairobi, Kenya</p>
+                            <h3 className="font-medium text-foreground mb-1">Research Hub</h3>
+                            <p className="text-sm text-muted-foreground">Access our extensive research resources</p>
+                        </div>
+                        <div className="text-center">
+                            <div className="mx-auto mb-3 rounded-full bg-purple-500/10 p-3 w-fit">
+                                <MapPin className="h-6 w-6 text-purple-600" />
+                            </div>
+                            <h3 className="font-medium text-foreground mb-1">Visit Us</h3>
+                            <p className="text-sm text-muted-foreground">Plan your visit to the National Museum</p>
                         </div>
                     </div>
                 </div>
-
-                {/* Fallback section for users with very limited permissions */}
-                {(() => {
-                    const hasStats = can('artifacts.view') || can('acquisitions.view') || can('projects.view') || 
-                                   can('users.view') || can('reports.view') || can('archives.view');
-                    const hasMainContent = can('acquisitions.view') || can('acquisitions.create') || 
-                                         can('proposals.create') || can('artifacts.view') || 
-                                         can('archives.view') || can('ai.view') || can('users.view') || 
-                                         can('logs.view') || can('projects.view');
-                    
-                    if (!hasStats && !hasMainContent) {
-                        return (
-                            <div className="museum-gradient rounded-xl border border-border p-6 shadow-sm">
-                                <div className="text-center py-8">
-                                    <div className="mx-auto mb-4 rounded-full bg-primary/10 p-3 w-fit">
-                                        <Landmark className="h-8 w-8 text-primary" />
-                                    </div>
-                                    <h3 className="text-lg font-medium text-foreground mb-2">Welcome to Museum KE</h3>
-                                    <p className="text-muted-foreground mb-4">
-                                        You have limited access to the system. Contact your administrator to request additional permissions.
-                                    </p>
-                                    <div className="grid gap-4 md:grid-cols-2 max-w-md mx-auto">
-                                        <div className="text-center p-4 rounded-lg bg-background/50">
-                                            <h4 className="font-medium text-foreground mb-1">Contact Admin</h4>
-                                            <p className="text-sm text-muted-foreground">Request access to additional features</p>
-                                        </div>
-                                        <div className="text-center p-4 rounded-lg bg-background/50">
-                                            <h4 className="font-medium text-foreground mb-1">View Museum Info</h4>
-                                            <p className="text-sm text-muted-foreground">Learn about our collections</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        );
-                    }
-                    return null;
-                })()}
             </div>
         </AppLayout>
     );

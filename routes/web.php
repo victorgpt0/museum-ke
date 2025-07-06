@@ -38,9 +38,7 @@ Route::middleware('guest')->group(function () {
 
 Route::middleware(['auth', 'verified'])->group(function () {
 
-    Route::get('dashboard', function () {
-        return Inertia::render('dashboard');
-    })->name('dashboard');
+    Route::get('dashboard', [App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard');
 
     Route::resource('users', UserController::class);
     Route::resource('roles', RoleController::class);
@@ -151,6 +149,21 @@ Route::put('/projects/{project}/milestones/{milestone}/budget', [MilestoneContro
 
 
 Route::get('activity-logs', [App\Http\Controllers\ActivityLogController::class, 'index'])->name('activity-logs.index');
+
+// Media Library Routes
+Route::prefix('media-library')->name('media-library.')->group(function () {
+    Route::get('/', [App\Http\Controllers\MediaLibraryController::class, 'index'])->name('index');
+    Route::get('/type/{type}', [App\Http\Controllers\MediaLibraryController::class, 'byType'])->name('by-type');
+    Route::get('/{id}', [App\Http\Controllers\MediaLibraryController::class, 'show'])->name('show');
+    Route::get('/{id}/edit', [App\Http\Controllers\MediaLibraryController::class, 'edit'])->name('edit');
+    Route::put('/{id}', [App\Http\Controllers\MediaLibraryController::class, 'update'])->name('update');
+    Route::delete('/{id}', [App\Http\Controllers\MediaLibraryController::class, 'destroy'])->name('destroy');
+    Route::get('/{id}/download', [App\Http\Controllers\MediaLibraryController::class, 'download'])->name('download');
+    Route::get('/{id}/conversion/{conversion}', [App\Http\Controllers\MediaLibraryController::class, 'conversion'])->name('conversion');
+    Route::post('/bulk-action', [App\Http\Controllers\MediaLibraryController::class, 'bulkAction'])->name('bulk-action');
+    Route::get('/analytics', [App\Http\Controllers\MediaLibraryController::class, 'analytics'])->name('analytics');
+    Route::get('/search', [App\Http\Controllers\MediaLibraryController::class, 'search'])->name('search');
+});
 
 Route::post('/project/{id}/complete', [ProjectController::class, 'markComplete'])->middleware(['auth'])->name('project.complete');
 
