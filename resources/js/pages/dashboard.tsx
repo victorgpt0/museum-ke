@@ -24,7 +24,7 @@ import {
     Shield,
     BookOpen,
     Search,
-    Database
+    Database, Landmark
 } from 'lucide-react';
 import AppLogoIcon from '@/components/app-logo-icon';
 import can from '@/lib/can';
@@ -143,7 +143,7 @@ export default function Dashboard() {
                         </p>
                     </div>
                     <div className="flex items-center gap-2">
-                        <AppLogoIcon className="h-8 w-8 text-primary" />
+                        <Landmark className="h-8 w-8 text-primary" />
                         <span className="text-lg font-semibold text-primary">National Museum</span>
                     </div>
                 </div>

@@ -17,12 +17,11 @@ use App\Http\Controllers\TeamMembersController;
 
 
 
+Route::get('/', function () {
+    return Inertia::render('welcome');
+})->name('home');
+
 Route::middleware('guest')->group(function () {
-
-    Route::get('/', function () {
-        return Inertia::render('welcome');
-    })->name('home');
-
     Route::get('/landingpage', function () {
         return Inertia::render('theDashboard');
     })->name('landingpage');

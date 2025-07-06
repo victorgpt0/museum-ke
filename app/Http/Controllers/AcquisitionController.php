@@ -212,13 +212,14 @@ class AcquisitionController extends Controller implements HasMiddleware
 
             DB::commit();
 
+            $approver = auth()->user();
             // Send notification to curators and admins
-            User::role(['Curator','SuperAdmin'])->each(function($user) use ($artifactProposal){
+            User::role(['Curator','SuperAdmin','Inventory Manager'])->each(function($user) use ($artifactProposal, $approver){
                 $user->notify(
                     new UserNotification(
                         'success',
                         "Acquisition Proposal Approved",
-                        "$user->name has approved of an acquisition titled: $artifactProposal->title. Please follow the redirect to know more!",
+                        "$approver->name has approved of an acquisition titled: $artifactProposal->title. Please follow the redirect to know more!",
                         route('acquisitions.show', $artifactProposal->id),
                         $user->id
                     ));
@@ -249,13 +250,15 @@ class AcquisitionController extends Controller implements HasMiddleware
                 'proposal_status' => 'rejected'
             ]);
 
+            $rejector = auth()->user();
+
             // Send notification to curators and admins
-            User::role(['Curator','SuperAdmin'])->each(function($user) use ($artifactProposal){
+            User::role(['Curator','SuperAdmin'])->each(function($user) use ($artifactProposal, $rejector){
                 $user->notify(
                     new UserNotification(
                         'error',
                         "Acquisition Proposal Rejected",
-                        "$user->name has rejected of an acquisition titled: $artifactProposal->title. Please follow the redirect to know more!",
+                        "$rejector->name has rejected of an acquisition titled: $artifactProposal->title. Please follow the redirect to know more!",
                         route('acquisitions.show', $artifactProposal->id),
                         $user->id
                     ));
