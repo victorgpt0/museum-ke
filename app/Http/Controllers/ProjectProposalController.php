@@ -95,8 +95,16 @@ class ProjectProposalController extends Controller
             $proposal->user_name = $proposal->user ? $proposal->user->name : 'Unknown';
             return $proposal;
         });
+        
+        // Get current user's roles for authorization
+        $user = auth()->user();
+        $userRoles = $user ? $user->getRoleNames()->toArray() : [];
+        $canApproveReject = $user && $user->hasRole(['SuperAdmin', 'HOD']);
+        
         return Inertia::render('Project/proposal/ViewProposals', [
-            'proposals' => $proposals
+            'proposals' => $proposals,
+            'userRoles' => $userRoles,
+            'canApproveReject' => $canApproveReject
         ]);
     } catch (\Exception $e) {
         return back()->withErrors([
@@ -107,6 +115,13 @@ class ProjectProposalController extends Controller
 }
  public function approve(Request $request)
 {
+    // Check if user has permission to approve proposals
+    if (!auth()->user()->hasRole(['SuperAdmin', 'HOD'])) {
+        return back()->withErrors([
+            'error' => 'You do not have permission to approve proposals.',
+        ]);
+    }
+
     try {
         $request->validate([
             'id' => 'required|integer|exists:project_proposals,id'
@@ -169,6 +184,13 @@ class ProjectProposalController extends Controller
 }
     public function reject(Request $request)
     {
+        // Check if user has permission to reject proposals
+        if (!auth()->user()->hasRole(['SuperAdmin', 'HOD'])) {
+            return back()->withErrors([
+                'error' => 'You do not have permission to reject proposals.',
+            ]);
+        }
+
         try {
             $request->validate([
                 'id' => 'required|integer|exists:project_proposals,id'

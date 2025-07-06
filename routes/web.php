@@ -82,6 +82,39 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::get('{id}/download', 'download')->name('download');
             Route::get('{id}/conversion/{conversion}', 'conversion')->name('conversion');
         });
+    //------PROJECT-------->
+    //proposals
+    Route::get('/project/all-projects', [ProjectController::class, 'showAll'])->name('project.all');
+    Route::get('/project/dashboard/{id}', [ProjectController::class, 'show'])->name('project.show');
+
+    Route::get('/project/new-proposal', function () {
+        return Inertia::render('Project/proposal/new-proposal');
+    })->name('projectproposal.new');
+    Route::post('/project/saveproposal', [ProjectProposalController::class, 'store'])->name('projectproposal.store');
+    Route::get('/project/viewproposals', [ProjectProposalController::class, 'index'])->name('project.proposal.index');
+    Route::post('/project/proposal/approve', [ProjectProposalController::class, 'approve']);
+    Route::post('/project/proposal/reject', [ProjectProposalController::class, 'reject']);
+
+    Route::get('/projects/{project}/findings/create', [FindingController::class, 'create'])->name('findings.create');
+    Route::post('/projects/{project}/findings', [FindingController::class, 'store'])->name('findings.store');
+    Route::post('/projects/{project}/team-members', [TeamMembersController::class, 'store'])->name('findings.team-members');
+    Route::get('/projects/{project}/team-members/create', [TeamMembersController::class, 'create'])->name('findings.team-members.create');
+
+    // Milestone routes
+    Route::post('/projects/{project}/savemilestones', [MilestoneController::class, 'store'])->name('project.milestones.store');
+    Route::put('/milestones/{milestone}', [MilestoneController::class, 'update'])->name('milestones.update');
+    Route::get('/projects/{project}/milestones/create', [MilestoneController::class, 'create'])->name('project.milestones.create');
+
+    // Goal routes
+    Route::post('/goals', [GoalController::class, 'storeWithMilestone'])->name('goals.store');
+    Route::put('/goals/{goal:id}/save', [GoalController::class, 'update'])->name('goals.update');
+    Route::get('/projects/{project}/milestones/{milestone}', [MilestoneController::class, 'show'])->name('project.milestones.show');
+    Route::put('/projects/{project}/milestones/{milestone}/goals', [MilestoneController::class, 'updateGoals'])->name('project.milestones.update-goals');
+    Route::put('/projects/{project}/milestones/{milestone}/budget', [MilestoneController::class, 'updateBudget'])->name('project.milestones.update-budget');
+
+    Route::post('/project/{id}/complete', [ProjectController::class, 'markComplete'])->name('project.complete');
+    Route::get('/proposals/{id}', [ProjectProposalController::class, 'show'])->name('proposals.show');
+
 });
 
 //Guest Routes
@@ -129,46 +162,6 @@ Route::get('/ai', function () {
 Route::post('/api/ai/query', [App\Http\Controllers\AIController::class, 'query'])
     ->middleware(['auth'])
     ->name('ai.query');
-
-//------PROJECT-------->
-//proposals
-Route::get('/project/all-projects', [ProjectController::class, 'showAll'])->name('project.all');
-Route::get('/project/dashboard/{id}', [ProjectController::class, 'show'])->name('project.show');
-
-Route::get('/project/new-proposal', function () {
-    return Inertia::render('Project/proposal/new-proposal');
-})->name('projectproposal.new');
-Route::post('/project/saveproposal', [ProjectProposalController::class, 'store'])->name('projectproposal.store');
-Route::get('/project/viewproposals', [ProjectProposalController::class, 'index'])->name('project.proposal.index');
-Route::post('/project/proposal/approve', [ProjectProposalController::class, 'approve']);
-Route::post('/project/proposal/reject', [ProjectProposalController::class, 'reject']);
-
-Route::get('/projects/{project}/findings/create', [FindingController::class, 'create'])->name('findings.create');
-Route::post('/projects/{project}/findings', [FindingController::class, 'store'])->name('findings.store');
-Route::post('/projects/{project}/team-members', [TeamMembersController::class, 'store'])->name('findings.team-members');
-Route::get('/projects/{project}/team-members/create', [TeamMembersController::class, 'create'])->name('findings.team-members.create');
-
-
-
-
-
-// routes/web.php
-
-// Milestone routes
-// Change your milestone create route to include project parameter
-Route::post('/projects/{project}/savemilestones', [MilestoneController::class, 'store'])->name('project.milestones.store');
-Route::put('/milestones/{milestone}', [MilestoneController::class, 'update'])->name('milestones.update');
-Route::get('/projects/{project}/milestones/create', [MilestoneController::class, 'create'])->name('project.milestones.create');
-
-// Goal routes
-Route::post('/goals', [GoalController::class, 'storeWithMilestone'])->name('goals.store');
-Route::put('/goals/{goal:id}/save', [GoalController::class, 'update'])->name('goals.update');
-Route::get('/projects/{project}/milestones/{milestone}', [MilestoneController::class, 'show'])->name('project.milestones.show');
-Route::put('/projects/{project}/milestones/{milestone}/goals', [MilestoneController::class, 'updateGoals'])->name('project.milestones.update-goals');
-Route::put('/projects/{project}/milestones/{milestone}/budget', [MilestoneController::class, 'updateBudget'])->name('project.milestones.update-budget');
-
-
-
 
 Route::get('activity-logs', [App\Http\Controllers\ActivityLogController::class, 'index'])->name('activity-logs.index');
 

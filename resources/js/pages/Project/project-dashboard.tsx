@@ -66,6 +66,8 @@ interface Proposal {
     description: string;
     user_id: number;
     user_name?: string;
+    all_image_urls?: string[];
+    all_documents_urls?: any[];
     // Add other proposal fields as needed
 }
 
@@ -258,6 +260,8 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ project }) => {
         y += 8;
         doc.text(`Start Date: ${new Date(project.start_date).toLocaleDateString()}`, 10, y);
         y += 8;
+        doc.text(`Project Progress: ${project.project_progress}%`, 10, y);
+        y += 8;
         doc.text(`Proposal: ${project.proposal.title}`, 10, y);
         y += 8;
         doc.text(doc.splitTextToSize(`Proposal Description: ${project.proposal.description}`, 180), 10, y);
@@ -277,7 +281,7 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ project }) => {
         });
         y = (doc as any).lastAutoTable.finalY + 8;
 
-        // Milestones
+        // Milestones with Performance and Completion
         doc.setFontSize(14);
         doc.text('Milestones', 10, y);
         y += 4;
@@ -288,8 +292,8 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ project }) => {
                 m.title,
                 m.description,
                 m.due_date ? new Date(m.due_date).toLocaleDateString() : '',
-                m.performance_indicator || '',
-                m.completion ? m.completion * 10 + '%' : '',
+                m.performance_indicator ? `${m.performance_indicator}/10` : 'N/A',
+                m.completion ? `${Math.round(m.completion * 100)}%` : '0%',
             ]),
             theme: 'grid',
             styles: { fontSize: 10, cellWidth: 'wrap' },
@@ -297,7 +301,7 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ project }) => {
         });
         y = (doc as any).lastAutoTable.finalY + 8;
 
-    // Budget Items
+    // Budget Items with Detailed Financial Analysis
     doc.setFontSize(14);
     doc.text('Budget Items', 10, y);
     y += 4;
@@ -310,13 +314,18 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ project }) => {
     (project.milestones || []).forEach((milestone: any) => {
       if (milestone.budgets && milestone.budgets.length > 0) {
         milestone.budgets.forEach((budget: any) => {
-          totalBudget += budget.amount ? parseFloat(budget.amount) : 0;
-          totalSpent += budget.amount_spent ? parseFloat(budget.amount_spent) : 0;
+          const budgetAmount = budget.amount ? parseFloat(budget.amount) : 0;
+          const spentAmount = budget.amount_spent ? parseFloat(budget.amount_spent) : 0;
+          totalBudget += budgetAmount;
+          totalSpent += spentAmount;
+          
+          const consumption = budgetAmount > 0 ? (spentAmount / budgetAmount) * 100 : 0;
           allBudgetItems.push([
             budget.title,
             budget.description,
-            `Ksh ${budget.amount}`,
-            budget.amount_spent > 0 ? `Ksh ${budget.amount_spent}` : 'Ksh 0',
+            `Ksh ${budgetAmount.toLocaleString()}`,
+            `Ksh ${spentAmount.toLocaleString()}`,
+            `${consumption.toFixed(1)}%`,
             milestone.title
           ]);
         });
@@ -326,15 +335,22 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ project }) => {
     if (allBudgetItems.length > 0) {
       autoTable(doc, {
         startY: y,
-        head: [['Title', 'Description', 'Budgeted Amount', 'Amount Spent', 'Milestone']],
+        head: [['Title', 'Description', 'Budgeted', 'Spent', 'Consumption', 'Milestone']],
         body: allBudgetItems,
         theme: 'grid',
-        styles: { fontSize: 10, cellWidth: 'wrap' },
-        columnStyles: { 0: { cellWidth: 30 }, 1: { cellWidth: 50 }, 2: { cellWidth: 25 }, 3: { cellWidth: 25 }, 4: { cellWidth: 30 } },
+        styles: { fontSize: 9, cellWidth: 'wrap' },
+        columnStyles: { 
+          0: { cellWidth: 25 }, 
+          1: { cellWidth: 40 }, 
+          2: { cellWidth: 20 }, 
+          3: { cellWidth: 20 }, 
+          4: { cellWidth: 20 },
+          5: { cellWidth: 25 }
+        },
       });
       y = (doc as any).lastAutoTable.finalY + 8;
-
-      // Add financial summary
+      
+      // Add comprehensive financial summary
       doc.setFontSize(12);
       doc.text('Financial Summary:', 10, y);
       y += 6;
@@ -345,6 +361,9 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ project }) => {
       y += 5;
       doc.text(`Remaining: Ksh ${(totalBudget - totalSpent).toLocaleString()}`, 10, y);
       y += 5;
+      const consumption = totalBudget > 0 ? (totalSpent / totalBudget) * 100 : 0;
+      doc.text(`Budget Consumption: ${consumption.toFixed(1)}%`, 10, y);
+      y += 5;
       const efficiency = totalBudget > 0 ? ((totalBudget - totalSpent) / totalBudget) * 100 : 100;
       doc.text(`Financial Efficiency: ${efficiency.toFixed(1)}%`, 10, y);
       y += 8;
@@ -354,89 +373,114 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ project }) => {
       y += 6;
     }
 
-        // Goals
+        // Goals with Performance and Comments
         doc.setFontSize(14);
         doc.text('Goals', 10, y);
         y += 4;
-        autoTable(doc, {
-            startY: y,
-            head: [['Title', 'Description', 'Performance', 'Comments', 'Completed', 'Milestone']],
-            body: (project.goals || []).map((g: any) => [
-                g.title,
-                g.description,
-                g.performance !== null ? g.performance * 10 + '%' : '',
-                g.comments || '',
-                g.completed ? 'Yes' : 'No',
-                g.milestone?.title || '',
-            ]),
-            theme: 'grid',
-            styles: { fontSize: 10, cellWidth: 'wrap' },
-            columnStyles: {
-                0: { cellWidth: 30 },
-                1: { cellWidth: 60 },
-                2: { cellWidth: 25 },
-                3: { cellWidth: 30 },
-                4: { cellWidth: 20 },
-                5: { cellWidth: 30 },
-            },
-        });
-        y = (doc as any).lastAutoTable.finalY + 8;
+        
+        if (project.goals && project.goals.length > 0) {
+            // Sort goals by completion status and performance
+            const sortedGoals = [...project.goals].sort((a, b) => {
+                if (a.completed !== b.completed) {
+                    return a.completed ? -1 : 1;
+                }
+                return (b.performance || 0) - (a.performance || 0);
+            });
 
-        // Findings
+            autoTable(doc, {
+                startY: y,
+                head: [['Title', 'Description', 'Performance', 'Status', 'Milestone']],
+                body: sortedGoals.map((g: any) => [
+                    g.title,
+                    g.description || 'No description',
+                    g.performance !== null ? `${Math.round(g.performance * 10)}%` : 'N/A',
+                    g.completed ? '✅ Completed' : '⏳ In Progress',
+                    g.milestone?.title || 'N/A',
+                ]),
+                theme: 'grid',
+                styles: { fontSize: 9, cellWidth: 'wrap' },
+                columnStyles: {
+                    0: { cellWidth: 30 },
+                    1: { cellWidth: 50 },
+                    2: { cellWidth: 20 },
+                    3: { cellWidth: 25 },
+                    4: { cellWidth: 35 },
+                },
+            });
+            y = (doc as any).lastAutoTable.finalY + 8;
+
+            // Add detailed goal comments section
+            const goalsWithComments = sortedGoals.filter((g: any) => g.comments && g.comments.trim());
+            if (goalsWithComments.length > 0) {
+                doc.setFontSize(12);
+                doc.text('Goal Comments & Notes:', 10, y);
+                y += 6;
+                doc.setFontSize(10);
+                
+                goalsWithComments.forEach((goal: any) => {
+                    doc.setFontSize(11);
+                    doc.text(`• ${goal.title}:`, 10, y);
+                    y += 4;
+                    doc.setFontSize(9);
+                    const commentLines = doc.splitTextToSize(goal.comments, 180);
+                    doc.text(commentLines, 15, y);
+                    y += commentLines.length * 4 + 2;
+                    
+                    // Check if we need a new page
+                    if (y > 250) {
+                        doc.addPage();
+                        y = 10;
+                    }
+                });
+                y += 4;
+            }
+
+            // Add goals summary
+            const completedGoals = sortedGoals.filter((g: any) => g.completed);
+            const totalGoals = sortedGoals.length;
+            const completionRate = totalGoals > 0 ? (completedGoals.length / totalGoals) * 100 : 0;
+            
+            doc.setFontSize(11);
+            doc.text('Goals Summary:', 10, y);
+            y += 5;
+            doc.setFontSize(10);
+            doc.text(`Total Goals: ${totalGoals}`, 10, y);
+            y += 4;
+            doc.text(`Completed: ${completedGoals.length}`, 10, y);
+            y += 4;
+            doc.text(`Completion Rate: ${completionRate.toFixed(1)}%`, 10, y);
+            y += 8;
+        } else {
+            doc.setFontSize(10);
+            doc.text('No goals defined for this project.', 10, y);
+            y += 6;
+        }
+
+        // Findings with Images
         doc.setFontSize(14);
-        doc.text('Findings', 10, y);
+        doc.text('Key Findings', 10, y);
         y += 6;
+        
         if (project.findings && project.findings.length > 0) {
             for (const f of project.findings) {
                 // Title
                 doc.setFontSize(12);
                 doc.text(f.title, 10, y);
                 y += 6;
+                
                 // Description
                 const descLines = doc.splitTextToSize(f.description || '', 180);
                 doc.setFontSize(10);
                 doc.text(descLines, 10, y);
                 y += descLines.length * 5 + 2;
+                
                 // Documents
                 if (f.all_documents_urls && f.all_documents_urls.length > 0) {
                     doc.setFontSize(10);
                     doc.text('Documents: ' + f.all_documents_urls.map((d: any) => d.file_name || d.name).join(', '), 10, y);
                     y += 6;
                 }
-                // Images
-                if (f.all_image_urls && f.all_image_urls.length > 0) {
-                    doc.setFontSize(10);
-                    doc.text('Images:', 10, y);
-                    y += 4;
-                    for (const imgUrl of f.all_image_urls) {
-                        try {
-                            // Fetch image and convert to base64
-                            const imgData = await fetch(imgUrl)
-                                .then((res) => res.blob())
-                                .then(
-                                    (blob) =>
-                                        new Promise<string>((resolve, reject) => {
-                                            const reader = new FileReader();
-                                            reader.onloadend = () => resolve(reader.result as string);
-                                            reader.onerror = reject;
-                                            reader.readAsDataURL(blob);
-                                        }),
-                                );
-                            // Add image as a medium thumbnail (100x100 px)
-                            doc.addImage(imgData, 'JPEG', 10, y, 30, 30, undefined, 'FAST');
-                            y += 32;
-                            // If near bottom, add new page
-                            if (y > 260) {
-                                doc.addPage();
-                                y = 10;
-                            }
-                        } catch (e) {
-                            doc.text('[Image could not be loaded]', 10, y);
-                            y += 6;
-                        }
-                    }
-                }
-                y += 6;
+                
                 // If near bottom, add new page
                 if (y > 260) {
                     doc.addPage();
@@ -446,6 +490,110 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ project }) => {
         } else {
             doc.setFontSize(10);
             doc.text('No findings recorded.', 10, y);
+            y += 6;
+        }
+
+        // Project Images Section
+        doc.setFontSize(14);
+        doc.text('Project Images & Media', 10, y);
+        y += 8;
+
+        // Collect all images from findings
+        const allImages: { url: string; title: string; finding?: string }[] = [];
+        
+        if (project.findings && project.findings.length > 0) {
+            for (const f of project.findings) {
+                if (f.all_image_urls && f.all_image_urls.length > 0) {
+                    f.all_image_urls.forEach((imgUrl: string) => {
+                        allImages.push({
+                            url: imgUrl,
+                            title: f.title,
+                            finding: f.title
+                        });
+                    });
+                }
+            }
+        }
+
+        // Add images from project proposal if available
+        if (project.proposal && (project.proposal as any).all_image_urls) {
+            (project.proposal as any).all_image_urls.forEach((imgUrl: string) => {
+                allImages.push({
+                    url: imgUrl,
+                    title: 'Project Proposal',
+                    finding: 'Proposal Document'
+                });
+            });
+        }
+
+        if (allImages.length > 0) {
+            doc.setFontSize(11);
+            doc.text(`Total Images: ${allImages.length}`, 10, y);
+            y += 6;
+
+            // Process images in batches to avoid memory issues
+            const batchSize = 4; // Number of images per row
+            for (let i = 0; i < allImages.length; i += batchSize) {
+                const batch = allImages.slice(i, i + batchSize);
+                
+                // Check if we need a new page
+                if (y > 200) {
+                    doc.addPage();
+                    y = 10;
+                }
+
+                // Add batch title
+                doc.setFontSize(10);
+                doc.text(`Images ${i + 1}-${Math.min(i + batchSize, allImages.length)}:`, 10, y);
+                y += 4;
+
+                // Process each image in the batch
+                for (let j = 0; j < batch.length; j++) {
+                    const img = batch[j];
+                    const xPos = 10 + (j * 45); // 45mm spacing between images
+                    
+                    try {
+                        // Fetch image and convert to base64
+                        const imgData = await fetch(img.url)
+                            .then((res) => res.blob())
+                            .then(
+                                (blob) =>
+                                    new Promise<string>((resolve, reject) => {
+                                        const reader = new FileReader();
+                                        reader.onloadend = () => resolve(reader.result as string);
+                                        reader.onerror = reject;
+                                        reader.readAsDataURL(blob);
+                                    }),
+                            );
+                        
+                        // Add image (40x40 mm)
+                        doc.addImage(imgData, 'JPEG', xPos, y, 40, 40, undefined, 'FAST');
+                        
+                        // Add image caption
+                        doc.setFontSize(8);
+                        const caption = img.finding ? `${img.finding}` : 'Project Image';
+                        const captionLines = doc.splitTextToSize(caption, 35);
+                        doc.text(captionLines, xPos, y + 42);
+                        
+                    } catch (e) {
+                        // If image fails to load, add placeholder
+                        doc.setFontSize(8);
+                        doc.text('[Image Error]', xPos, y + 20);
+                        doc.text(img.finding || 'Project Image', xPos, y + 42);
+                    }
+                }
+                
+                y += 60; // Space for image + caption
+                
+                // Add new page if we have more images
+                if (i + batchSize < allImages.length && y > 200) {
+                    doc.addPage();
+                    y = 10;
+                }
+            }
+        } else {
+            doc.setFontSize(10);
+            doc.text('No images available for this project.', 10, y);
             y += 6;
         }
 

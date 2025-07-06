@@ -430,11 +430,26 @@ export default function MilestoneDashboard({ project, milestone }: Props) {
                                             id="due_date"
                                             value={data.due_date}
                                             onChange={(e) => setData('due_date', e.target.value)}
+                                            min={(() => {
+                                                // Get today's date in YYYY-MM-DD format
+                                                const today = new Date().toISOString().split('T')[0];
+                                                // Get project start date in YYYY-MM-DD format
+                                                const projectStartDate = new Date(project.start_date).toISOString().split('T')[0];
+                                                // Return the later of the two dates
+                                                return today > projectStartDate ? today : projectStartDate;
+                                            })()}
                                             className="w-full rounded-md border border-gray-300 px-3 py-2 pr-10 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-800 dark:text-white"
                                             required
                                         />
                                         <Calendar className="absolute top-2.5 right-3 h-5 w-5 text-gray-400 dark:text-gray-500" />
                                     </div>
+                                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                        Due date cannot be before {new Date(Math.max(new Date().getTime(), new Date(project.start_date).getTime())).toLocaleDateString('en-US', {
+                                            year: 'numeric',
+                                            month: 'long',
+                                            day: 'numeric',
+                                        })}
+                                    </p>
                                     {errors.due_date && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.due_date}</p>}
                                 </div>
                             </div>
@@ -689,7 +704,7 @@ export default function MilestoneDashboard({ project, milestone }: Props) {
                             <button
                                 type="submit"
                                 disabled={processing}
-                                className="inline-flex items-center rounded-md border border-transparent bg-blue-600 px-6 py-3 text-base font-medium text-white shadow-sm hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none disabled:opacity-50 dark:bg-blue-700 dark:hover:bg-blue-600"
+                                className="inline-flex items-center rounded-md border border-transparent bg-primary px-6 py-3 text-base font-medium text-primary-foreground shadow-sm hover:bg-primary/90 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:outline-none disabled:opacity-50"
                             >
                                 {processing ? 'Saving...' : 'Save Milestone & Goals'}
                             </button>

@@ -35,6 +35,8 @@ interface PaginatedProposals {
 
 interface Props extends PageProps {
     proposals: PaginatedProposals;
+    userRoles: string[];
+    canApproveReject: boolean;
 }
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -44,7 +46,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function ViewProposals({ proposals }: Props) {
+export default function ViewProposals({ proposals, userRoles, canApproveReject }: Props) {
     const [filteredProposals, setFilteredProposals] = useState<ProjectProposal[]>(proposals.data);
     const [statusFilter, setStatusFilter] = useState<string>('all');
 
@@ -177,7 +179,22 @@ export default function ViewProposals({ proposals }: Props) {
                                 </Button>
                             )}
                         </div>
-                        <p className="mt-2 text-muted-foreground">Manage and review submitted project proposals</p>
+                        <div className="mt-2 flex items-center gap-4">
+                            <p className="text-muted-foreground">Manage and review submitted project proposals</p>
+                            {userRoles.length > 0 && (
+                                <div className="flex items-center gap-2">
+                                    <span className="text-xs text-muted-foreground">Your role:</span>
+                                    <span className="inline-flex items-center rounded-full bg-primary/10 px-2 py-1 text-xs font-medium text-primary">
+                                        {userRoles.join(', ')}
+                                    </span>
+                                    {canApproveReject && (
+                                        <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-800 dark:bg-green-900 dark:text-green-200">
+                                            Can approve/reject
+                                        </span>
+                                    )}
+                                </div>
+                            )}
+                        </div>
                     </div>
 
                     {/* Status Filter */}
@@ -283,7 +300,8 @@ export default function ViewProposals({ proposals }: Props) {
                                         </Button>
                                     )}
 
-                                    {proposal.status === 'pending' && (
+                                    {/* Only show approve/reject buttons for SuperAdmin and HOD roles */}
+                                    {canApproveReject && proposal.status === 'pending' && (
                                         <>
                                             {can('proposals.approve') && (
                                                 <Button
@@ -308,7 +326,7 @@ export default function ViewProposals({ proposals }: Props) {
                                         </>
                                     )}
 
-                                    {proposal.status === 'under_review' && (
+                                    {canApproveReject && proposal.status === 'under_review' && (
                                         <>
                                             {can('proposals.approve') && (
                                                 <Button
