@@ -120,7 +120,7 @@ const Index: React.FC<Props> = ({ proposals }) => {
                 preserveScroll: true,
                 onSuccess: () => {
                     toast.success('Proposal approved successfully!');
-                    setTimeout(() => window.location.reload(), 1000);
+                    router.reload({only: ['proposals']});
                 },
                 onError: (errors) => {
                     if (errors.error) {
@@ -141,7 +141,7 @@ const Index: React.FC<Props> = ({ proposals }) => {
                 preserveScroll: true,
                 onSuccess: () => {
                     toast.success('Proposal rejected successfully!');
-                    setTimeout(() => window.location.reload(), 1000);
+                    router.reload({only: ['proposals']});
                 },
                 onError: (errors) => {
                     if (errors.error) {

@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
+use App\Notifications\UserNotification;
 use Illuminate\Http\Request;
 use App\Models\ProjectProposal;
 use Illuminate\Support\Facades\Validator;
@@ -117,6 +119,17 @@ class ProjectProposalController extends Controller
 
         DB::commit();
 
+        User::role(['HOD','SuperAdmin'])->each(function($user) use ($proposal){
+            $user->notify(
+                new UserNotification(
+                    'success',
+                    "Project Proposal Approved",
+                    "$user->name has approved of a project titled: $proposal->title. Please follow the redirect to know more!",
+                    route('proposals.show', $proposal->id),
+                    $user->id
+                ));
+        });
+
         return back()->with('success', 'Proposal approved and project created successfully.');
 
     } catch (\Exception $e) {
@@ -141,6 +154,17 @@ class ProjectProposalController extends Controller
                 'status' => 'rejected',
                 'approved_at' =>Carbon::now()
             ]);
+
+            User::role(['HOD','SuperAdmin'])->each(function($user) use ($proposal){
+                $user->notify(
+                    new UserNotification(
+                        'error',
+                        "Project Proposal Rejected",
+                        "$user->name has rejected of a project titled: $proposal->title. Please follow the redirect to know more!",
+                        route('proposals.show', $proposal->id),
+                        $user->id
+                    ));
+            });
 
             return back()->with('success', 'Proposal rejected successfully.');
 
