@@ -249,7 +249,7 @@ class DashboardController extends Controller
             return [];
         }
 
-        return Project::with(['milestones', 'teamMembers'])
+        return Project::with(['milestones.goals', 'teamMembers'])
             ->where('completed', false)
             ->latest()
             ->take(5)
@@ -341,7 +341,6 @@ class DashboardController extends Controller
                     'id' => $finding->id,
                     'title' => $finding->title,
                     'project' => $finding->project?->title,
-                    'status' => $finding->status,
                     'created_at' => $finding->created_at->diffForHumans(),
                     'route' => route('project.show', $finding->project_id),
                 ];
@@ -358,7 +357,7 @@ class DashboardController extends Controller
             return [];
         }
 
-        $budgets = Budget::with('project')->get();
+        $budgets = Budget::with('milestone.project')->get();
 
         $totalBudget = $budgets->sum('amount');
         $totalSpent = $budgets->sum('amount_spent');
@@ -383,16 +382,23 @@ class DashboardController extends Controller
     }
 
     /**
-     * Calculate project progress based on completed milestones.
+     * Calculate project progress based on completed goals.
      */
     private function calculateProjectProgress($project): int
     {
-        $totalMilestones = $project->milestones->count();
-        if ($totalMilestones === 0) {
+        $totalGoals = 0;
+        $completedGoals = 0;
+
+        // Count all goals and completed goals across all milestones
+        foreach ($project->milestones as $milestone) {
+            $totalGoals += $milestone->goals->count();
+            $completedGoals += $milestone->goals->where('completed', true)->count();
+        }
+
+        if ($totalGoals === 0) {
             return 0;
         }
 
-        $completedMilestones = $project->milestones->where('completed', true)->count();
-        return round(($completedMilestones / $totalMilestones) * 100);
+        return round(($completedGoals / $totalGoals) * 100);
     }
 }

@@ -180,7 +180,12 @@ export default function ViewProposals({ proposals, userRoles, canApproveReject }
                             )}
                         </div>
                         <div className="mt-2 flex items-center gap-4">
-                            <p className="text-muted-foreground">Manage and review submitted project proposals</p>
+                            <p className="text-muted-foreground">
+                                {canApproveReject 
+                                    ? 'Manage and review all submitted project proposals' 
+                                    : 'View and manage your submitted project proposals'
+                                }
+                            </p>
                             {userRoles.length > 0 && (
                                 <div className="flex items-center gap-2">
                                     <span className="text-xs text-muted-foreground">Your role:</span>
@@ -190,6 +195,11 @@ export default function ViewProposals({ proposals, userRoles, canApproveReject }
                                     {canApproveReject && (
                                         <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-800 dark:bg-green-900 dark:text-green-200">
                                             Can approve/reject
+                                        </span>
+                                    )}
+                                    {!canApproveReject && (
+                                        <span className="inline-flex items-center rounded-full bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                                            View own proposals only
                                         </span>
                                     )}
                                 </div>
@@ -214,6 +224,11 @@ export default function ViewProposals({ proposals, userRoles, canApproveReject }
                                 </button>
                             ))}
                         </div>
+                        {!canApproveReject && (
+                            <p className="mt-2 text-xs text-muted-foreground">
+                                Note: You can only view your own submitted proposals
+                            </p>
+                        )}
                     </div>
 
                     {/* Proposals List */}
@@ -371,7 +386,9 @@ export default function ViewProposals({ proposals, userRoles, canApproveReject }
                             <h3 className="mt-2 text-sm font-medium text-foreground">No proposals found</h3>
                             <p className="mt-1 text-sm text-muted-foreground">
                                 {statusFilter === 'all'
-                                    ? 'No project proposals have been submitted yet.'
+                                    ? canApproveReject 
+                                        ? 'No project proposals have been submitted yet.'
+                                        : 'You haven\'t submitted any project proposals yet.'
                                     : `No proposals with status "${statusFilter.replace('_', ' ')}" found.`}
                             </p>
                         </div>

@@ -89,17 +89,25 @@ class ProjectProposalController extends Controller
    public function index()
 {
     try {
-        $proposals = ProjectProposal::with('user')->orderBy('submitted_at', 'desc')->paginate(10); // eager load user
+        $user = auth()->user();
+        $userRoles = $user ? $user->getRoleNames()->toArray() : [];
+        $canApproveReject = $user && $user->hasRole(['SuperAdmin', 'HOD']);
+        
+        // Filter proposals based on user role
+        $query = ProjectProposal::with('user');
+        
+        // If user is not HOD or SuperAdmin, only show their own proposals
+        if (!$canApproveReject) {
+            $query->where('user_id', $user->id);
+        }
+        
+        $proposals = $query->orderBy('submitted_at', 'desc')->paginate(10);
+        
         // Transform proposals to include user name
         $proposals->getCollection()->transform(function ($proposal) {
             $proposal->user_name = $proposal->user ? $proposal->user->name : 'Unknown';
             return $proposal;
         });
-        
-        // Get current user's roles for authorization
-        $user = auth()->user();
-        $userRoles = $user ? $user->getRoleNames()->toArray() : [];
-        $canApproveReject = $user && $user->hasRole(['SuperAdmin', 'HOD']);
         
         return Inertia::render('Project/proposal/ViewProposals', [
             'proposals' => $proposals,

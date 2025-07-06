@@ -457,6 +457,38 @@ export default function Dashboard() {
                         </div>
                     )}
 
+                    {/* Recent Findings */}
+                    {can('projects.view') && recentFindings && recentFindings.length > 0 && (
+                        <div className="museum-gradient rounded-xl border border-border p-6 shadow-sm">
+                            <div className="flex items-center justify-between mb-4">
+                                <h2 className="text-xl font-semibold text-foreground">Recent Findings</h2>
+                                <Link href="/project/all-projects" className="text-sm text-primary hover:underline">
+                                    View all
+                                </Link>
+                            </div>
+                            <div className="space-y-3">
+                                {recentFindings.map((finding: any) => (
+                                    <Link
+                                        key={finding.id}
+                                        href={finding.route}
+                                        className="flex items-center gap-3 rounded-lg border border-border p-3 transition-colors hover:bg-muted/50"
+                                    >
+                                        <div className="rounded-full bg-green-500/10 p-2">
+                                            <Search className="h-4 w-4 text-green-600" />
+                                        </div>
+                                        <div className="flex-1">
+                                            <h3 className="font-medium text-foreground">{finding.title}</h3>
+                                            <p className="text-sm text-muted-foreground">
+                                                {finding.project}
+                                            </p>
+                                        </div>
+                                        <span className="text-xs text-muted-foreground">{finding.created_at}</span>
+                                    </Link>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
                     {/* Recent Activities */}
                     {can('logs.view') && recentActivities && recentActivities.length > 0 && (
                         <div className="museum-gradient rounded-xl border border-border p-6 shadow-sm">
