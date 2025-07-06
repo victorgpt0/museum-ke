@@ -86,7 +86,7 @@ export default function NewProposalForm() {
     // Sub-form states for adding new items
     const [newObjective, setNewObjective] = useState({ title: '', description: '' });
     const [newTeamMember, setNewTeamMember] = useState({ fullName: '', email: '', role: '' });
-    const [newMilestone, setNewMilestone] = useState({ title: '', duration: '', description: '', budgetItems: [] });
+    const [newMilestone, setNewMilestone] = useState({ title: '', duration: '', description: '', budgetItems: [] as BudgetItem[] });
     const [newGoal, setNewGoal] = useState({ title: '', description: '' });
     const [newBudgetItem, setNewBudgetItem] = useState({ title: '', description: '', amount: '' });
 
@@ -383,13 +383,11 @@ export default function NewProposalForm() {
                 console.log('[✅] Request successful! Server response page:', page);
                 toast.success('Proposal has been submitted successfully');
 
-                // Redirect after 3 seconds to allow user to see the success message
-                setTimeout(() => {
-                    router.visit(route('projectproposal.index'), {
-                        preserveState: false,
-                        preserveScroll: false,
-                    });
-                }, 3000);
+                // Redirect immediately to ViewProposals page
+                router.visit('/project/viewproposals', {
+                    preserveState: false,
+                    preserveScroll: false,
+                });
             },
             onError: (errors) => {
                 console.error('[❌] Request failed with validation/server errors:', errors);
@@ -403,7 +401,7 @@ export default function NewProposalForm() {
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <div className="min-h-screen bg-gray-50 py-8 dark:bg-gray-900">
+            <div className="flex h-full flex-1 flex-col gap-6 rounded-xl p-6">
                 {/* Toast Notifications */}
                 <Toaster
                     position="top-right"
@@ -444,10 +442,10 @@ export default function NewProposalForm() {
                     }}
                 />
 
-                <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+                <div className="mx-auto max-w-6xl w-full">
                     <div className="mb-8 text-center">
-                        <h1 className="mb-2 text-3xl font-bold text-gray-900 dark:text-white">New Proposal Form</h1>
-                        <p className="text-gray-600 dark:text-gray-300">Submit your project proposal with detailed information</p>
+                        <h1 className="mb-2 text-3xl font-bold text-foreground">New Proposal Form</h1>
+                        <p className="text-muted-foreground">Submit your project proposal with detailed information</p>
                     </div>
 
                     {/* Success Message */}
@@ -460,16 +458,16 @@ export default function NewProposalForm() {
 
                     <div className="space-y-8">
                         {/* Basic Information */}
-                        <Card className="border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
+                        <Card className="museum-gradient border border-border">
                             <CardHeader>
-                                <CardTitle className="text-gray-900 dark:text-white">Basic Information</CardTitle>
-                                <CardDescription className="text-gray-600 dark:text-gray-300">
+                                <CardTitle className="text-foreground">Basic Information</CardTitle>
+                                <CardDescription className="text-muted-foreground">
                                     Provide the fundamental details of your proposal
                                 </CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 <div className="space-y-1">
-                                    <Label htmlFor="title" className="text-gray-700 dark:text-gray-300">
+                                    <Label htmlFor="title" className="text-foreground">
                                         Title *
                                     </Label>
                                     <Input
@@ -477,7 +475,7 @@ export default function NewProposalForm() {
                                         value={data.title}
                                         onChange={(e) => setData((prev) => ({ ...prev, title: e.target.value }))}
                                         placeholder="Enter your proposal title"
-                                        className={`${errors.title ? 'border-red-500' : ''} border-gray-300 bg-white text-gray-900 placeholder-gray-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400`}
+                                        className={`${errors.title ? 'border-red-500' : ''}`}
                                     />
                                     {errors.title && <div className="text-sm text-red-500">{errors.title}</div>}
                                 </div>
@@ -1022,7 +1020,6 @@ export default function NewProposalForm() {
                                     type="submit"
                                     onClick={handleSubmit}
                                     disabled={processing}
-                                    className="bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600"
                                 >
                                     {processing ? 'Submitting...' : 'Submit Proposal'}
                                 </Button>

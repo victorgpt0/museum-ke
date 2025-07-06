@@ -70,19 +70,19 @@ export default function ViewProposals({ proposals }: Props) {
     // Get status badge styling
     const getStatusBadge = (status: string | undefined) => {
         const baseClasses = 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium';
-        if (!status) return `${baseClasses} bg-gray-100 text-gray-800`;
+        if (!status) return `${baseClasses} bg-muted text-muted-foreground`;
 
         switch (status) {
             case 'pending':
-                return `${baseClasses} bg-yellow-100 text-yellow-800`;
+                return `${baseClasses} bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200`;
             case 'under_review':
-                return `${baseClasses} bg-blue-100 text-blue-800`;
+                return `${baseClasses} bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200`;
             case 'approved':
-                return `${baseClasses} bg-green-100 text-green-800`;
+                return `${baseClasses} bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200`;
             case 'rejected':
-                return `${baseClasses} bg-red-100 text-red-800`;
+                return `${baseClasses} bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200`;
             default:
-                return `${baseClasses} bg-gray-100 text-gray-800`;
+                return `${baseClasses} bg-muted text-muted-foreground`;
         }
     };
 
@@ -164,17 +164,17 @@ export default function ViewProposals({ proposals }: Props) {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Project Proposals" />
 
-            <div className="min-h-screen bg-gray-50 py-8 dark:bg-gray-900">
-                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="flex h-full flex-1 flex-col gap-6 rounded-xl p-6">
+                <div className="mx-auto max-w-7xl w-full">
                     {/* Header */}
                     <div className="mb-8">
                         <div className={`flex items-center justify-between`}>
-                            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Project Proposals</h1>
-                            <Button variant={`default`}>
+                            <h1 className="text-3xl font-bold text-foreground">Project Proposals</h1>
+                            <Button asChild>
                                 <Link href="/project/new-proposal">Create New Proposal</Link>
                             </Button>
                         </div>
-                        <p className="mt-2 text-gray-600 dark:text-gray-400">Manage and review submitted project proposals</p>
+                        <p className="mt-2 text-muted-foreground">Manage and review submitted project proposals</p>
                     </div>
 
                     {/* Status Filter */}
@@ -186,8 +186,8 @@ export default function ViewProposals({ proposals }: Props) {
                                     onClick={() => handleStatusFilter(status)}
                                     className={`rounded-md px-4 py-2 text-sm font-medium transition-colors ${
                                         statusFilter === status
-                                            ? 'bg-blue-600 text-white'
-                                            : 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700'
+                                            ? 'bg-primary text-primary-foreground'
+                                            : 'border border-border bg-background text-foreground hover:bg-muted'
                                     }`}
                                 >
                                     {status === 'all' ? 'All' : status.charAt(0).toUpperCase() + status.slice(1).replace('_', ' ')}
@@ -201,18 +201,18 @@ export default function ViewProposals({ proposals }: Props) {
                         {filteredProposals.map((proposal) => (
                             <div
                                 key={proposal.id}
-                                className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800"
+                                className="museum-gradient rounded-xl border border-border p-6 shadow-sm hover:shadow-md transition-shadow"
                             >
                                 <div className="mb-4 flex items-start justify-between">
                                     <div className="flex-1">
-                                        <h3 className="mb-2 text-xl font-semibold text-gray-900 dark:text-white">{proposal.title}</h3>
+                                        <h3 className="mb-2 text-xl font-semibold text-foreground">{proposal.title}</h3>
                                         <span className={getStatusBadge(proposal.status)}>{formatStatusText(proposal.status)}</span>
-                                        <div className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                                        <div className="mt-1 text-sm text-muted-foreground">
                                             Uploaded by:{' '}
-                                            <span className="font-medium text-gray-700 dark:text-gray-200">{proposal.user_name || 'Unknown'}</span>
+                                            <span className="font-medium text-foreground">{proposal.user_name || 'Unknown'}</span>
                                         </div>
                                     </div>
-                                    <div className="text-right text-sm text-gray-500 dark:text-gray-400">
+                                    <div className="text-right text-sm text-muted-foreground">
                                         Submitted: {formatDate(proposal.submitted_at || proposal.created_at)}
                                     </div>
                                 </div>
@@ -220,7 +220,7 @@ export default function ViewProposals({ proposals }: Props) {
                                 <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
                                     {/* Images */}
                                     <div className="lg:col-span-1">
-                                        <h4 className="mb-2 font-medium text-gray-900 dark:text-white">Images</h4>
+                                        <h4 className="mb-2 font-medium text-foreground">Images</h4>
                                         {proposal.all_image_urls && proposal.all_image_urls.length > 0 ? (
                                             <div className="grid grid-cols-2 gap-2">
                                                 {proposal.all_image_urls.map((image: string, index) => (
@@ -237,7 +237,7 @@ export default function ViewProposals({ proposals }: Props) {
                                                 ))}
                                             </div>
                                         ) : (
-                                            <div className="flex aspect-square items-center justify-center rounded-lg bg-gray-100 text-sm text-gray-400 dark:bg-gray-700 dark:text-gray-500">
+                                            <div className="flex aspect-square items-center justify-center rounded-lg bg-muted text-sm text-muted-foreground">
                                                 No images uploaded
                                             </div>
                                         )}
@@ -246,22 +246,22 @@ export default function ViewProposals({ proposals }: Props) {
                                     {/* Details */}
                                     <div className="space-y-4 lg:col-span-2">
                                         <div>
-                                            <h4 className="mb-1 font-medium text-gray-900 dark:text-white">Description</h4>
-                                            <p className="text-sm leading-relaxed text-gray-600 dark:text-gray-300">{proposal.description}</p>
+                                            <h4 className="mb-1 font-medium text-foreground">Description</h4>
+                                            <p className="text-sm leading-relaxed text-muted-foreground">{proposal.description}</p>
                                         </div>
 
                                         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                             {proposal.duration && (
                                                 <div>
-                                                    <h4 className="mb-1 font-medium text-gray-900 dark:text-white">Duration</h4>
-                                                    <p className="text-sm text-gray-600 dark:text-gray-300">{proposal.duration}</p>
+                                                    <h4 className="mb-1 font-medium text-foreground">Duration</h4>
+                                                    <p className="text-sm text-muted-foreground">{proposal.duration}</p>
                                                 </div>
                                             )}
 
                                             {proposal.approved_at && (
                                                 <div>
-                                                    <h4 className="mb-1 font-medium text-gray-900 dark:text-white">Approved Date</h4>
-                                                    <p className="text-sm text-gray-600 dark:text-gray-300">{formatDate(proposal.approved_at)}</p>
+                                                    <h4 className="mb-1 font-medium text-foreground">Approved Date</h4>
+                                                    <p className="text-sm text-muted-foreground">{formatDate(proposal.approved_at)}</p>
                                                 </div>
                                             )}
                                         </div>
@@ -269,51 +269,54 @@ export default function ViewProposals({ proposals }: Props) {
                                 </div>
 
                                 {/* Action Buttons */}
-                                <div className="mt-6 flex justify-end space-x-3 border-t border-gray-100 pt-4">
-                                    <button
+                                <div className="mt-6 flex justify-end space-x-3 border-t border-border pt-4">
+                                    <Button
                                         onClick={() => handleViewDetails(proposal.id)}
-                                        className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 dark:focus:ring-blue-400"
+                                        variant="outline"
+                                        size="sm"
                                     >
                                         View Details
-                                    </button>
+                                    </Button>
 
                                     {proposal.status === 'pending' && (
                                         <>
-                                            <button
-                                                onClick={() => handleReview(proposal.id)}
-                                                className="rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                                            >
-                                                Review
-                                            </button>
-                                            <button
+                                            <Button
                                                 onClick={() => handleApprove(proposal.id)}
-                                                className="rounded-md border border-transparent bg-green-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:outline-none"
+                                                variant="default"
+                                                size="sm"
+                                                className="bg-green-600 hover:bg-green-700"
                                             >
                                                 Approve
-                                            </button>
-                                            <button
+                                            </Button>
+                                            <Button
                                                 onClick={() => handleReject(proposal.id)}
-                                                className="rounded-md border border-transparent bg-red-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700 focus:ring-2 focus:ring-red-500 focus:outline-none"
+                                                variant="default"
+                                                size="sm"
+                                                className="bg-red-600 hover:bg-red-700"
                                             >
                                                 Reject
-                                            </button>
+                                            </Button>
                                         </>
                                     )}
 
                                     {proposal.status === 'under_review' && (
                                         <>
-                                            <button
+                                            <Button
                                                 onClick={() => handleApprove(proposal.id)}
-                                                className="rounded-md border border-transparent bg-green-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:outline-none"
+                                                variant="default"
+                                                size="sm"
+                                                className="bg-green-600 hover:bg-green-700"
                                             >
                                                 Approve
-                                            </button>
-                                            <button
+                                            </Button>
+                                            <Button
                                                 onClick={() => handleReject(proposal.id)}
-                                                className="rounded-md border border-transparent bg-red-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700 focus:ring-2 focus:ring-red-500 focus:outline-none"
+                                                variant="default"
+                                                size="sm"
+                                                className="bg-red-600 hover:bg-red-700"
                                             >
                                                 Reject
-                                            </button>
+                                            </Button>
                                         </>
                                     )}
                                 </div>
@@ -323,8 +326,8 @@ export default function ViewProposals({ proposals }: Props) {
 
                     {/* Empty State */}
                     {filteredProposals.length === 0 && (
-                        <div className="py-12 text-center">
-                            <div className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500">
+                        <div className="museum-gradient rounded-xl border border-border p-8 shadow-sm text-center">
+                            <div className="mx-auto h-12 w-12 text-muted-foreground">
                                 <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path
                                         strokeLinecap="round"
@@ -334,8 +337,8 @@ export default function ViewProposals({ proposals }: Props) {
                                     />
                                 </svg>
                             </div>
-                            <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No proposals found</h3>
-                            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                            <h3 className="mt-2 text-sm font-medium text-foreground">No proposals found</h3>
+                            <p className="mt-1 text-sm text-muted-foreground">
                                 {statusFilter === 'all'
                                     ? 'No project proposals have been submitted yet.'
                                     : `No proposals with status "${statusFilter.replace('_', ' ')}" found.`}
@@ -346,7 +349,7 @@ export default function ViewProposals({ proposals }: Props) {
                     {/* Pagination */}
                     {proposals.last_page > 1 && (
                         <div className="mt-8 flex items-center justify-between">
-                            <div className="text-sm text-gray-700">
+                            <div className="text-sm text-muted-foreground">
                                 Showing {(proposals.current_page - 1) * proposals.per_page + 1} to{' '}
                                 {Math.min(proposals.current_page * proposals.per_page, proposals.total)} of {proposals.total} results
                             </div>
@@ -358,10 +361,10 @@ export default function ViewProposals({ proposals }: Props) {
                                         disabled={!link.url}
                                         className={`rounded-md px-3 py-2 text-sm font-medium ${
                                             link.active
-                                                ? 'bg-blue-600 text-white'
+                                                ? 'bg-primary text-primary-foreground'
                                                 : link.url
-                                                  ? 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
-                                                  : 'cursor-not-allowed bg-gray-100 text-gray-400'
+                                                  ? 'border border-border bg-background text-foreground hover:bg-muted'
+                                                  : 'cursor-not-allowed bg-muted text-muted-foreground'
                                         }`}
                                         dangerouslySetInnerHTML={{ __html: link.label }}
                                     />
