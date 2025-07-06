@@ -10,6 +10,7 @@ import { BreadcrumbItem } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { Edit, Eye, Filter, Grid, List, Plus, Search } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import can from '@/lib/can';
 
 export default function Index() {
     const { artifacts, categories, condition, filters, auth } = usePage().props as any;
@@ -119,12 +120,14 @@ export default function Index() {
                       <h1 className="text-3xl font-bold text-gray-900">Artifacts</h1>
                       <p className="mt-1 text-gray-600">Manage your museum artifacts</p>
                   </div>
-                  <Link href={route('artifacts.create')}>
-                      <Button>
-                          <Plus className="mr-2 h-4 w-4" />
-                          Add Artifact
-                      </Button>
-                  </Link>
+                  {can('artifacts.create') && (
+                      <Link href={route('artifacts.create')}>
+                          <Button>
+                              <Plus className="mr-2 h-4 w-4" />
+                              Add Artifact
+                          </Button>
+                      </Link>
+                  )}
               </div>
 
               {/* Tabs and View Toggle */}
@@ -261,11 +264,13 @@ export default function Index() {
                                                   View
                                               </Button>
                                           </Link>
-                                          <Link href={route('artifacts.edit', artifact.id)}>
-                                              <Button size="sm" variant="outline">
-                                                  <Edit className="h-4 w-4" />
-                                              </Button>
-                                          </Link>
+                                          {can('artifacts.edit') && (
+                                              <Link href={route('artifacts.edit', artifact.id)}>
+                                                  <Button size="sm" variant="outline">
+                                                      <Edit className="h-4 w-4" />
+                                                  </Button>
+                                              </Link>
+                                          )}
                                       </div>
                                   </CardContent>
                               </Card>

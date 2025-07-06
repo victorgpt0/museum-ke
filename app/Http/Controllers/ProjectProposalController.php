@@ -63,7 +63,21 @@ class ProjectProposalController extends Controller
 
         DB::commit();
 
-        return redirect()->back()->with('success', 'Proposal submitted successfully!');
+        $proposer = auth()->user();
+
+        User::role(['HOD','SuperAdmin'])->each(function($user) use ($projectProposal, $proposer){
+            $user->notify(
+                new UserNotification(
+                    'info',
+                    "New Project Proposal",
+                    "$proposer->name has uploaded a new proposal for a project titled: $projectProposal->title. Please follow the redirect to know more!",
+                    route('proposals.show', $projectProposal->id),
+                    $user->id
+                ));
+        });
+
+
+        return to_route('project.proposal.index')->with('success', 'Proposal submitted successfully!');
     } catch (\Exception $e) {
         DB::rollBack();
         return back()->withErrors([
@@ -134,16 +148,29 @@ class ProjectProposalController extends Controller
 
         DB::commit();
 
-        User::role(['HOD','SuperAdmin'])->each(function($user) use ($proposal){
+        $approver = auth()->user();
+
+        User::role(['HOD','SuperAdmin'])->each(function($user) use ($proposal, $approver){
             $user->notify(
                 new UserNotification(
                     'success',
                     "Project Proposal Approved",
-                    "$user->name has approved of a project titled: $proposal->title. Please follow the redirect to know more!",
+                    "$approver->name has approved of a project titled: $proposal->title. Please follow the redirect to know more!",
                     route('proposals.show', $proposal->id),
                     $user->id
                 ));
         });
+
+        $proposer = $proposal->user;
+        $proposer->notify(
+            new UserNotification(
+                'success',
+                "Project Proposal Approved",
+                "$approver->name has approved of your project titled: $proposal->title. Please follow the redirect to know more!",
+                route('proposals.show', $proposal->id),
+                $proposer->id
+            )
+        );
 
         return back()->with('success', 'Proposal approved and project created successfully.');
 
@@ -177,16 +204,29 @@ class ProjectProposalController extends Controller
                 'approved_at' =>Carbon::now()
             ]);
 
-            User::role(['HOD','SuperAdmin'])->each(function($user) use ($proposal){
+            $rejecter = auth()->user();
+
+            User::role(['HOD','SuperAdmin'])->each(function($user) use ($proposal, $rejecter){
                 $user->notify(
                     new UserNotification(
                         'error',
                         "Project Proposal Rejected",
-                        "$user->name has rejected of a project titled: $proposal->title. Please follow the redirect to know more!",
+                        "$rejecter->name has rejected of a project titled: $proposal->title. Please follow the redirect to know more!",
                         route('proposals.show', $proposal->id),
                         $user->id
                     ));
             });
+
+            $proposer = $proposal->user;
+            $proposer->notify(
+                new UserNotification(
+                    'error',
+                    "Project Proposal Rejected",
+                    "$rejecter->name has rejected of your project titled: $proposal->title. Please follow the redirect to know more!",
+                    route('proposals.show', $proposal->id),
+                    $proposer->id
+                )
+            );
 
             return back()->with('success', 'Proposal rejected successfully.');
 

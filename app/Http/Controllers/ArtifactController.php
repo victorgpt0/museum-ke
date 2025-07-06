@@ -41,7 +41,7 @@ class ArtifactController extends Controller
             }
         }
 
-        $artifacts = $query->paginate(request('perPage', 10))->withQueryString();
+        $artifacts = $query->paginate(request('perPage', 8))->withQueryString();
         $condition = Artifact::select('condition')->distinct()->pluck('condition');
         $tags = Tag::all();
 

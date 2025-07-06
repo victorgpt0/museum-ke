@@ -169,7 +169,7 @@ class Artifact extends Model implements HasMedia
 
     public function getThumbnailUrlAttribute()
     {
-        return $this->getFirstMediaUrl('images', 'thumb');
+        return $this->getFirstMediaUrl('images');
     }
 
     /**
@@ -183,17 +183,4 @@ class Artifact extends Model implements HasMedia
         $this->addMediaCollection('documents')
             ->acceptsMimeTypes(['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']);
     }
-
-//    protected static string $logName = 'artifact';
-//    protected static array $logAttributes = ['title', 'description', 'category_id', 'location', 'acquisition_date', 'status', 'donor_id', 'condition'];
-//    protected static bool $logOnlyDirty = true;
-//    protected static bool $submitEmptyLogs = false;
-//
-//    public function getActivitylogOptions(): LogOptions
-//    {
-//        return LogOptions::defaults()
-//            ->logOnly(['title', 'description', 'category_id', 'location', 'acquisition_date', 'status', 'donor_id', 'condition'])
-//            ->logOnlyDirty()
-//            ->dontSubmitEmptyLogs();
-//    }
 }

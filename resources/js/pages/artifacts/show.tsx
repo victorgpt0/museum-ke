@@ -6,6 +6,7 @@ import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
 import { Calendar, Edit, FileText, Image, MapPin, Tag, User } from 'lucide-react';
+import can from '@/lib/can';
 
 export default function ArtifactShow() {
     const { artifact, images, documents } = usePage().props as any;
@@ -58,13 +59,17 @@ export default function ArtifactShow() {
                         </div>
                     </div>
                     <div className="flex gap-2">
-                        <Link href={route('artifacts.edit', artifact.id)}>
-                            <Button>
-                                <Edit className="mr-2 h-4 w-4" />
-                                Edit
-                            </Button>
-                        </Link>
-                        <DeleteConfirm deleteRoute={route(`artifacts.destroy`, artifact.id)} itemType={'artifact'} itemName={artifact.title} />
+                        {can('artifacts.edit') && (
+                            <Link href={route('artifacts.edit', artifact.id)}>
+                                <Button>
+                                    <Edit className="mr-2 h-4 w-4" />
+                                    Edit
+                                </Button>
+                            </Link>
+                        )}
+                        {can('artifacts.delete') && (
+                            <DeleteConfirm deleteRoute={route(`artifacts.destroy`, artifact.id)} itemType={'artifact'} itemName={artifact.title} />
+                        )}
                     </div>
                 </div>
 

@@ -3,6 +3,7 @@ import AppLayout from '@/layouts/app-layout';
 import { BreadcrumbItem, PageProps } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
+import can from '@/lib/can';
 
 interface ProjectProposal {
     id: number;
@@ -172,9 +173,11 @@ export default function ViewProposals({ proposals, userRoles, canApproveReject }
                     <div className="mb-8">
                         <div className={`flex items-center justify-between`}>
                             <h1 className="text-3xl font-bold text-foreground">Project Proposals</h1>
-                            <Button asChild>
-                                <Link href="/project/new-proposal">Create New Proposal</Link>
-                            </Button>
+                            {can('proposals.create') && (
+                                <Button asChild>
+                                    <Link href="/project/new-proposal">Create New Proposal</Link>
+                                </Button>
+                            )}
                         </div>
                         <div className="mt-2 flex items-center gap-4">
                             <p className="text-muted-foreground">Manage and review submitted project proposals</p>
@@ -287,54 +290,64 @@ export default function ViewProposals({ proposals, userRoles, canApproveReject }
 
                                 {/* Action Buttons */}
                                 <div className="mt-6 flex justify-end space-x-3 border-t border-border pt-4">
-                                    <Button
-                                        onClick={() => handleViewDetails(proposal.id)}
-                                        variant="outline"
-                                        size="sm"
-                                    >
-                                        View Details
-                                    </Button>
+                                    {can('proposals.view') && (
+                                        <Button
+                                            onClick={() => handleViewDetails(proposal.id)}
+                                            variant="outline"
+                                            size="sm"
+                                        >
+                                            View Details
+                                        </Button>
+                                    )}
 
                                     {/* Only show approve/reject buttons for SuperAdmin and HOD roles */}
                                     {canApproveReject && proposal.status === 'pending' && (
                                         <>
-                                            <Button
-                                                onClick={() => handleApprove(proposal.id)}
-                                                variant="default"
-                                                size="sm"
-                                                className="bg-green-600 hover:bg-green-700"
-                                            >
-                                                Approve
-                                            </Button>
-                                            <Button
-                                                onClick={() => handleReject(proposal.id)}
-                                                variant="default"
-                                                size="sm"
-                                                className="bg-red-600 hover:bg-red-700"
-                                            >
-                                                Reject
-                                            </Button>
+                                            {can('proposals.approve') && (
+                                                <Button
+                                                    onClick={() => handleApprove(proposal.id)}
+                                                    variant="default"
+                                                    size="sm"
+                                                    className="bg-green-600 hover:bg-green-700"
+                                                >
+                                                    Approve
+                                                </Button>
+                                            )}
+                                            {can('proposals.reject') && (
+                                                <Button
+                                                    onClick={() => handleReject(proposal.id)}
+                                                    variant="default"
+                                                    size="sm"
+                                                    className="bg-red-600 hover:bg-red-700"
+                                                >
+                                                    Reject
+                                                </Button>
+                                            )}
                                         </>
                                     )}
 
                                     {canApproveReject && proposal.status === 'under_review' && (
                                         <>
-                                            <Button
-                                                onClick={() => handleApprove(proposal.id)}
-                                                variant="default"
-                                                size="sm"
-                                                className="bg-green-600 hover:bg-green-700"
-                                            >
-                                                Approve
-                                            </Button>
-                                            <Button
-                                                onClick={() => handleReject(proposal.id)}
-                                                variant="default"
-                                                size="sm"
-                                                className="bg-red-600 hover:bg-red-700"
-                                            >
-                                                Reject
-                                            </Button>
+                                            {can('proposals.approve') && (
+                                                <Button
+                                                    onClick={() => handleApprove(proposal.id)}
+                                                    variant="default"
+                                                    size="sm"
+                                                    className="bg-green-600 hover:bg-green-700"
+                                                >
+                                                    Approve
+                                                </Button>
+                                            )}
+                                            {can('proposals.reject') && (
+                                                <Button
+                                                    onClick={() => handleReject(proposal.id)}
+                                                    variant="default"
+                                                    size="sm"
+                                                    className="bg-red-600 hover:bg-red-700"
+                                                >
+                                                    Reject
+                                                </Button>
+                                            )}
                                         </>
                                     )}
                                 </div>

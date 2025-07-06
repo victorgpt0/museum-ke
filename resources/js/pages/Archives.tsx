@@ -3,6 +3,7 @@ import { BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
 import { Calendar, Edit, Eye, FileText, Plus, Search, Trash2 } from 'lucide-react';
 import { useState } from 'react';
+import can from '@/lib/can';
 
 interface Archive {
     id: number;
@@ -104,13 +105,15 @@ export default function Archives({ archives, filters }: Props) {
                                 <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Archives</h1>
                                 <p className="mt-2 text-gray-600 dark:text-gray-300">Manage and browse your archive collection</p>
                             </div>
-                            <Link
-                                href="/archives/new-file"
-                                className="inline-flex items-center rounded-lg bg-blue-600 px-4 py-2 font-medium text-white transition-colors hover:bg-blue-700"
-                            >
-                                <Plus className="mr-2 h-4 w-4" />
-                                Add Archive
-                            </Link>
+                            {can('archives.create') && (
+                                <Link
+                                    href="/archives/new-file"
+                                    className="inline-flex items-center rounded-lg bg-blue-600 px-4 py-2 font-medium text-white transition-colors hover:bg-blue-700"
+                                >
+                                    <Plus className="mr-2 h-4 w-4" />
+                                    Add Archive
+                                </Link>
+                            )}
                         </div>
                     </div>
 
@@ -200,28 +203,34 @@ export default function Archives({ archives, filters }: Props) {
 
                                 <div className="flex items-center justify-between border-t border-gray-100 pt-4 dark:border-gray-700">
                                     <div className="flex space-x-2">
-                                        <Link
-                                            href={`/archives/${archive.id}`}
-                                            className="rounded-lg p-2 text-gray-400 transition-colors hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-900/20 dark:hover:text-blue-400"
-                                            title="View"
-                                        >
-                                            <Eye className="h-4 w-4" />
-                                        </Link>
-                                        <Link
-                                            href={`/archives/${archive.id}/edit`}
-                                            className="rounded-lg p-2 text-gray-400 transition-colors hover:bg-green-50 hover:text-green-600 dark:hover:bg-green-900/20 dark:hover:text-green-400"
-                                            title="Edit"
-                                        >
-                                            <Edit className="h-4 w-4" />
-                                        </Link>
+                                        {can('archives.view') && (
+                                            <Link
+                                                href={`/archives/${archive.id}`}
+                                                className="rounded-lg p-2 text-gray-400 transition-colors hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-900/20 dark:hover:text-blue-400"
+                                                title="View"
+                                            >
+                                                <Eye className="h-4 w-4" />
+                                            </Link>
+                                        )}
+                                        {can('archives.edit') && (
+                                            <Link
+                                                href={`/archives/${archive.id}/edit`}
+                                                className="rounded-lg p-2 text-gray-400 transition-colors hover:bg-green-50 hover:text-green-600 dark:hover:bg-green-900/20 dark:hover:text-green-400"
+                                                title="Edit"
+                                            >
+                                                <Edit className="h-4 w-4" />
+                                            </Link>
+                                        )}
                                     </div>
-                                    <button
-                                        onClick={() => handleDelete(archive.id)}
-                                        className="rounded-lg p-2 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20 dark:hover:text-red-400"
-                                        title="Delete"
-                                    >
-                                        <Trash2 className="h-4 w-4" />
-                                    </button>
+                                    {can('archives.delete') && (
+                                        <button
+                                            onClick={() => handleDelete(archive.id)}
+                                            className="rounded-lg p-2 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20 dark:hover:text-red-400"
+                                            title="Delete"
+                                        >
+                                            <Trash2 className="h-4 w-4" />
+                                        </button>
+                                    )}
                                 </div>
                             </div>
                         ))}
@@ -237,7 +246,7 @@ export default function Archives({ archives, filters }: Props) {
                                     ? 'Try adjusting your search or filter criteria.'
                                     : 'Get started by adding your first archive.'}
                             </p>
-                            {!searchTerm && !selectedCategory && (
+                            {!searchTerm && !selectedCategory && can('archives.create') && (
                                 <Link
                                     href="/archives/new-file"
                                     className="inline-flex items-center rounded-lg bg-blue-600 px-4 py-2 font-medium text-white transition-colors hover:bg-blue-700"
