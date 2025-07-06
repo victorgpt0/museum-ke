@@ -6,6 +6,7 @@ import { BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/react';
 import { Calendar, CheckCircle, Clock, Eye, FileText, Image as ImageIcon, Mail, Phone, User, XCircle } from 'lucide-react';
 import toast, { Toaster } from 'react-hot-toast';
+import can from '@/lib/can';
 
 interface Media {
     id: number;
@@ -187,14 +188,18 @@ export default function AcquisitionShow({ proposal }: Props) {
                             {/* Action Buttons */}
                             {proposal.proposal_status === 'pending' && (
                                 <div className="flex space-x-2">
-                                    <Button onClick={handleApprove} className="bg-green-600 text-white hover:bg-green-700">
-                                        <CheckCircle className="mr-2 h-4 w-4" />
-                                        Approve
-                                    </Button>
-                                    <Button onClick={handleReject} variant="destructive">
-                                        <XCircle className="mr-2 h-4 w-4" />
-                                        Reject
-                                    </Button>
+                                    {can('acquisitions.approve') && (
+                                        <Button onClick={handleApprove} className="bg-green-600 text-white hover:bg-green-700">
+                                            <CheckCircle className="mr-2 h-4 w-4" />
+                                            Approve
+                                        </Button>
+                                    )}
+                                    {can('acquisitions.reject') && (
+                                        <Button onClick={handleReject} variant="destructive">
+                                            <XCircle className="mr-2 h-4 w-4" />
+                                            Reject
+                                        </Button>
+                                    )}
                                 </div>
                             )}
                         </div>

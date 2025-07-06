@@ -4,6 +4,7 @@ import { BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
 import React, { useState } from 'react';
 import toast from 'react-hot-toast';
+import can from '@/lib/can';
 
 interface Media {
     id: number;
@@ -291,49 +292,61 @@ const Index: React.FC<Props> = ({ proposals }) => {
 
                                 {/* Action Buttons */}
                                 <div className="mt-6 flex justify-end space-x-3 border-t border-gray-100 pt-4">
-                                    <Link href={route('acquisitions.show', proposal.id)}>
-                                        <Button variant="outline" className="px-4 py-2 text-sm font-medium">
-                                            View Details
-                                        </Button>
-                                    </Link>
+                                    {can('acquisitions.view') && (
+                                        <Link href={route('acquisitions.show', proposal.id)}>
+                                            <Button variant="outline" className="px-4 py-2 text-sm font-medium">
+                                                View Details
+                                            </Button>
+                                        </Link>
+                                    )}
 
                                     {proposal.proposal_status === 'pending' && (
                                         <>
-                                            <button
-                                                onClick={() => handleStatusUpdate(proposal.id, 'under_review')}
-                                                className="rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                                            >
-                                                Review
-                                            </button>
-                                            <button
-                                                onClick={() => handleApprove(proposal.id)}
-                                                className="rounded-md border border-transparent bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:outline-none"
-                                            >
-                                                Approve
-                                            </button>
-                                            <button
-                                                onClick={() => handleReject(proposal.id)}
-                                                className="rounded-md border border-transparent bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 focus:ring-2 focus:ring-red-500 focus:outline-none"
-                                            >
-                                                Reject
-                                            </button>
+                                            {can('acquisitions.edit') && (
+                                                <button
+                                                    onClick={() => handleStatusUpdate(proposal.id, 'under_review')}
+                                                    className="rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                                                >
+                                                    Review
+                                                </button>
+                                            )}
+                                            {can('acquisitions.approve') && (
+                                                <button
+                                                    onClick={() => handleApprove(proposal.id)}
+                                                    className="rounded-md border border-transparent bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:outline-none"
+                                                >
+                                                    Approve
+                                                </button>
+                                            )}
+                                            {can('acquisitions.reject') && (
+                                                <button
+                                                    onClick={() => handleReject(proposal.id)}
+                                                    className="rounded-md border border-transparent bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 focus:ring-2 focus:ring-red-500 focus:outline-none"
+                                                >
+                                                    Reject
+                                                </button>
+                                            )}
                                         </>
                                     )}
 
                                     {proposal.proposal_status === 'under_review' && (
                                         <>
-                                            <button
-                                                onClick={() => handleStatusUpdate(proposal.id, 'approved')}
-                                                className="rounded-md border border-transparent bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:outline-none"
-                                            >
-                                                Approve
-                                            </button>
-                                            <button
-                                                onClick={() => handleStatusUpdate(proposal.id, 'rejected')}
-                                                className="rounded-md border border-transparent bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 focus:ring-2 focus:ring-red-500 focus:outline-none"
-                                            >
-                                                Reject
-                                            </button>
+                                            {can('acquisitions.approve') && (
+                                                <button
+                                                    onClick={() => handleStatusUpdate(proposal.id, 'approved')}
+                                                    className="rounded-md border border-transparent bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:outline-none"
+                                                >
+                                                    Approve
+                                                </button>
+                                            )}
+                                            {can('acquisitions.reject') && (
+                                                <button
+                                                    onClick={() => handleStatusUpdate(proposal.id, 'rejected')}
+                                                    className="rounded-md border border-transparent bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 focus:ring-2 focus:ring-red-500 focus:outline-none"
+                                                >
+                                                    Reject
+                                                </button>
+                                            )}
                                         </>
                                     )}
                                 </div>

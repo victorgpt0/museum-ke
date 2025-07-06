@@ -31,13 +31,13 @@ ChartJS.register(
   ArcElement
 );
 
-import { 
-  Calendar, 
-  Users, 
-  Target, 
-  TrendingUp, 
-  Plus, 
-  Search, 
+import {
+  Calendar,
+  Users,
+  Target,
+  TrendingUp,
+  Plus,
+  Search,
   Filter,
   CheckCircle,
   Clock,
@@ -57,6 +57,8 @@ import {
   ChevronDown,
   ChevronUp
 } from 'lucide-react';
+
+import can from '@/lib/can';
 
 interface Proposal {
     id: number;
@@ -299,12 +301,12 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ project }) => {
     doc.setFontSize(14);
     doc.text('Budget Items', 10, y);
     y += 4;
-    
+
     // Collect all budget items from all milestones
     const allBudgetItems: any[] = [];
     let totalBudget = 0;
     let totalSpent = 0;
-    
+
     (project.milestones || []).forEach((milestone: any) => {
       if (milestone.budgets && milestone.budgets.length > 0) {
         milestone.budgets.forEach((budget: any) => {
@@ -331,7 +333,7 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ project }) => {
         columnStyles: { 0: { cellWidth: 30 }, 1: { cellWidth: 50 }, 2: { cellWidth: 25 }, 3: { cellWidth: 25 }, 4: { cellWidth: 30 } },
       });
       y = (doc as any).lastAutoTable.finalY + 8;
-      
+
       // Add financial summary
       doc.setFontSize(12);
       doc.text('Financial Summary:', 10, y);
@@ -450,19 +452,19 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ project }) => {
         doc.save(`${project.title.replace(/[^a-z0-9]/gi, '_')}_details.pdf`);
     };
 
-  const MetricCard = ({ 
-    title, 
-    value, 
-    icon: Icon, 
-    color, 
+  const MetricCard = ({
+    title,
+    value,
+    icon: Icon,
+    color,
     actionText,
     actionLink,
     isEmpty = false
-  }: { 
-    title: string; 
-    value: string | number; 
-    icon: any; 
-    color: string; 
+  }: {
+    title: string;
+    value: string | number;
+    icon: any;
+    color: string;
     actionText: string;
     actionLink: string;
     isEmpty?: boolean;
@@ -502,18 +504,18 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ project }) => {
     </div>
   );
 
-  const EmptyState = ({ 
-    icon: Icon, 
-    title, 
-    description, 
-    actionText, 
-    actionLink 
-  }: { 
-    icon: any; 
-    title: string; 
-    description: string; 
-    actionText: string; 
-    actionLink: string; 
+  const EmptyState = ({
+    icon: Icon,
+    title,
+    description,
+    actionText,
+    actionLink
+  }: {
+    icon: any;
+    title: string;
+    description: string;
+    actionText: string;
+    actionLink: string;
   }) => (
     <div className="text-center py-8">
       <Icon className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
@@ -535,7 +537,7 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ project }) => {
     const milestoneData = project.milestones.map((milestone: any) => {
       const totalBudget = milestone.budgets?.reduce((sum: number, budget: any) => sum + (budget.amount ? parseFloat(budget.amount) : 0), 0) || 0;
       const totalSpent = milestone.budgets?.reduce((sum: number, budget: any) => sum + (budget.amount_spent ? parseFloat(budget.amount_spent) : 0), 0) || 0;
-      
+
       return {
         milestone: milestone.title,
         budget: totalBudget,
@@ -697,12 +699,12 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ project }) => {
                                 Download Project PDF
                             </Button>
                         </div>
-                        
+
                         {/* Structured Project Description - Full Width */}
                         <div className="w-full">
                             {(() => {
                                 const descriptionSections = parseProjectDescription(project.description);
-                                
+
                                 return (
                                     <div className="museum-gradient rounded-xl border border-border p-6 shadow-sm">
                                         <h3 className="text-lg font-semibold text-foreground mb-4">Project Details</h3>
@@ -715,7 +717,7 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ project }) => {
                                                         {descriptionSections.overview.map((line, index) => {
                                                             const wordCount = countWords(line);
                                                             const displayText = showFullDescription ? line : truncateToWordLimit(line, 100);
-                                                            
+
                                                             return (
                                                                 <div key={index}>
                                                                     <p className="text-muted-foreground text-sm leading-relaxed">
@@ -899,8 +901,8 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ project }) => {
                   </span>
                 </div>
                 <div className="w-full bg-muted rounded-full h-2">
-                  <div 
-                    className="bg-primary h-2 rounded-full transition-all duration-300" 
+                  <div
+                    className="bg-primary h-2 rounded-full transition-all duration-300"
                     style={{ width: `${project.project_progress}%` }}
                   ></div>
                 </div>
@@ -1060,15 +1062,17 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ project }) => {
                         >
                             <div className="mb-6 flex items-center justify-between">
                                 <h3 className="text-lg font-semibold text-foreground">Team Members</h3>
-                                <Button
-                                    asChild
-                                    disabled={project.completed}
-                                >
-                                    <Link href={`/projects/${project.id}/team-members/create`}>
-                                        <Plus className="mr-2 h-4 w-4" />
-                                        Add Member
-                                    </Link>
-                                </Button>
+                                {can('projects.edit') && (
+                                    <Button
+                                        asChild
+                                        disabled={project.completed}
+                                    >
+                                        <Link href={`/projects/${project.id}/team-members/create`}>
+                                            <Plus className="mr-2 h-4 w-4" />
+                                            Add Member
+                                        </Link>
+                                    </Button>
+                                )}
                             </div>
 
                             {!project.team_members || project.team_members.length === 0 ? (
@@ -1107,15 +1111,17 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ project }) => {
                         <div className="max-h-100 overflow-y-auto museum-gradient rounded-xl border border-border p-6 shadow-sm">
                             <div className="mb-6 flex items-center justify-between">
                                 <h3 className="text-lg font-semibold text-foreground">Goals</h3>
-                                <Button
-                                    asChild
-                                    disabled={project.completed}
-                                >
-                                    <Link href={`/projects/${project.id}/goals`}>
-                                        <Plus className="mr-2 h-4 w-4" />
-                                        Add Goal
-                                    </Link>
-                                </Button>
+                                {can('projects.edit') && (
+                                    <Button
+                                        asChild
+                                        disabled={project.completed}
+                                    >
+                                        <Link href={`/projects/${project.id}/goals`}>
+                                            <Plus className="mr-2 h-4 w-4" />
+                                            Add Goal
+                                        </Link>
+                                    </Button>
+                                )}
                             </div>
 
                             {!project.goals || project.goals.length === 0 ? (
@@ -1210,15 +1216,17 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ project }) => {
                     <div className="mb-8 museum-gradient rounded-xl border border-border p-6 shadow-sm">
                         <div className="mb-6 flex items-center justify-between">
                             <h3 className="text-lg font-semibold text-foreground">Milestones</h3>
-                            <Button
-                                asChild
-                                disabled={project.completed}
-                            >
-                                <Link href={`/projects/${project.id}/milestones/create`}>
-                                    <Plus className="mr-2 h-4 w-4" />
-                                    Add Milestone
-                                </Link>
-                            </Button>
+                            {can('projects.edit') && (
+                                <Button
+                                    asChild
+                                    disabled={project.completed}
+                                >
+                                    <Link href={`/projects/${project.id}/milestones/create`}>
+                                        <Plus className="mr-2 h-4 w-4" />
+                                        Add Milestone
+                                    </Link>
+                                </Button>
+                            )}
                         </div>
 
                         {project.milestones.length === 0 ? (
@@ -1345,15 +1353,17 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ project }) => {
                     <div className="mb-8 museum-gradient rounded-xl border border-border p-6 shadow-sm">
                         <div className="mb-6 flex items-center justify-between">
                             <h3 className="text-lg font-semibold text-foreground">Key Findings</h3>
-                            <Button
-                                asChild
-                                disabled={project.completed}
-                            >
-                                <Link href={`/projects/${project.id}/findings/create`}>
-                                    <Plus className="mr-2 h-4 w-4" />
-                                    Add Finding
-                                </Link>
-                            </Button>
+                            {can('projects.edit') && (
+                                <Button
+                                    asChild
+                                    disabled={project.completed}
+                                >
+                                    <Link href={`/projects/${project.id}/findings/create`}>
+                                        <Plus className="mr-2 h-4 w-4" />
+                                        Add Finding
+                                    </Link>
+                                </Button>
+                            )}
                         </div>
 
                         {!project.findings || project.findings.length === 0 ? (
@@ -1427,61 +1437,60 @@ const ProjectDashboard: React.FC<ProjectDashboardProps> = ({ project }) => {
                         )}
                     </div>
                 </div>
-            </div>
-
-            {/* Project Proposal Section */}
-            <div className="mb-8 museum-gradient rounded-xl border border-border p-6 shadow-sm">
-                <div className="mb-6 flex items-center justify-between">
-                    <h3 className="text-lg font-semibold text-foreground">Project Proposal</h3>
-                    <Button asChild>
-                        <Link href={`/proposals/${project.proposal.id}`}>
-                            <FileText className="mr-2 h-4 w-4" />
-                            View Full Proposal
-                        </Link>
-                    </Button>
-                </div>
-
-                <div className="space-y-4">
-                    <div>
-                        <h4 className="mb-2 text-md font-medium text-foreground">{project.proposal.title}</h4>
-                        <p className="text-sm text-muted-foreground leading-relaxed">
-                            {project.proposal.description.length > 300 
-                                ? `${project.proposal.description.substring(0, 300)}...` 
-                                : project.proposal.description
-                            }
-                        </p>
-                        {project.proposal.description.length > 300 && (
-                            <Link
-                                href={`/proposals/${project.proposal.id}`}
-                                className="inline-flex items-center text-sm text-primary hover:underline mt-2"
-                            >
-                                Read more
-                                <ArrowRight className="ml-1 h-4 w-4" />
+                {/* Project Proposal Section */}
+                <div className="mb-8 museum-gradient rounded-xl border border-border p-6 shadow-sm">
+                    <div className="mb-6 flex items-center justify-between">
+                        <h3 className="text-lg font-semibold text-foreground">Project Proposal</h3>
+                        <Button asChild>
+                            <Link href={`/proposals/${project.proposal.id}`}>
+                                <FileText className="mr-2 h-4 w-4" />
+                                View Full Proposal
                             </Link>
-                        )}
+                        </Button>
                     </div>
-                    
-                   
-                </div>
-            </div>
 
-            {/* Mark Project as Complete Button */}
-            {!project.completed && (
-                <Button
-                    onClick={handleMarkComplete}
-                    variant="default"
-                    className="mr-2 bg-green-600 hover:bg-green-700"
-                    type="button"
-                >
-                    <CheckCircle className="mr-2 h-4 w-4" />
-                    Mark Project as Complete
-                </Button>
-            )}
-            {project.completed && (
-                <Badge variant="secondary" className="ml-2">
-                    Completed
-                </Badge>
-            )}
+                    <div className="space-y-4">
+                        <div>
+                            <h4 className="mb-2 text-md font-medium text-foreground">{project.proposal.title}</h4>
+                            <p className="text-sm text-muted-foreground leading-relaxed">
+                                {project.proposal.description.length > 300
+                                    ? `${project.proposal.description.substring(0, 300)}...`
+                                    : project.proposal.description
+                                }
+                            </p>
+                            {project.proposal.description.length > 300 && (
+                                <Link
+                                    href={`/proposals/${project.proposal.id}`}
+                                    className="inline-flex items-center text-sm text-primary hover:underline mt-2"
+                                >
+                                    Read more
+                                    <ArrowRight className="ml-1 h-4 w-4" />
+                                </Link>
+                            )}
+                        </div>
+
+
+                    </div>
+                </div>
+
+                {/* Mark Project as Complete Button */}
+                {!project.completed && can('projects.edit') && (
+                    <Button
+                        onClick={handleMarkComplete}
+                        variant="default"
+                        className="mr-2 bg-green-600 hover:bg-green-700"
+                        type="button"
+                    >
+                        <CheckCircle className="mr-2 h-4 w-4" />
+                        Mark Project as Complete
+                    </Button>
+                )}
+                {project.completed && (
+                    <Badge variant="secondary" className="ml-2">
+                        Completed
+                    </Badge>
+                )}
+            </div>
         </AppLayout>
     );
 };

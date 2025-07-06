@@ -132,9 +132,9 @@ export default function Dashboard() {
 
             <div className="flex h-full flex-1 flex-col gap-6 rounded-xl p-6">
                 {/* Welcome Header */}
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
-                        <h1 className="text-3xl font-bold text-foreground">Welcome back, {auth.user?.name}!</h1>
+                        <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Welcome back, {auth.user?.name}!</h1>
                         <p className="text-muted-foreground">
                             Here's what's happening at the National Museum today.
                             <span className="ml-2 inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-1 text-xs font-medium text-primary">
@@ -143,13 +143,15 @@ export default function Dashboard() {
                         </p>
                     </div>
                     <div className="flex items-center gap-2">
-                        <Landmark className="h-8 w-8 text-primary" />
-                        <span className="text-lg font-semibold text-primary">National Museum</span>
+                        <Landmark className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
+                        <span className="text-base sm:text-lg font-semibold text-primary">National Museum</span>
                     </div>
                 </div>
 
-                {/* Stats Cards - Permission-based */}
-                <div className="grid auto-rows-min gap-6 md:grid-cols-2 lg:grid-cols-4">
+                {/* Stats Cards - Permission-based with flexible grid */}
+                <div className="grid gap-4 sm:gap-6 auto-rows-fr" style={{
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))'
+                }}>
                     {/* Artifacts Stats - Show if user can view artifacts */}
                     {can('artifacts.view') && (
                         <div className="museum-gradient rounded-xl border border-border p-6 shadow-sm">
@@ -263,161 +265,159 @@ export default function Dashboard() {
                     )}
                 </div>
 
-                {/* Main Content Grid */}
-                <div className="grid gap-6 lg:grid-cols-3">
+                {/* Main Content Grid - Flexible layout based on available content */}
+                <div className="grid gap-4 sm:gap-6" style={{
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))'
+                }}>
                     {/* Recent Donation Proposals - Show if user can view acquisitions */}
                     {can('acquisitions.view') && (
-                        <div className="lg:col-span-2">
-                            <div className="museum-gradient rounded-xl border border-border p-6 shadow-sm">
-                                <div className="flex items-center justify-between mb-4">
-                                    <h2 className="text-xl font-semibold text-foreground">Recent Donation Proposals</h2>
-                                    <Link
-                                        href={route('acquisitions.index')}
-                                        className="text-sm text-primary hover:underline"
-                                    >
-                                        View all
-                                    </Link>
-                                </div>
-                                <div className="space-y-4">
-                                    {recentProposals.map((proposal) => (
-                                        <div key={proposal.id} className="flex items-center justify-between rounded-lg border border-border p-4 bg-background/50">
-                                            <div className="flex-1">
-                                                <h3 className="font-medium text-foreground">{proposal.title}</h3>
-                                                <p className="text-sm text-muted-foreground">Donor: {proposal.donor}</p>
-                                                <p className="text-xs text-muted-foreground">{new Date(proposal.date).toLocaleDateString()}</p>
-                                            </div>
-                                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(proposal.status)}`}>
-                                                {proposal.status.replace('_', ' ')}
-                                            </span>
+                        <div className="museum-gradient rounded-xl border border-border p-6 shadow-sm">
+                            <div className="flex items-center justify-between mb-4">
+                                <h2 className="text-xl font-semibold text-foreground">Recent Donation Proposals</h2>
+                                <Link
+                                    href={route('acquisitions.index')}
+                                    className="text-sm text-primary hover:underline"
+                                >
+                                    View all
+                                </Link>
+                            </div>
+                            <div className="space-y-4">
+                                {recentProposals.map((proposal) => (
+                                    <div key={proposal.id} className="flex items-center justify-between rounded-lg border border-border p-4 bg-background/50">
+                                        <div className="flex-1">
+                                            <h3 className="font-medium text-foreground">{proposal.title}</h3>
+                                            <p className="text-sm text-muted-foreground">Donor: {proposal.donor}</p>
+                                            <p className="text-xs text-muted-foreground">{new Date(proposal.date).toLocaleDateString()}</p>
                                         </div>
-                                    ))}
-                                </div>
+                                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(proposal.status)}`}>
+                                            {proposal.status.replace('_', ' ')}
+                                        </span>
+                                    </div>
+                                ))}
                             </div>
                         </div>
                     )}
 
                     {/* Quick Actions - Permission-based */}
-                    <div className="space-y-6">
+                    <div className="museum-gradient rounded-xl border border-border p-6 shadow-sm">
+                        <h2 className="text-xl font-semibold text-foreground mb-4">Quick Actions</h2>
+                        <div className="space-y-3">
+                            {/* Submit Donation - Show if user can create acquisitions */}
+                            {can('acquisitions.create') && (
+                                <Link
+                                    href={route('acquisitions.create')}
+                                    className="flex items-center gap-3 rounded-lg border border-border p-3 hover:bg-accent transition-colors"
+                                >
+                                    <Plus className="h-5 w-5 text-primary" />
+                                    <span className="text-sm font-medium">Submit Donation</span>
+                                </Link>
+                            )}
+
+                            {/* Create Project - Show if user can create proposals */}
+                            {can('proposals.create') && (
+                                <Link
+                                    href={route('projectproposal.new')}
+                                    className="flex items-center gap-3 rounded-lg border border-border p-3 hover:bg-accent transition-colors"
+                                >
+                                    <FileText className="h-5 w-5 text-primary" />
+                                    <span className="text-sm font-medium">Create Project</span>
+                                </Link>
+                            )}
+
+                            {/* Browse Collections - Show if user can view artifacts */}
+                            {can('artifacts.view') && (
+                                <Link
+                                    href={route('artifacts.index')}
+                                    className="flex items-center gap-3 rounded-lg border border-border p-3 hover:bg-accent transition-colors"
+                                >
+                                    <Eye className="h-5 w-5 text-primary" />
+                                    <span className="text-sm font-medium">Browse Collections</span>
+                                </Link>
+                            )}
+
+                            {/* Manage Acquisitions - Show if user can view acquisitions */}
+                            {can('acquisitions.view') && (
+                                <Link
+                                    href={route('acquisitions.index')}
+                                    className="flex items-center gap-3 rounded-lg border border-border p-3 hover:bg-accent transition-colors"
+                                >
+                                    <Settings className="h-5 w-5 text-primary" />
+                                    <span className="text-sm font-medium">Manage Acquisitions</span>
+                                </Link>
+                            )}
+
+                            {/* View Archives - Show if user can view archives */}
+                            {can('archives.view') && (
+                                <Link
+                                    href={route('archives.index')}
+                                    className="flex items-center gap-3 rounded-lg border border-border p-3 hover:bg-accent transition-colors"
+                                >
+                                    <Database className="h-5 w-5 text-primary" />
+                                    <span className="text-sm font-medium">View Archives</span>
+                                </Link>
+                            )}
+
+                            {/* AI Assistant - Show if user can view AI */}
+                            {can('ai.view') && (
+                                <Link
+                                    href={route('ai')}
+                                    className="flex items-center gap-3 rounded-lg border border-border p-3 hover:bg-accent transition-colors"
+                                >
+                                    <Search className="h-5 w-5 text-primary" />
+                                    <span className="text-sm font-medium">AI Assistant</span>
+                                </Link>
+                            )}
+
+                            {/* User Management - Show if user can view users */}
+                            {can('users.view') && (
+                                <Link
+                                    href={route('users.index')}
+                                    className="flex items-center gap-3 rounded-lg border border-border p-3 hover:bg-accent transition-colors"
+                                >
+                                    <UserCheck className="h-5 w-5 text-primary" />
+                                    <span className="text-sm font-medium">Manage Users</span>
+                                </Link>
+                            )}
+
+                            {/* Activity Logs - Show if user can view logs */}
+                            {can('logs.view') && (
+                                <Link
+                                    href={route('activity-logs.index')}
+                                    className="flex items-center gap-3 rounded-lg border border-border p-3 hover:bg-accent transition-colors"
+                                >
+                                    <BarChart3 className="h-5 w-5 text-primary" />
+                                    <span className="text-sm font-medium">Activity Logs</span>
+                                </Link>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Active Projects - Show if user can view projects */}
+                    {can('projects.view') && (
                         <div className="museum-gradient rounded-xl border border-border p-6 shadow-sm">
-                            <h2 className="text-xl font-semibold text-foreground mb-4">Quick Actions</h2>
-                            <div className="space-y-3">
-                                {/* Submit Donation - Show if user can create acquisitions */}
-                                {can('acquisitions.create') && (
-                                    <Link
-                                        href={route('acquisitions.create')}
-                                        className="flex items-center gap-3 rounded-lg border border-border p-3 hover:bg-accent transition-colors"
-                                    >
-                                        <Plus className="h-5 w-5 text-primary" />
-                                        <span className="text-sm font-medium">Submit Donation</span>
-                                    </Link>
-                                )}
-
-                                {/* Create Project - Show if user can create proposals */}
-                                {can('proposals.create') && (
-                                    <Link
-                                        href={route('projectproposal.new')}
-                                        className="flex items-center gap-3 rounded-lg border border-border p-3 hover:bg-accent transition-colors"
-                                    >
-                                        <FileText className="h-5 w-5 text-primary" />
-                                        <span className="text-sm font-medium">Create Project</span>
-                                    </Link>
-                                )}
-
-                                {/* Browse Collections - Show if user can view artifacts */}
-                                {can('artifacts.view') && (
-                                    <Link
-                                        href={route('artifacts.index')}
-                                        className="flex items-center gap-3 rounded-lg border border-border p-3 hover:bg-accent transition-colors"
-                                    >
-                                        <Eye className="h-5 w-5 text-primary" />
-                                        <span className="text-sm font-medium">Browse Collections</span>
-                                    </Link>
-                                )}
-
-                                {/* Manage Acquisitions - Show if user can view acquisitions */}
-                                {can('acquisitions.view') && (
-                                    <Link
-                                        href={route('acquisitions.index')}
-                                        className="flex items-center gap-3 rounded-lg border border-border p-3 hover:bg-accent transition-colors"
-                                    >
-                                        <Settings className="h-5 w-5 text-primary" />
-                                        <span className="text-sm font-medium">Manage Acquisitions</span>
-                                    </Link>
-                                )}
-
-                                {/* View Archives - Show if user can view archives */}
-                                {can('archives.view') && (
-                                    <Link
-                                        href={route('archives.index')}
-                                        className="flex items-center gap-3 rounded-lg border border-border p-3 hover:bg-accent transition-colors"
-                                    >
-                                        <Database className="h-5 w-5 text-primary" />
-                                        <span className="text-sm font-medium">View Archives</span>
-                                    </Link>
-                                )}
-
-                                {/* AI Assistant - Show if user can view AI */}
-                                {can('ai.view') && (
-                                    <Link
-                                        href={route('ai')}
-                                        className="flex items-center gap-3 rounded-lg border border-border p-3 hover:bg-accent transition-colors"
-                                    >
-                                        <Search className="h-5 w-5 text-primary" />
-                                        <span className="text-sm font-medium">AI Assistant</span>
-                                    </Link>
-                                )}
-
-                                {/* User Management - Show if user can view users */}
-                                {can('users.view') && (
-                                    <Link
-                                        href={route('users.index')}
-                                        className="flex items-center gap-3 rounded-lg border border-border p-3 hover:bg-accent transition-colors"
-                                    >
-                                        <UserCheck className="h-5 w-5 text-primary" />
-                                        <span className="text-sm font-medium">Manage Users</span>
-                                    </Link>
-                                )}
-
-                                {/* Activity Logs - Show if user can view logs */}
-                                {can('logs.view') && (
-                                    <Link
-                                        href={route('activity-logs.index')}
-                                        className="flex items-center gap-3 rounded-lg border border-border p-3 hover:bg-accent transition-colors"
-                                    >
-                                        <BarChart3 className="h-5 w-5 text-primary" />
-                                        <span className="text-sm font-medium">Activity Logs</span>
-                                    </Link>
-                                )}
+                            <h2 className="text-xl font-semibold text-foreground mb-4">Active Projects</h2>
+                            <div className="space-y-4">
+                                {activeProjects.map((project) => (
+                                    <div key={project.id} className="space-y-2">
+                                        <div className="flex items-center justify-between">
+                                            <h3 className="text-sm font-medium text-foreground">{project.title}</h3>
+                                            <span className="text-xs text-muted-foreground">{project.progress}%</span>
+                                        </div>
+                                        <div className="w-full bg-muted rounded-full h-2">
+                                            <div
+                                                className="bg-primary h-2 rounded-full transition-all duration-300"
+                                                style={{ width: `${project.progress}%` }}
+                                            ></div>
+                                        </div>
+                                        <div className="flex items-center justify-between text-xs text-muted-foreground">
+                                            <span>{project.team} team members</span>
+                                            <span>Due: {new Date(project.dueDate).toLocaleDateString()}</span>
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
                         </div>
-
-                        {/* Active Projects - Show if user can view projects */}
-                        {can('projects.view') && (
-                            <div className="museum-gradient rounded-xl border border-border p-6 shadow-sm">
-                                <h2 className="text-xl font-semibold text-foreground mb-4">Active Projects</h2>
-                                <div className="space-y-4">
-                                    {activeProjects.map((project) => (
-                                        <div key={project.id} className="space-y-2">
-                                            <div className="flex items-center justify-between">
-                                                <h3 className="text-sm font-medium text-foreground">{project.title}</h3>
-                                                <span className="text-xs text-muted-foreground">{project.progress}%</span>
-                                            </div>
-                                            <div className="w-full bg-muted rounded-full h-2">
-                                                <div
-                                                    className="bg-primary h-2 rounded-full transition-all duration-300"
-                                                    style={{ width: `${project.progress}%` }}
-                                                ></div>
-                                            </div>
-                                            <div className="flex items-center justify-between text-xs text-muted-foreground">
-                                                <span>{project.team} team members</span>
-                                                <span>Due: {new Date(project.dueDate).toLocaleDateString()}</span>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-                    </div>
+                    )}
                 </div>
 
                 {/* Museum Highlights - Show for all users */}
@@ -447,6 +447,43 @@ export default function Dashboard() {
                         </div>
                     </div>
                 </div>
+
+                {/* Fallback section for users with very limited permissions */}
+                {(() => {
+                    const hasStats = can('artifacts.view') || can('acquisitions.view') || can('projects.view') || 
+                                   can('users.view') || can('reports.view') || can('archives.view');
+                    const hasMainContent = can('acquisitions.view') || can('acquisitions.create') || 
+                                         can('proposals.create') || can('artifacts.view') || 
+                                         can('archives.view') || can('ai.view') || can('users.view') || 
+                                         can('logs.view') || can('projects.view');
+                    
+                    if (!hasStats && !hasMainContent) {
+                        return (
+                            <div className="museum-gradient rounded-xl border border-border p-6 shadow-sm">
+                                <div className="text-center py-8">
+                                    <div className="mx-auto mb-4 rounded-full bg-primary/10 p-3 w-fit">
+                                        <Landmark className="h-8 w-8 text-primary" />
+                                    </div>
+                                    <h3 className="text-lg font-medium text-foreground mb-2">Welcome to Museum KE</h3>
+                                    <p className="text-muted-foreground mb-4">
+                                        You have limited access to the system. Contact your administrator to request additional permissions.
+                                    </p>
+                                    <div className="grid gap-4 md:grid-cols-2 max-w-md mx-auto">
+                                        <div className="text-center p-4 rounded-lg bg-background/50">
+                                            <h4 className="font-medium text-foreground mb-1">Contact Admin</h4>
+                                            <p className="text-sm text-muted-foreground">Request access to additional features</p>
+                                        </div>
+                                        <div className="text-center p-4 rounded-lg bg-background/50">
+                                            <h4 className="font-medium text-foreground mb-1">View Museum Info</h4>
+                                            <p className="text-sm text-muted-foreground">Learn about our collections</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        );
+                    }
+                    return null;
+                })()}
             </div>
         </AppLayout>
     );
