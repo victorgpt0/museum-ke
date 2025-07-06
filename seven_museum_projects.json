@@ -1,0 +1,702 @@
+[
+  {
+    "title": "Panthera Monitoring and Genetic Mapping in the Mara",
+    "description": "Monitoring the lion population in the Maasai Mara and analyzing their genetic diversity to guide conservation policy.",
+    "duration_months": 6,
+    "team_members": [
+      "Dr. Moses Rono",
+      "Jane Kagiri",
+      "Patrick Omondi",
+      "Vivian Ndung'u"
+    ],
+    "goals": [
+      {
+        "title": "Scientific Discovery",
+        "description": "Contribute to the national archive of cultural and natural data."
+      },
+      {
+        "title": "Public Engagement",
+        "description": "Translate field findings into accessible exhibitions and lessons."
+      }
+    ],
+    "objectives": [
+      {
+        "title": "Field Data Collection",
+        "description": "Collect specimens, visuals, or oral data on site."
+      },
+      {
+        "title": "Archival Processing",
+        "description": "Digitally store and structure collected data for long-term use."
+      }
+    ],
+    "milestones": [
+      {
+        "title": "Phase 1: Planning & Mobilization",
+        "description": "Initial setup and communication with field contacts and local authorities.",
+        "period": "Month 1",
+        "budget_items": [
+          {
+            "title": "Travel & Logistics",
+            "description": "Transportation and accommodation",
+            "amount": 60000
+          },
+          {
+            "title": "Permits & Local Fees",
+            "description": "Fieldwork licensing",
+            "amount": 20000
+          },
+          {
+            "title": "Field Equipment",
+            "description": "Basic gear and tools",
+            "amount": 50000
+          }
+        ]
+      },
+      {
+        "title": "Phase 2: Data Collection",
+        "description": "Field visits and primary data gathering from sites or sources.",
+        "period": "Months 2\u20134",
+        "budget_items": [
+          {
+            "title": "Research Supplies",
+            "description": "Bags, notebooks, sensors",
+            "amount": 30000
+          },
+          {
+            "title": "Field Team Allowances",
+            "description": "Daily stipends and meal costs",
+            "amount": 50000
+          },
+          {
+            "title": "Documentation Tools",
+            "description": "Cameras, scanners, audio gear",
+            "amount": 45000
+          }
+        ]
+      },
+      {
+        "title": "Phase 3: Analysis and Outreach",
+        "description": "Process findings and prepare them for museum and public release.",
+        "period": "Months 5\u20136",
+        "budget_items": [
+          {
+            "title": "Digital Processing",
+            "description": "Editing and formatting materials",
+            "amount": 35000
+          },
+          {
+            "title": "Exhibit Prep",
+            "description": "Design and print exhibition items",
+            "amount": 40000
+          },
+          {
+            "title": "Stakeholder Workshop",
+            "description": "Hold meeting with communities and institutions",
+            "amount": 30000
+          }
+        ]
+      }
+    ],
+    "user_id": 6
+  },
+  {
+    "title": "Insect Diversity Mapping in Coastal Mangrove Habitats",
+    "description": "Documenting insect biodiversity in Kenya\u2019s coastal mangroves, focusing on endangered pollinators and aquatic beetles.",
+    "duration_months": 6,
+    "team_members": [
+      "Dr. George Kariuki",
+      "Millicent Awuor",
+      "Ezra Limo",
+      "Salma Abdallah"
+    ],
+    "goals": [
+      {
+        "title": "Scientific Discovery",
+        "description": "Contribute to the national archive of cultural and natural data."
+      },
+      {
+        "title": "Public Engagement",
+        "description": "Translate field findings into accessible exhibitions and lessons."
+      }
+    ],
+    "objectives": [
+      {
+        "title": "Field Data Collection",
+        "description": "Collect specimens, visuals, or oral data on site."
+      },
+      {
+        "title": "Archival Processing",
+        "description": "Digitally store and structure collected data for long-term use."
+      }
+    ],
+    "milestones": [
+      {
+        "title": "Phase 1: Planning & Mobilization",
+        "description": "Initial setup and communication with field contacts and local authorities.",
+        "period": "Month 1",
+        "budget_items": [
+          {
+            "title": "Travel & Logistics",
+            "description": "Transportation and accommodation",
+            "amount": 60000
+          },
+          {
+            "title": "Permits & Local Fees",
+            "description": "Fieldwork licensing",
+            "amount": 20000
+          },
+          {
+            "title": "Field Equipment",
+            "description": "Basic gear and tools",
+            "amount": 50000
+          }
+        ]
+      },
+      {
+        "title": "Phase 2: Data Collection",
+        "description": "Field visits and primary data gathering from sites or sources.",
+        "period": "Months 2\u20134",
+        "budget_items": [
+          {
+            "title": "Research Supplies",
+            "description": "Bags, notebooks, sensors",
+            "amount": 30000
+          },
+          {
+            "title": "Field Team Allowances",
+            "description": "Daily stipends and meal costs",
+            "amount": 50000
+          },
+          {
+            "title": "Documentation Tools",
+            "description": "Cameras, scanners, audio gear",
+            "amount": 45000
+          }
+        ]
+      },
+      {
+        "title": "Phase 3: Analysis and Outreach",
+        "description": "Process findings and prepare them for museum and public release.",
+        "period": "Months 5\u20136",
+        "budget_items": [
+          {
+            "title": "Digital Processing",
+            "description": "Editing and formatting materials",
+            "amount": 35000
+          },
+          {
+            "title": "Exhibit Prep",
+            "description": "Design and print exhibition items",
+            "amount": 40000
+          },
+          {
+            "title": "Stakeholder Workshop",
+            "description": "Hold meeting with communities and institutions",
+            "amount": 30000
+          }
+        ]
+      }
+    ],
+    "user_id": 6
+  },
+  {
+    "title": "Restoration of Pre-Colonial Trade Artifacts",
+    "description": "Conserving and documenting artifacts from pre-colonial trade centers in Lamu and Kilwa linked to Indian Ocean trade.",
+    "duration_months": 6,
+    "team_members": [
+      "Dr. Joseph Otieno",
+      "Susan Muthoni",
+      "Brian Wekesa",
+      "Rose Nyaribo"
+    ],
+    "goals": [
+      {
+        "title": "Scientific Discovery",
+        "description": "Contribute to the national archive of cultural and natural data."
+      },
+      {
+        "title": "Public Engagement",
+        "description": "Translate field findings into accessible exhibitions and lessons."
+      }
+    ],
+    "objectives": [
+      {
+        "title": "Field Data Collection",
+        "description": "Collect specimens, visuals, or oral data on site."
+      },
+      {
+        "title": "Archival Processing",
+        "description": "Digitally store and structure collected data for long-term use."
+      }
+    ],
+    "milestones": [
+      {
+        "title": "Phase 1: Planning & Mobilization",
+        "description": "Initial setup and communication with field contacts and local authorities.",
+        "period": "Month 1",
+        "budget_items": [
+          {
+            "title": "Travel & Logistics",
+            "description": "Transportation and accommodation",
+            "amount": 60000
+          },
+          {
+            "title": "Permits & Local Fees",
+            "description": "Fieldwork licensing",
+            "amount": 20000
+          },
+          {
+            "title": "Field Equipment",
+            "description": "Basic gear and tools",
+            "amount": 50000
+          }
+        ]
+      },
+      {
+        "title": "Phase 2: Data Collection",
+        "description": "Field visits and primary data gathering from sites or sources.",
+        "period": "Months 2\u20134",
+        "budget_items": [
+          {
+            "title": "Research Supplies",
+            "description": "Bags, notebooks, sensors",
+            "amount": 30000
+          },
+          {
+            "title": "Field Team Allowances",
+            "description": "Daily stipends and meal costs",
+            "amount": 50000
+          },
+          {
+            "title": "Documentation Tools",
+            "description": "Cameras, scanners, audio gear",
+            "amount": 45000
+          }
+        ]
+      },
+      {
+        "title": "Phase 3: Analysis and Outreach",
+        "description": "Process findings and prepare them for museum and public release.",
+        "period": "Months 5\u20136",
+        "budget_items": [
+          {
+            "title": "Digital Processing",
+            "description": "Editing and formatting materials",
+            "amount": 35000
+          },
+          {
+            "title": "Exhibit Prep",
+            "description": "Design and print exhibition items",
+            "amount": 40000
+          },
+          {
+            "title": "Stakeholder Workshop",
+            "description": "Hold meeting with communities and institutions",
+            "amount": 30000
+          }
+        ]
+      }
+    ],
+    "user_id": 6
+  },
+  {
+    "title": "Museum Education Reform for Urban Youth",
+    "description": "Creating interactive, youth-centered museum programs using pop-up exhibits, an app, and school outreach in Nairobi.",
+    "duration_months": 6,
+    "team_members": [
+      "Caroline Wachira",
+      "Kelvin Munene",
+      "Sylvia Mugure",
+      "James Mboya"
+    ],
+    "goals": [
+      {
+        "title": "Scientific Discovery",
+        "description": "Contribute to the national archive of cultural and natural data."
+      },
+      {
+        "title": "Public Engagement",
+        "description": "Translate field findings into accessible exhibitions and lessons."
+      }
+    ],
+    "objectives": [
+      {
+        "title": "Field Data Collection",
+        "description": "Collect specimens, visuals, or oral data on site."
+      },
+      {
+        "title": "Archival Processing",
+        "description": "Digitally store and structure collected data for long-term use."
+      }
+    ],
+    "milestones": [
+      {
+        "title": "Phase 1: Planning & Mobilization",
+        "description": "Initial setup and communication with field contacts and local authorities.",
+        "period": "Month 1",
+        "budget_items": [
+          {
+            "title": "Travel & Logistics",
+            "description": "Transportation and accommodation",
+            "amount": 60000
+          },
+          {
+            "title": "Permits & Local Fees",
+            "description": "Fieldwork licensing",
+            "amount": 20000
+          },
+          {
+            "title": "Field Equipment",
+            "description": "Basic gear and tools",
+            "amount": 50000
+          }
+        ]
+      },
+      {
+        "title": "Phase 2: Data Collection",
+        "description": "Field visits and primary data gathering from sites or sources.",
+        "period": "Months 2\u20134",
+        "budget_items": [
+          {
+            "title": "Research Supplies",
+            "description": "Bags, notebooks, sensors",
+            "amount": 30000
+          },
+          {
+            "title": "Field Team Allowances",
+            "description": "Daily stipends and meal costs",
+            "amount": 50000
+          },
+          {
+            "title": "Documentation Tools",
+            "description": "Cameras, scanners, audio gear",
+            "amount": 45000
+          }
+        ]
+      },
+      {
+        "title": "Phase 3: Analysis and Outreach",
+        "description": "Process findings and prepare them for museum and public release.",
+        "period": "Months 5\u20136",
+        "budget_items": [
+          {
+            "title": "Digital Processing",
+            "description": "Editing and formatting materials",
+            "amount": 35000
+          },
+          {
+            "title": "Exhibit Prep",
+            "description": "Design and print exhibition items",
+            "amount": 40000
+          },
+          {
+            "title": "Stakeholder Workshop",
+            "description": "Hold meeting with communities and institutions",
+            "amount": 30000
+          }
+        ]
+      }
+    ],
+    "user_id": 12
+  },
+  {
+    "title": "Early Hominid Footprint Preservation in Northern Kenya",
+    "description": "Preserving and digitally recording early hominid footprints discovered in sediment beds to analyze locomotion patterns.",
+    "duration_months": 6,
+    "team_members": [
+      "Dr. Fatuma Said",
+      "Peter Mwangi",
+      "Ruth Kamau",
+      "John Kipkoech"
+    ],
+    "goals": [
+      {
+        "title": "Scientific Discovery",
+        "description": "Contribute to the national archive of cultural and natural data."
+      },
+      {
+        "title": "Public Engagement",
+        "description": "Translate field findings into accessible exhibitions and lessons."
+      }
+    ],
+    "objectives": [
+      {
+        "title": "Field Data Collection",
+        "description": "Collect specimens, visuals, or oral data on site."
+      },
+      {
+        "title": "Archival Processing",
+        "description": "Digitally store and structure collected data for long-term use."
+      }
+    ],
+    "milestones": [
+      {
+        "title": "Phase 1: Planning & Mobilization",
+        "description": "Initial setup and communication with field contacts and local authorities.",
+        "period": "Month 1",
+        "budget_items": [
+          {
+            "title": "Travel & Logistics",
+            "description": "Transportation and accommodation",
+            "amount": 60000
+          },
+          {
+            "title": "Permits & Local Fees",
+            "description": "Fieldwork licensing",
+            "amount": 20000
+          },
+          {
+            "title": "Field Equipment",
+            "description": "Basic gear and tools",
+            "amount": 50000
+          }
+        ]
+      },
+      {
+        "title": "Phase 2: Data Collection",
+        "description": "Field visits and primary data gathering from sites or sources.",
+        "period": "Months 2\u20134",
+        "budget_items": [
+          {
+            "title": "Research Supplies",
+            "description": "Bags, notebooks, sensors",
+            "amount": 30000
+          },
+          {
+            "title": "Field Team Allowances",
+            "description": "Daily stipends and meal costs",
+            "amount": 50000
+          },
+          {
+            "title": "Documentation Tools",
+            "description": "Cameras, scanners, audio gear",
+            "amount": 45000
+          }
+        ]
+      },
+      {
+        "title": "Phase 3: Analysis and Outreach",
+        "description": "Process findings and prepare them for museum and public release.",
+        "period": "Months 5\u20136",
+        "budget_items": [
+          {
+            "title": "Digital Processing",
+            "description": "Editing and formatting materials",
+            "amount": 35000
+          },
+          {
+            "title": "Exhibit Prep",
+            "description": "Design and print exhibition items",
+            "amount": 40000
+          },
+          {
+            "title": "Stakeholder Workshop",
+            "description": "Hold meeting with communities and institutions",
+            "amount": 30000
+          }
+        ]
+      }
+    ],
+    "user_id": 16
+  },
+  {
+    "title": "Underwater Archaeology of Swahili Port Cities",
+    "description": "Surveying and documenting submerged archaeological sites along Kenya\u2019s coast, including ancient harbor infrastructure.",
+    "duration_months": 6,
+    "team_members": [
+      "Dr. Leila Hassan",
+      "Ali Mombasa",
+      "Sarah Wanyoike",
+      "Kevin Thuita"
+    ],
+    "goals": [
+      {
+        "title": "Scientific Discovery",
+        "description": "Contribute to the national archive of cultural and natural data."
+      },
+      {
+        "title": "Public Engagement",
+        "description": "Translate field findings into accessible exhibitions and lessons."
+      }
+    ],
+    "objectives": [
+      {
+        "title": "Field Data Collection",
+        "description": "Collect specimens, visuals, or oral data on site."
+      },
+      {
+        "title": "Archival Processing",
+        "description": "Digitally store and structure collected data for long-term use."
+      }
+    ],
+    "milestones": [
+      {
+        "title": "Phase 1: Planning & Mobilization",
+        "description": "Initial setup and communication with field contacts and local authorities.",
+        "period": "Month 1",
+        "budget_items": [
+          {
+            "title": "Travel & Logistics",
+            "description": "Transportation and accommodation",
+            "amount": 60000
+          },
+          {
+            "title": "Permits & Local Fees",
+            "description": "Fieldwork licensing",
+            "amount": 20000
+          },
+          {
+            "title": "Field Equipment",
+            "description": "Basic gear and tools",
+            "amount": 50000
+          }
+        ]
+      },
+      {
+        "title": "Phase 2: Data Collection",
+        "description": "Field visits and primary data gathering from sites or sources.",
+        "period": "Months 2\u20134",
+        "budget_items": [
+          {
+            "title": "Research Supplies",
+            "description": "Bags, notebooks, sensors",
+            "amount": 30000
+          },
+          {
+            "title": "Field Team Allowances",
+            "description": "Daily stipends and meal costs",
+            "amount": 50000
+          },
+          {
+            "title": "Documentation Tools",
+            "description": "Cameras, scanners, audio gear",
+            "amount": 45000
+          }
+        ]
+      },
+      {
+        "title": "Phase 3: Analysis and Outreach",
+        "description": "Process findings and prepare them for museum and public release.",
+        "period": "Months 5\u20136",
+        "budget_items": [
+          {
+            "title": "Digital Processing",
+            "description": "Editing and formatting materials",
+            "amount": 35000
+          },
+          {
+            "title": "Exhibit Prep",
+            "description": "Design and print exhibition items",
+            "amount": 40000
+          },
+          {
+            "title": "Stakeholder Workshop",
+            "description": "Hold meeting with communities and institutions",
+            "amount": 30000
+          }
+        ]
+      }
+    ],
+    "user_id": 16
+  },
+  {
+    "title": "Traditional Music Instrument Digitization and Archive Project",
+    "description": "Digitizing traditional music instruments, their sounds, and histories across Kenyan communities for cultural preservation.",
+    "duration_months": 6,
+    "team_members": [
+      "Dr. Angela Nduta",
+      "Ben Murage",
+      "Emily Oduor",
+      "David Gachanja"
+    ],
+    "goals": [
+      {
+        "title": "Scientific Discovery",
+        "description": "Contribute to the national archive of cultural and natural data."
+      },
+      {
+        "title": "Public Engagement",
+        "description": "Translate field findings into accessible exhibitions and lessons."
+      }
+    ],
+    "objectives": [
+      {
+        "title": "Field Data Collection",
+        "description": "Collect specimens, visuals, or oral data on site."
+      },
+      {
+        "title": "Archival Processing",
+        "description": "Digitally store and structure collected data for long-term use."
+      }
+    ],
+    "milestones": [
+      {
+        "title": "Phase 1: Planning & Mobilization",
+        "description": "Initial setup and communication with field contacts and local authorities.",
+        "period": "Month 1",
+        "budget_items": [
+          {
+            "title": "Travel & Logistics",
+            "description": "Transportation and accommodation",
+            "amount": 60000
+          },
+          {
+            "title": "Permits & Local Fees",
+            "description": "Fieldwork licensing",
+            "amount": 20000
+          },
+          {
+            "title": "Field Equipment",
+            "description": "Basic gear and tools",
+            "amount": 50000
+          }
+        ]
+      },
+      {
+        "title": "Phase 2: Data Collection",
+        "description": "Field visits and primary data gathering from sites or sources.",
+        "period": "Months 2\u20134",
+        "budget_items": [
+          {
+            "title": "Research Supplies",
+            "description": "Bags, notebooks, sensors",
+            "amount": 30000
+          },
+          {
+            "title": "Field Team Allowances",
+            "description": "Daily stipends and meal costs",
+            "amount": 50000
+          },
+          {
+            "title": "Documentation Tools",
+            "description": "Cameras, scanners, audio gear",
+            "amount": 45000
+          }
+        ]
+      },
+      {
+        "title": "Phase 3: Analysis and Outreach",
+        "description": "Process findings and prepare them for museum and public release.",
+        "period": "Months 5\u20136",
+        "budget_items": [
+          {
+            "title": "Digital Processing",
+            "description": "Editing and formatting materials",
+            "amount": 35000
+          },
+          {
+            "title": "Exhibit Prep",
+            "description": "Design and print exhibition items",
+            "amount": 40000
+          },
+          {
+            "title": "Stakeholder Workshop",
+            "description": "Hold meeting with communities and institutions",
+            "amount": 30000
+          }
+        ]
+      }
+    ],
+    "user_id": 6
+  }
+]

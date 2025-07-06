@@ -22,11 +22,12 @@ class DatabaseSeeder extends Seeder
             'email' => 'test@example.com',
         ]);
 
-        // Call your ArtifactSeeder
+        // Call your seeders
         $this->call([
             CategorySeeder::class,
             ArtifactSeeder::class,
             PermissionSeeder::class,
+            ProjectProposalSeeder::class,
         ]);
     }
 }
