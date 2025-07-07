@@ -23,7 +23,8 @@ class Project extends Model
             'description',
             'duration',
             'start_date',
-            'project_proposal_id'
+            'project_proposal_id',
+            'is_published',
         ];
 
     /**

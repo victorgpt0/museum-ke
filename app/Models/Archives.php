@@ -37,6 +37,7 @@ class Archives extends Model implements HasMedia
         'author',
         'category',
         'user_id',
+        'is_published',
     ];
 
     /**

@@ -1,17 +1,38 @@
 import { type SharedData } from '@/types';
-import { Head, Link, usePage } from '@inertiajs/react';
-import { useEffect } from 'react';
+import { Head, Link, usePage, router } from '@inertiajs/react';
+import { useEffect, useState } from 'react';
 import toast, { Toaster } from 'react-hot-toast';
 import { motion } from 'framer-motion';
+import { Search, FileText, MapPin, Calendar, Eye, BoxIcon } from 'lucide-react';
 
 export default function Welcome() {
-    const { auth, flash } = usePage<SharedData & { flash?: { success?: string; error?: string } }>().props;
+    const { auth, flash, searchResults } = usePage<SharedData & {
+        flash?: { success?: string; error?: string };
+        searchResults?: any;
+    }>().props;
+
+    const [searchQuery, setSearchQuery] = useState('');
+    const [searchType, setSearchType] = useState('all');
+    const [isSearching, setIsSearching] = useState(false);
 
     useEffect(() => {
         if (flash?.success) {
             toast.success(flash.success);
         }
     }, [flash?.success]);
+
+    const handleSearch = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!searchQuery.trim()) return;
+
+        setIsSearching(true);
+        router.get('/search', {
+            query: searchQuery,
+            type: searchType,
+        }, {
+            onFinish: () => setIsSearching(false),
+        });
+    };
 
     // Animation variants
     const containerVariants = {
@@ -90,7 +111,7 @@ export default function Welcome() {
                             </Link>
                         ) : (
                             <>
-                               
+
                                 <Link
                                     href={route('login')}
                                     className="inline-block rounded-md border border-[#19140035] px-5 py-1.5 text-sm leading-normal text-[#1b1b18] hover:border-[#1915014a] dark:border-[#3E3E3A] dark:text-[#EDEDEC] dark:hover:border-[#62605b] transition-colors duration-200"
@@ -115,7 +136,7 @@ export default function Welcome() {
                     {/* Left: Text & CTA */}
                     <motion.section className="flex flex-col justify-center w-[45%] pr-4 z-20 relative" variants={fadeUp}>
                       <motion.h1 className="font-serif text-5xl font-bold leading-tight mb-3 relative z-30 text-black dark:text-white" variants={fadeUp}>
-                        Welcome to the Nairobi National Museum <span role="img" aria-label="museum">🏛️</span> 
+                        Welcome to the Nairobi National Museum <span role="img" aria-label="museum">🏛️</span>
                       </motion.h1>
                       <motion.p className="text-lg text-gray-700 dark:text-gray-300 mb-6 max-w-md relative z-30" variants={fadeUp}>
                       We invite you to help preserve our shared heritage by donating historical artifacts to our museum for future generations to learn from and appreciate.                      </motion.p>
@@ -137,7 +158,7 @@ export default function Welcome() {
                     </motion.section>
 
                     {/* Right: Main Image and overlays */}
-                    <motion.section className="relative w-[55%] flex items-center justify-center z-10" variants={fadeUp}>
+                    <motion.section className="relative w-[55%] flex flex-col items-center justify-center z-10" variants={fadeUp}>
                       {/* image1 - main skeleton/hero image, contained within the right section */}
                       <motion.img
                         src="/images/image1.png"
@@ -146,6 +167,14 @@ export default function Welcome() {
                         style={{ pointerEvents: 'none' }}
                         variants={fadeUp}
                       />
+                            <motion.div className={`mt-8`}>
+                                <Link
+                                    href="/explore"
+                                    className="px-8 py-3 bg-[#C2A14D] text-black font-semibold rounded-lg hover:bg-[#bfa14a] transition"
+                                >
+                                    Explore Our Collections
+                                </Link>
+                            </motion.div>
                     </motion.section>
 
                     {/* image4 - bottom left, overlaps main content */}

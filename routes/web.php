@@ -3,6 +3,7 @@
 use App\Http\Controllers\AcquisitionController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\SearchController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\ArtifactController;
@@ -20,6 +21,13 @@ use App\Http\Controllers\TeamMembersController;
 Route::get('/', function () {
     return Inertia::render('welcome');
 })->name('home');
+
+// Public search route
+Route::get('/search', [SearchController::class, 'search'])->name('search');
+
+Route::get('/explore', function () {
+    return Inertia::render('explore');
+})->name('explore');
 
 Route::middleware('guest')->group(function () {
     Route::get('/landingpage', function () {

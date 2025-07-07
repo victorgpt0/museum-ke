@@ -42,6 +42,7 @@ class Artifact extends Model implements HasMedia
 //        'donor_id',
         'user_id',
         'metadata',
+        'is_published',
     ];
 
     /**

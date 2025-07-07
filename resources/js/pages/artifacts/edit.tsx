@@ -11,7 +11,7 @@ import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Link, useForm, usePage } from '@inertiajs/react';
 import { X } from 'lucide-react';
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 
 export default function Edit() {
     const { artifact, categories, donors, images, documents, tags } = usePage().props as any;
@@ -19,6 +19,14 @@ export default function Edit() {
     const documentsRef = useRef<HTMLInputElement>(null);
     const [selectedImages, setSelectedImages] = useState<File[]>([]);
     const [selectedDocuments, setSelectedDocuments] = useState<File[]>([]);
+
+    useEffect(() => {
+        setData('images', selectedImages);
+    }, [selectedImages]);
+
+    useEffect(() => {
+        setData('documents', selectedDocuments);
+    }, [selectedDocuments]);
 
     const breadcrumbs: BreadcrumbItem[] = [
         {
@@ -78,6 +86,7 @@ export default function Edit() {
 
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
+        console.log(data);
         post(route('artifacts.update', artifact.id), {
             forceFormData: true,
         });
