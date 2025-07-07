@@ -109,7 +109,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
         <div className="text-center">
           <Upload className="mx-auto h-12 w-12 text-gray-400" />
           <div className="mt-4">
-            <Button variant="default">
+            <Button variant="default" type="button">
               Upload
             </Button>
             <input

@@ -215,7 +215,7 @@ export default function ArtifactCreate() {
                                 {/* Additional Information */}
                                 <div className="space-y-4">
                                     <div>
-                                        <Label htmlFor="location">Location</Label>
+                                        <Label htmlFor="location">Origin</Label>
                                         <Input id="location" name="location" value={data.location} onChange={handleChange} error={errors.location} />
                                     </div>
 
