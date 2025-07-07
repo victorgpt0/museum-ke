@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Head, useForm } from '@inertiajs/react';
-import { Upload, X } from 'lucide-react';
+import { Upload, X, Landmark } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 
 interface DonationFormData {
@@ -129,11 +129,22 @@ export default function Create() {
         <>
             <Head title="Artifact Donation Form" />
 
-            <div className="py-8">
-                <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+            <div className="py-8 min-h-screen bg-gradient-to-br from-[#FFFDD0] via-[#f7f7f7] to-[#e9e7e1] flex flex-col items-center justify-center relative">
+                {/* Decorative Museum Header */}
+                <div className="flex flex-col items-center mb-8">
+                    <div className="flex items-center gap-3 mb-2">
+                        <span className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-[#C2A14D]/90 border-4 border-[#bfa14a] shadow-lg">
+                            <Landmark className="w-8 h-8 text-[#7c5e18]" />
+                        </span>
+                        <span className="font-serif text-4xl font-bold tracking-wide text-[#7c5e18] drop-shadow-sm">Museum Artifact Donation</span>
+                    </div>
+                    <span className="text-lg text-[#6b4f1d] font-serif italic">Preserve History. Share Heritage.</span>
+                </div>
+
+                <div className="mx-auto w-full max-w-4xl px-4 sm:px-6 lg:px-8">
                     <div className="mb-8 text-center">
-                        <h1 className="mb-2 text-3xl font-bold text-gray-900">Artifact Donation Form</h1>
-                        <p className="text-gray-600">Thank you for your interest in donating to Nairobi National Museum</p>
+                        <h1 className="mb-2 text-3xl font-serif font-bold text-[#3d2c0a]">Artifact Donation Form</h1>
+                        <p className="text-[#7c5e18] font-serif">Thank you for your interest in donating to the Museum</p>
                     </div>
 
                     {/*/!* Success Message *!/*/}
@@ -159,10 +170,13 @@ export default function Create() {
                     <FormUI>
                         <form onSubmit={handleSubmit} className="space-y-8">
                             {/* Artifact Information */}
-                            <Card>
+                            <Card className="bg-white/90 border-[#C2A14D] shadow-xl">
                                 <CardHeader>
-                                    <CardTitle>Artifact Information</CardTitle>
-                                    <CardDescription>Please provide details about the artifact you wish to donate</CardDescription>
+                                    <div className="flex items-center gap-2">
+                                        <Landmark className="h-6 w-6 text-[#C2A14D]" />
+                                        <CardTitle className="font-serif text-2xl text-[#3d2c0a]">Artifact Information</CardTitle>
+                                    </div>
+                                    <CardDescription className="text-[#7c5e18] font-serif">Please provide details about the artifact you wish to donate</CardDescription>
                                 </CardHeader>
                                 <CardContent className="space-y-4">
                                     <div className="space-y-1">
@@ -275,10 +289,13 @@ export default function Create() {
                             </Card>
 
                             {/* Donor Information */}
-                            <Card>
+                            <Card className="bg-white/90 border-[#C2A14D] shadow-xl">
                                 <CardHeader>
-                                    <CardTitle>Donor Information</CardTitle>
-                                    <CardDescription>Your contact information for our records</CardDescription>
+                                    <div className="flex items-center gap-2">
+                                        <Landmark className="h-6 w-6 text-[#C2A14D]" />
+                                        <CardTitle className="font-serif text-2xl text-[#3d2c0a]">Donor Information</CardTitle>
+                                    </div>
+                                    <CardDescription className="text-[#7c5e18] font-serif">Your contact information for our records</CardDescription>
                                 </CardHeader>
                                 <CardContent className="space-y-4">
                                     <div className="space-y-1">
@@ -330,10 +347,13 @@ export default function Create() {
                             </Card>
 
                             {/* Next of Kin Information */}
-                            <Card>
+                            <Card className="bg-white/90 border-[#C2A14D] shadow-xl">
                                 <CardHeader>
-                                    <CardTitle>Next of Kin Information</CardTitle>
-                                    <CardDescription>Emergency contact information (optional but recommended)</CardDescription>
+                                    <div className="flex items-center gap-2">
+                                        <Landmark className="h-6 w-6 text-[#C2A14D]" />
+                                        <CardTitle className="font-serif text-2xl text-[#3d2c0a]">Next of Kin Information</CardTitle>
+                                    </div>
+                                    <CardDescription className="text-[#7c5e18] font-serif">Emergency contact information (optional but recommended)</CardDescription>
                                 </CardHeader>
                                 <CardContent className="space-y-4">
                                     <div className="space-y-1">
@@ -382,21 +402,21 @@ export default function Create() {
                             </Card>
 
                             {/* Submit Buttons */}
-                            <Card>
+                            <Card className="bg-white/90 border-[#C2A14D] shadow-xl">
                                 <CardFooter className="flex justify-end space-x-4">
                                     <Button
                                         variant="outline"
                                         type="button"
                                         onClick={() => window.history.back()}
                                         disabled={processing || isUploadingImages}
-                                        className="dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700"
+                                        className="dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700 border-[#C2A14D] text-[#7c5e18] font-serif"
                                     >
                                         Cancel
                                     </Button>
                                     <Button
                                         type="submit"
                                         disabled={processing || isUploadingImages}
-                                        className="bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-600 dark:text-white dark:hover:bg-blue-700"
+                                        className="bg-[#C2A14D] text-[#3d2c0a] font-serif font-bold hover:bg-[#bfa14a] dark:bg-[#C2A14D] dark:text-[#3d2c0a] dark:hover:bg-[#bfa14a] border-[#bfa14a] shadow-md"
                                     >
                                         {processing ? 'Submitting...' : isUploadingImages ? 'Uploading Images...' : 'Submit Donation'}
                                     </Button>
