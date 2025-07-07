@@ -524,19 +524,19 @@ export default function Dashboard() {
                                 <div className="flex justify-between items-center">
                                     <span className="text-sm text-muted-foreground">Total Budget</span>
                                     <span className="font-semibold text-foreground">
-                                        ${budgetOverview.total_budget?.toLocaleString() || 0}
+                                        Ksh {budgetOverview.total_budget?.toLocaleString() || 0}
                                     </span>
                                 </div>
                                 <div className="flex justify-between items-center">
                                     <span className="text-sm text-muted-foreground">Total Spent</span>
                                     <span className="font-semibold text-foreground">
-                                        ${budgetOverview.total_spent?.toLocaleString() || 0}
+                                        Ksh {budgetOverview.total_spent?.toLocaleString() || 0}
                                     </span>
                                 </div>
                                 <div className="flex justify-between items-center">
                                     <span className="text-sm text-muted-foreground">Remaining</span>
                                     <span className="font-semibold text-foreground">
-                                        ${budgetOverview.remaining_budget?.toLocaleString() || 0}
+                                        Ksh {budgetOverview.remaining_budget?.toLocaleString() || 0}
                                     </span>
                                 </div>
                                 <div className="w-full bg-gray-200 rounded-full h-2">

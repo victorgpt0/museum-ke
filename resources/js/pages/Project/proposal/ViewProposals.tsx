@@ -163,6 +163,9 @@ export default function ViewProposals({ proposals, userRoles, canApproveReject }
         router.visit(`/proposals/${proposalId}`);
     };
 
+    // Helper to check if user is HOD
+    const isHOD = userRoles.includes('HOD');
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Project Proposals" />
@@ -316,7 +319,7 @@ export default function ViewProposals({ proposals, userRoles, canApproveReject }
                                     )}
 
                                     {/* Only show approve/reject buttons for SuperAdmin and HOD roles */}
-                                    {canApproveReject && proposal.status === 'pending' && (
+                                    {(canApproveReject || isHOD) && proposal.status === 'pending' && (
                                         <>
                                             {can('proposals.approve') && (
                                                 <Button
@@ -341,7 +344,7 @@ export default function ViewProposals({ proposals, userRoles, canApproveReject }
                                         </>
                                     )}
 
-                                    {canApproveReject && proposal.status === 'under_review' && (
+                                    {(canApproveReject || isHOD) && proposal.status === 'under_review' && (
                                         <>
                                             {can('proposals.approve') && (
                                                 <Button
