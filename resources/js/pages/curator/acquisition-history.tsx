@@ -439,7 +439,6 @@ const AcquisitionHistory: React.FC<Props> = ({ proposals }) => {
                     )}
                 </div>
             </div>
-
             {/* Toast Notifications */}
             <Toaster
                 position="top-right"

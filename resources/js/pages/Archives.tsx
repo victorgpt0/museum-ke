@@ -104,6 +104,7 @@ export default function Archives({ archives, filters }: Props) {
                             <div>
                                 <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Archives</h1>
                                 <p className="mt-2 text-gray-600 dark:text-gray-300">Manage and browse your archive collection</p>
+
                             </div>
                             {can('archives.create') && (
                                 <Link
@@ -235,7 +236,6 @@ export default function Archives({ archives, filters }: Props) {
                             </div>
                         ))}
                     </div>
-
                     {/* Empty State */}
                     {archives.data.length === 0 && (
                         <div className="py-12 text-center">

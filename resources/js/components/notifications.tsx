@@ -152,7 +152,7 @@ const Notifications: React.FC = () => {
             },
         });
     };
-
+  
     const handleRedirect = async (redirect: string, id, e) => {
         if (redirect) {
             await markAsRead(id, e);

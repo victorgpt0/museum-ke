@@ -2,7 +2,6 @@ import AppLayout from '@/layouts/app-layout';
 import { router } from '@inertiajs/react'; // or '@inertiajs/inertia-react' depending on your setup
 import React, { useEffect, useState } from 'react';
 import toast, { Toaster } from 'react-hot-toast';
-
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -89,7 +88,6 @@ export default function NewProposalForm() {
     const [newMilestone, setNewMilestone] = useState({ title: '', duration: '', description: '', budgetItems: [] as BudgetItem[] });
     const [newGoal, setNewGoal] = useState({ title: '', description: '' });
     const [newBudgetItem, setNewBudgetItem] = useState({ title: '', description: '', amount: '' });
-
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [success, setSuccess] = useState<string>('');
 
@@ -202,7 +200,6 @@ export default function NewProposalForm() {
             id: Date.now().toString(),
             ...newTeamMember,
         };
-
         setData((prev) => ({
             ...prev,
             teamMembers: [...prev.teamMembers, teamMember],
