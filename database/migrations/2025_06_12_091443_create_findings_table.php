@@ -13,6 +13,9 @@ return new class extends Migration
     {
         Schema::create('findings', function (Blueprint $table) {
             $table->id();
+            $table->string('title');
+            $table->text('description');
+            $table->foreignId('project_id')->constrained()->onDelete('cascade');
             $table->timestamps();
         });
     }

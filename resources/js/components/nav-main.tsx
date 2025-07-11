@@ -1,9 +1,12 @@
 import { SidebarGroup, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
+import Can from '@/lib/can';
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
 
 export function NavMain({ items = [] }: { items: NavItem[] }) {
     const page = usePage();
+    items = items.filter((item) => !item.permission || Can(item.permission));
+
     return (
         <SidebarGroup className="px-2 py-0">
             <SidebarGroupLabel>Platform</SidebarGroupLabel>

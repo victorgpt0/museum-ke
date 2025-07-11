@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-         Schema::create('artifact_proposals', function (Blueprint $table) {
+        Schema::create('artifact_proposals', function (Blueprint $table) {
         $table->id();
         $table->string('title');
         $table->text('description');

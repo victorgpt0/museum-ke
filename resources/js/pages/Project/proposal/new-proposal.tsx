@@ -1,12 +1,13 @@
 import AppLayout from '@/layouts/app-layout';
+import { router } from '@inertiajs/react'; // or '@inertiajs/inertia-react' depending on your setup
 import React, { useEffect, useState } from 'react';
 import toast, { Toaster } from 'react-hot-toast';
-
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { BreadcrumbItem } from '@/types';
 import { CheckCircle, Flag, Plus, Target, Trash2, Upload, User, X } from 'lucide-react';
 
 interface TeamMember {
@@ -21,6 +22,7 @@ interface Milestone {
     title: string;
     duration: string;
     description: string;
+    budgetItems: BudgetItem[];
 }
 
 interface Goal {
@@ -35,6 +37,13 @@ interface Objective {
     description: string;
 }
 
+interface BudgetItem {
+    id: string;
+    title: string;
+    description: string;
+    amount: string;
+}
+
 interface ProposalFormData {
     title: string;
     description: string;
@@ -45,10 +54,17 @@ interface ProposalFormData {
     goals: Goal[];
 }
 
+const breadcrumbs: BreadcrumbItem[] = [
+    {
+        title: 'Project Proposals',
+        href: '/project/viewproposals',
+    },
+    {
+        title: 'New Proposal',
+        href: '/project/new-proposal',
+    },
+];
 export default function NewProposalForm() {
-    const [selectedDocuments, setSelectedDocuments] = useState<File[]>([]);
-    const [documentPreviews, setDocumentPreviews] = useState<string[]>([]);
-    const [isUploadingDocs, setIsUploadingDocs] = useState(false);
     const [processing, setProcessing] = useState(false);
 
     // Form data state
@@ -61,13 +77,17 @@ export default function NewProposalForm() {
         milestones: [],
         goals: [],
     });
+    const [selectedDocuments, setSelectedDocuments] = useState<File[]>([]);
+    const [documentPreviews, setDocumentPreviews] = useState<string[]>([]);
+    const [isUploadingDocs, setIsUploadingDocs] = useState(false);
 
+    // Sub-form states for adding new items (your existing code)
     // Sub-form states for adding new items
     const [newObjective, setNewObjective] = useState({ title: '', description: '' });
     const [newTeamMember, setNewTeamMember] = useState({ fullName: '', email: '', role: '' });
-    const [newMilestone, setNewMilestone] = useState({ title: '', duration: '', description: '' });
+    const [newMilestone, setNewMilestone] = useState({ title: '', duration: '', description: '', budgetItems: [] as BudgetItem[] });
     const [newGoal, setNewGoal] = useState({ title: '', description: '' });
-
+    const [newBudgetItem, setNewBudgetItem] = useState({ title: '', description: '', amount: '' });
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [success, setSuccess] = useState<string>('');
 
@@ -180,7 +200,6 @@ export default function NewProposalForm() {
             id: Date.now().toString(),
             ...newTeamMember,
         };
-
         setData((prev) => ({
             ...prev,
             teamMembers: [...prev.teamMembers, teamMember],
@@ -198,6 +217,35 @@ export default function NewProposalForm() {
         toast.success('Team member removed');
     };
 
+    // Budget item handlers
+    const addBudgetItem = () => {
+        if (!newBudgetItem.title.trim() || !newBudgetItem.description.trim() || !newBudgetItem.amount.trim()) {
+            toast.error('Please fill in all budget item fields');
+            return;
+        }
+
+        const budgetItem: BudgetItem = {
+            id: Date.now().toString(),
+            ...newBudgetItem,
+        };
+
+        setNewMilestone((prev) => ({
+            ...prev,
+            budgetItems: [...(prev.budgetItems || []), budgetItem],
+        }));
+
+        setNewBudgetItem({ title: '', description: '', amount: '' });
+        toast.success('Budget item added successfully');
+    };
+
+    const removeBudgetItem = (id: string) => {
+        setNewMilestone((prev) => ({
+            ...prev,
+            budgetItems: (prev.budgetItems || []).filter((item) => item.id !== id),
+        }));
+        toast.success('Budget item removed');
+    };
+
     // Milestone handlers
     const addMilestone = () => {
         if (!newMilestone.title.trim() || !newMilestone.duration.trim() || !newMilestone.description.trim()) {
@@ -207,7 +255,10 @@ export default function NewProposalForm() {
 
         const milestone: Milestone = {
             id: Date.now().toString(),
-            ...newMilestone,
+            title: newMilestone.title,
+            duration: newMilestone.duration,
+            description: newMilestone.description,
+            budgetItems: newMilestone.budgetItems || [],
         };
 
         setData((prev) => ({
@@ -215,7 +266,7 @@ export default function NewProposalForm() {
             milestones: [...prev.milestones, milestone],
         }));
 
-        setNewMilestone({ title: '', duration: '', description: '' });
+        setNewMilestone({ title: '', duration: '', description: '', budgetItems: [] });
         toast.success('Milestone added successfully');
     };
 
@@ -259,51 +310,95 @@ export default function NewProposalForm() {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
-        // Validate required fields
-        const newErrors: Record<string, string> = {};
+        console.log('Form submission started');
+        console.log('Original form data:', data);
+        console.log('Selected documents:', selectedDocuments); // Log the actual File objects
+        console.log('Document previews:', documentPreviews); // Log the preview names
 
-        if (!data.title.trim()) newErrors.title = 'Title is required';
-        if (!data.description.trim()) newErrors.description = 'Description is required';
-        if (!data.duration) newErrors.duration = 'Duration is required';
-        if (data.objectives.length === 0) newErrors.objectives = 'At least one objective is required';
-        if (data.teamMembers.length === 0) newErrors.teamMembers = 'At least one team member is required';
-        if (data.milestones.length === 0) newErrors.milestones = 'At least one milestone is required';
-        if (data.goals.length === 0) newErrors.goals = 'At least one goal is required';
-
-        if (Object.keys(newErrors).length > 0) {
-            setErrors(newErrors);
-            toast.error('Please fill all required fields');
+        if (!data.title.trim()) {
+            alert('Please enter a proposal title');
             return;
         }
 
-        setErrors({});
-        setProcessing(true);
+        if (!data.description.trim()) {
+            alert('Please enter a description');
+            return;
+        }
 
-        // Simulate form submission
-        const submitPromise = new Promise((resolve, reject) => {
-            setTimeout(() => {
-                try {
-                    setProcessing(false);
-                    setSuccess('Proposal submitted successfully!');
-                    console.log('Proposal Data:', data);
-                    console.log('Documents:', selectedDocuments);
-                    resolve('Success');
-                } catch (error) {
-                    reject(error);
-                }
-            }, 2000);
-        });
+        // Build the additional description content
+        let additions = '';
+        if (data.objectives?.length > 0) {
+            const objectiveText = data.objectives.map((obj) => `- ${obj.title}: ${obj.description}`).join('\n');
+            additions += `\n\nObjectives:\n${objectiveText}`;
+        }
+        if (data.milestones?.length > 0) {
+            const milestoneText = data.milestones
+                .map((m) => {
+                    let milestoneInfo = `- ${m.title} (${m.duration}): ${m.description}`;
+                    if (m.budgetItems && m.budgetItems.length > 0) {
+                        const budgetText = m.budgetItems.map((item) => `  • ${item.title}: ${item.description} - Ksh ${item.amount}`).join('\n');
+                        milestoneInfo += `\n  Budget Breakdown:\n${budgetText}`;
+                    }
+                    return milestoneInfo;
+                })
+                .join('\n');
+            additions += `\n\nMilestones:\n${milestoneText}`;
+        }
+        if (data.goals?.length > 0) {
+            const goalText = data.goals.map((goal) => `- ${goal.title}: ${goal.description}`).join('\n');
+            additions += `\n\nGoals:\n${goalText}`;
+        }
+        if (data.teamMembers?.length > 0) {
+            const teamText = data.teamMembers.map((member) => `- ${member.fullName} (${member.role}, ${member.email})`).join('\n');
+            additions += `\n\nTeam Members:\n${teamText}`;
+        }
+        const fullDescription = `${data.description.trim()}${additions}`;
 
-        toast.promise(submitPromise, {
-            loading: 'Submitting proposal...',
-            success: 'Proposal submitted successfully!',
-            error: 'Failed to submit proposal',
+        // Create form data object that includes documents
+        const formData = {
+            title: data.title.trim(),
+            description: fullDescription,
+            duration: data.duration.trim() || 'Not specified',
+            documents: selectedDocuments || [], // Add the uploaded documents here
+        };
+
+        console.log('Formatted Proposal Data:', formData);
+        console.log('Documents being sent:', selectedDocuments?.map((doc) => doc.name) || []); // Log document names
+
+        // Send data to backend
+        router.post(route('projectproposal.store'), formData, {
+            forceFormData: true, // This ensures files are handled properly
+            preserveState: false,
+            preserveScroll: true,
+            onStart: () => {
+                console.log('[DEBUG] 🛫 Request started...');
+            },
+            onProgress: (event) => {
+                console.log('[DEBUG] Progress event:', event);
+            },
+            onSuccess: (page) => {
+                console.log('[✅] Request successful! Server response page:', page);
+                toast.success('Proposal has been submitted successfully');
+
+                // Redirect immediately to ViewProposals page
+                router.visit('/project/viewproposals', {
+                    preserveState: false,
+                    preserveScroll: false,
+                });
+            },
+            onError: (errors) => {
+                console.error('[❌] Request failed with validation/server errors:', errors);
+                alert('There was an error submitting the proposal. Check console for details.');
+            },
+            onFinish: () => {
+                console.log('[DEBUG] ✅ Request finished (success or failure)');
+            },
         });
     };
 
     return (
-        <AppLayout>
-            <div className="min-h-screen bg-gray-50 py-8">
+        <AppLayout breadcrumbs={breadcrumbs}>
+            <div className="flex h-full flex-1 flex-col gap-6 rounded-xl p-6">
                 {/* Toast Notifications */}
                 <Toaster
                     position="top-right"
@@ -344,61 +439,69 @@ export default function NewProposalForm() {
                     }}
                 />
 
-                <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+                <div className="mx-auto max-w-6xl w-full">
                     <div className="mb-8 text-center">
-                        <h1 className="mb-2 text-3xl font-bold text-gray-900">New Proposal Form</h1>
-                        <p className="text-gray-600">Submit your project proposal with detailed information</p>
+                        <h1 className="mb-2 text-3xl font-bold text-foreground">New Proposal Form</h1>
+                        <p className="text-muted-foreground">Submit your project proposal with detailed information</p>
                     </div>
 
                     {/* Success Message */}
                     {success && (
-                        <div className="mb-6 flex items-center space-x-2 rounded-md border border-green-200 bg-green-50 p-4">
-                            <CheckCircle className="h-4 w-4 flex-shrink-0 text-green-600" />
-                            <p className="text-green-800">{success}</p>
+                        <div className="mb-6 flex items-center space-x-2 rounded-md border border-green-200 bg-green-50 p-4 dark:border-green-700 dark:bg-green-900/20">
+                            <CheckCircle className="h-4 w-4 flex-shrink-0 text-green-600 dark:text-green-400" />
+                            <p className="text-green-800 dark:text-green-200">{success}</p>
                         </div>
                     )}
 
                     <div className="space-y-8">
                         {/* Basic Information */}
-                        <Card>
+                        <Card className="museum-gradient border border-border">
                             <CardHeader>
-                                <CardTitle>Basic Information</CardTitle>
-                                <CardDescription>Provide the fundamental details of your proposal</CardDescription>
+                                <CardTitle className="text-foreground">Basic Information</CardTitle>
+                                <CardDescription className="text-muted-foreground">
+                                    Provide the fundamental details of your proposal
+                                </CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 <div className="space-y-1">
-                                    <Label htmlFor="title">Title *</Label>
+                                    <Label htmlFor="title" className="text-foreground">
+                                        Title *
+                                    </Label>
                                     <Input
                                         id="title"
                                         value={data.title}
                                         onChange={(e) => setData((prev) => ({ ...prev, title: e.target.value }))}
                                         placeholder="Enter your proposal title"
-                                        className={errors.title ? 'border-red-500' : ''}
+                                        className={`${errors.title ? 'border-red-500' : ''}`}
                                     />
                                     {errors.title && <div className="text-sm text-red-500">{errors.title}</div>}
                                 </div>
 
                                 <div className="space-y-1">
-                                    <Label htmlFor="description">Description *</Label>
+                                    <Label htmlFor="description" className="text-gray-700 dark:text-gray-300">
+                                        Description *
+                                    </Label>
                                     <Textarea
                                         id="description"
                                         value={data.description}
                                         onChange={(e) => setData((prev) => ({ ...prev, description: e.target.value }))}
                                         placeholder="Provide a detailed description of your proposal"
                                         rows={4}
-                                        className={errors.description ? 'border-red-500' : ''}
+                                        className={`${errors.description ? 'border-red-500' : ''} border-gray-300 bg-white text-gray-900 placeholder-gray-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400`}
                                     />
                                     {errors.description && <div className="text-sm text-red-500">{errors.description}</div>}
                                 </div>
 
                                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                     <div className="space-y-1">
-                                        <Label htmlFor="duration">Duration *</Label>
+                                        <Label htmlFor="duration" className="text-gray-700 dark:text-gray-300">
+                                            Duration *
+                                        </Label>
                                         <select
                                             id="duration"
                                             value={data.duration}
                                             onChange={(e) => setData((prev) => ({ ...prev, duration: e.target.value }))}
-                                            className={`w-full rounded-md border px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none ${errors.duration ? 'border-red-500' : 'border-gray-300'}`}
+                                            className={`w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-gray-900 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white ${errors.duration ? 'border-red-500' : ''}`}
                                         >
                                             {durationOptions.map((option) => (
                                                 <option key={option.value} value={option.value}>
@@ -410,17 +513,17 @@ export default function NewProposalForm() {
                                     </div>
 
                                     <div className="space-y-2">
-                                        <Label>Documents</Label>
-                                        <div className="rounded-lg border-2 border-dashed border-gray-300 p-4">
+                                        <Label className="text-gray-700 dark:text-gray-300">Documents</Label>
+                                        <div className="rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 p-4 dark:border-gray-600 dark:bg-gray-700">
                                             <div className="text-center">
-                                                <Upload className="mx-auto h-8 w-8 text-gray-400" />
+                                                <Upload className="mx-auto h-8 w-8 text-gray-400 dark:text-gray-500" />
                                                 <div className="mt-2">
                                                     <Label
                                                         htmlFor="documents"
                                                         className={`inline-block cursor-pointer rounded-md px-3 py-1 text-sm transition-colors ${
                                                             isUploadingDocs
-                                                                ? 'cursor-not-allowed bg-gray-400 text-white'
-                                                                : 'bg-blue-600 text-white hover:bg-blue-700'
+                                                                ? 'cursor-not-allowed bg-gray-400 text-white dark:bg-gray-600'
+                                                                : 'bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600'
                                                         }`}
                                                     >
                                                         {isUploadingDocs ? 'Uploading...' : 'Choose Files'}
@@ -435,7 +538,9 @@ export default function NewProposalForm() {
                                                         disabled={isUploadingDocs}
                                                     />
                                                 </div>
-                                                <p className="mt-1 text-xs text-gray-500">PDF, Word, Excel, Text, Images (Max 10MB each)</p>
+                                                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                                    PDF, Word, Excel, Text, Images (Max 10MB each)
+                                                </p>
                                             </div>
                                         </div>
 
@@ -443,12 +548,15 @@ export default function NewProposalForm() {
                                         {documentPreviews.length > 0 && (
                                             <div className="space-y-2">
                                                 {documentPreviews.map((fileName, index) => (
-                                                    <div key={index} className="flex items-center justify-between rounded bg-gray-100 p-2">
-                                                        <span className="truncate text-sm">{fileName}</span>
+                                                    <div
+                                                        key={index}
+                                                        className="flex items-center justify-between rounded bg-gray-100 p-2 dark:bg-gray-600"
+                                                    >
+                                                        <span className="truncate text-sm text-gray-900 dark:text-white">{fileName}</span>
                                                         <button
                                                             type="button"
                                                             onClick={() => removeDocument(index)}
-                                                            className="text-red-500 hover:text-red-700"
+                                                            className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
                                                         >
                                                             <X size={16} />
                                                         </button>
@@ -462,36 +570,45 @@ export default function NewProposalForm() {
                         </Card>
 
                         {/* Objectives */}
-                        <Card>
+                        <Card className="border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
                             <CardHeader>
-                                <CardTitle className="flex items-center space-x-2">
+                                <CardTitle className="flex items-center space-x-2 text-gray-900 dark:text-white">
                                     <Target className="h-5 w-5" />
                                     <span>Objectives</span>
                                 </CardTitle>
-                                <CardDescription>Define the specific objectives of your proposal</CardDescription>
+                                <CardDescription className="text-gray-600 dark:text-gray-300">
+                                    Define the specific objectives of your proposal
+                                </CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                     <div className="space-y-1">
-                                        <Label>Title</Label>
+                                        <Label className="text-gray-700 dark:text-gray-300">Title</Label>
                                         <Input
                                             value={newObjective.title}
                                             onChange={(e) => setNewObjective((prev) => ({ ...prev, title: e.target.value }))}
                                             placeholder="Objective title"
+                                            className="border-gray-300 bg-white text-gray-900 placeholder-gray-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
                                         />
                                     </div>
                                     <div className="space-y-1">
-                                        <Label>Description</Label>
+                                        <Label className="text-gray-700 dark:text-gray-300">Description</Label>
                                         <Input
                                             value={newObjective.description}
                                             onChange={(e) => setNewObjective((prev) => ({ ...prev, description: e.target.value }))}
                                             placeholder="Brief description"
+                                            className="border-gray-300 bg-white text-gray-900 placeholder-gray-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
                                         />
                                     </div>
                                 </div>
 
                                 <div className="flex justify-end">
-                                    <Button type="button" onClick={addObjective} size="sm">
+                                    <Button
+                                        type="button"
+                                        onClick={addObjective}
+                                        size="sm"
+                                        className="bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600"
+                                    >
                                         <Plus className="mr-1 h-4 w-4" />
                                         Add Objective
                                     </Button>
@@ -502,20 +619,22 @@ export default function NewProposalForm() {
                                 {/* Objectives List */}
                                 {data.objectives.length > 0 && (
                                     <div className="space-y-2">
-                                        <h4 className="font-medium text-gray-900">Added Objectives:</h4>
+                                        <h4 className="font-medium text-gray-900 dark:text-white">Added Objectives:</h4>
                                         {data.objectives.map((objective) => (
-                                            <div key={objective.id} className="flex items-center justify-between rounded bg-blue-50 p-3">
+                                            <div
+                                                key={objective.id}
+                                                className="flex items-center justify-between rounded border border-blue-200 bg-blue-50 p-3 dark:border-blue-700 dark:bg-blue-900/20"
+                                            >
                                                 <div className="flex-1">
-                                                    <h5 className="font-medium">{objective.title}</h5>
-                                                    <p className="text-sm text-gray-600">{objective.description}</p>
-                                                    {objective.context && <p className="text-xs text-gray-500">Context: {objective.context}</p>}
+                                                    <h5 className="font-medium text-gray-900 dark:text-white">{objective.title}</h5>
+                                                    <p className="text-sm text-gray-600 dark:text-gray-300">{objective.description}</p>
                                                 </div>
                                                 <Button
                                                     type="button"
                                                     variant="outline"
                                                     size="sm"
                                                     onClick={() => removeObjective(objective.id)}
-                                                    className="text-red-600 hover:text-red-800"
+                                                    className="border-gray-300 text-red-600 hover:text-red-800 dark:border-gray-600 dark:text-red-400 dark:hover:text-red-300"
                                                 >
                                                     <Trash2 className="h-4 w-4" />
                                                 </Button>
@@ -527,45 +646,55 @@ export default function NewProposalForm() {
                         </Card>
 
                         {/* Team Members */}
-                        <Card>
+                        <Card className="border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
                             <CardHeader>
-                                <CardTitle className="flex items-center space-x-2">
+                                <CardTitle className="flex items-center space-x-2 text-gray-900 dark:text-white">
                                     <User className="h-5 w-5" />
                                     <span>Team Members</span>
                                 </CardTitle>
-                                <CardDescription>Add the team members who will work on this proposal</CardDescription>
+                                <CardDescription className="text-gray-600 dark:text-gray-300">
+                                    Add the team members who will work on this proposal
+                                </CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                                     <div className="space-y-1">
-                                        <Label>Full Name</Label>
+                                        <Label className="text-gray-700 dark:text-gray-300">Full Name</Label>
                                         <Input
                                             value={newTeamMember.fullName}
                                             onChange={(e) => setNewTeamMember((prev) => ({ ...prev, fullName: e.target.value }))}
                                             placeholder="Enter full name"
+                                            className="border-gray-300 bg-white text-gray-900 placeholder-gray-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
                                         />
                                     </div>
                                     <div className="space-y-1">
-                                        <Label>Email</Label>
+                                        <Label className="text-gray-700 dark:text-gray-300">Email</Label>
                                         <Input
                                             type="email"
                                             value={newTeamMember.email}
                                             onChange={(e) => setNewTeamMember((prev) => ({ ...prev, email: e.target.value }))}
                                             placeholder="Enter email address"
+                                            className="border-gray-300 bg-white text-gray-900 placeholder-gray-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
                                         />
                                     </div>
                                     <div className="space-y-1">
-                                        <Label>Role</Label>
+                                        <Label className="text-gray-700 dark:text-gray-300">Role</Label>
                                         <Input
                                             value={newTeamMember.role}
                                             onChange={(e) => setNewTeamMember((prev) => ({ ...prev, role: e.target.value }))}
                                             placeholder="Enter role/position"
+                                            className="border-gray-300 bg-white text-gray-900 placeholder-gray-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
                                         />
                                     </div>
                                 </div>
 
                                 <div className="flex justify-end">
-                                    <Button type="button" onClick={addTeamMember} size="sm">
+                                    <Button
+                                        type="button"
+                                        onClick={addTeamMember}
+                                        size="sm"
+                                        className="bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600"
+                                    >
                                         <Plus className="mr-1 h-4 w-4" />
                                         Add Team Member
                                     </Button>
@@ -576,12 +705,15 @@ export default function NewProposalForm() {
                                 {/* Team Members List */}
                                 {data.teamMembers.length > 0 && (
                                     <div className="space-y-2">
-                                        <h4 className="font-medium text-gray-900">Team Members:</h4>
+                                        <h4 className="font-medium text-gray-900 dark:text-white">Team Members:</h4>
                                         {data.teamMembers.map((member) => (
-                                            <div key={member.id} className="flex items-center justify-between rounded bg-green-50 p-3">
+                                            <div
+                                                key={member.id}
+                                                className="flex items-center justify-between rounded border border-green-200 bg-green-50 p-3 dark:border-green-700 dark:bg-green-900/20"
+                                            >
                                                 <div className="flex-1">
-                                                    <h5 className="font-medium">{member.fullName}</h5>
-                                                    <p className="text-sm text-gray-600">
+                                                    <h5 className="font-medium text-gray-900 dark:text-white">{member.fullName}</h5>
+                                                    <p className="text-sm text-gray-600 dark:text-gray-300">
                                                         {member.email} • {member.role}
                                                     </p>
                                                 </div>
@@ -590,7 +722,7 @@ export default function NewProposalForm() {
                                                     variant="outline"
                                                     size="sm"
                                                     onClick={() => removeTeamMember(member.id)}
-                                                    className="text-red-600 hover:text-red-800"
+                                                    className="border-gray-300 text-red-600 hover:text-red-800 dark:border-gray-600 dark:text-red-400 dark:hover:text-red-300"
                                                 >
                                                     <Trash2 className="h-4 w-4" />
                                                 </Button>
@@ -602,44 +734,131 @@ export default function NewProposalForm() {
                         </Card>
 
                         {/* Milestones */}
-                        <Card>
+                        <Card className="border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
                             <CardHeader>
-                                <CardTitle className="flex items-center space-x-2">
+                                <CardTitle className="flex items-center space-x-2 text-gray-900 dark:text-white">
                                     <Flag className="h-5 w-5" />
                                     <span>Milestones</span>
                                 </CardTitle>
-                                <CardDescription>Define key milestones for your proposal</CardDescription>
+                                <CardDescription className="text-gray-600 dark:text-gray-300">
+                                    Define key milestones for your proposal with budget breakdown
+                                </CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                                     <div className="space-y-1">
-                                        <Label>Title</Label>
+                                        <Label className="text-gray-700 dark:text-gray-300">Title</Label>
                                         <Input
                                             value={newMilestone.title}
                                             onChange={(e) => setNewMilestone((prev) => ({ ...prev, title: e.target.value }))}
                                             placeholder="Milestone title"
+                                            className="border-gray-300 bg-white text-gray-900 placeholder-gray-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
                                         />
                                     </div>
                                     <div className="space-y-1">
-                                        <Label>Duration</Label>
+                                        <Label className="text-gray-700 dark:text-gray-300">Duration</Label>
                                         <Input
                                             value={newMilestone.duration}
                                             onChange={(e) => setNewMilestone((prev) => ({ ...prev, duration: e.target.value }))}
                                             placeholder="e.g., 2 weeks, 1 month"
+                                            className="border-gray-300 bg-white text-gray-900 placeholder-gray-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
                                         />
                                     </div>
                                     <div className="space-y-1">
-                                        <Label>Description</Label>
+                                        <Label className="text-gray-700 dark:text-gray-300">Description</Label>
                                         <Input
                                             value={newMilestone.description}
                                             onChange={(e) => setNewMilestone((prev) => ({ ...prev, description: e.target.value }))}
                                             placeholder="Brief description"
+                                            className="border-gray-300 bg-white text-gray-900 placeholder-gray-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
                                         />
                                     </div>
                                 </div>
 
+                                {/* Budget Items Section */}
+                                <div className="border-t border-gray-200 pt-4 dark:border-gray-600">
+                                    <h4 className="mb-3 font-medium text-gray-900 dark:text-white">Budget Breakdown</h4>
+                                    <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                                        <div className="space-y-1">
+                                            <Label className="text-gray-700 dark:text-gray-300">Item Title</Label>
+                                            <Input
+                                                value={newBudgetItem.title}
+                                                onChange={(e) => setNewBudgetItem((prev) => ({ ...prev, title: e.target.value }))}
+                                                placeholder="e.g., Equipment rental"
+                                                className="border-gray-300 bg-white text-gray-900 placeholder-gray-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
+                                            />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <Label className="text-gray-700 dark:text-gray-300">Description</Label>
+                                            <Input
+                                                value={newBudgetItem.description}
+                                                onChange={(e) => setNewBudgetItem((prev) => ({ ...prev, description: e.target.value }))}
+                                                placeholder="Brief description"
+                                                className="border-gray-300 bg-white text-gray-900 placeholder-gray-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
+                                            />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <Label className="text-gray-700 dark:text-gray-300">Amount (Ksh)</Label>
+                                            <Input
+                                                type="number"
+                                                value={newBudgetItem.amount}
+                                                onChange={(e) => setNewBudgetItem((prev) => ({ ...prev, amount: e.target.value }))}
+                                                placeholder="0.00"
+                                                step="0.01"
+                                                min="0"
+                                                className="border-gray-300 bg-white text-gray-900 placeholder-gray-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="mt-3 flex justify-end">
+                                        <Button
+                                            type="button"
+                                            onClick={addBudgetItem}
+                                            size="sm"
+                                            className="bg-green-600 text-white hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-600"
+                                        >
+                                            <Plus className="mr-1 h-4 w-4" />
+                                            Add Budget Item
+                                        </Button>
+                                    </div>
+
+                                    {/* Budget Items List */}
+                                    {newMilestone.budgetItems && newMilestone.budgetItems.length > 0 && (
+                                        <div className="mt-4 space-y-2">
+                                            <h5 className="font-medium text-gray-900 dark:text-white">Budget Items:</h5>
+                                            {newMilestone.budgetItems.map((item) => (
+                                                <div
+                                                    key={item.id}
+                                                    className="flex items-center justify-between rounded border border-blue-200 bg-blue-50 p-3 dark:border-blue-700 dark:bg-blue-900/20"
+                                                >
+                                                    <div className="flex-1">
+                                                        <h6 className="font-medium text-gray-900 dark:text-white">{item.title}</h6>
+                                                        <p className="text-sm text-gray-600 dark:text-gray-300">{item.description}</p>
+                                                        <p className="text-sm font-medium text-green-600 dark:text-green-400">Ksh {item.amount}</p>
+                                                    </div>
+                                                    <Button
+                                                        type="button"
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={() => removeBudgetItem(item.id)}
+                                                        className="border-gray-300 text-red-600 hover:text-red-800 dark:border-gray-600 dark:text-red-400 dark:hover:text-red-300"
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+
                                 <div className="flex justify-end">
-                                    <Button type="button" onClick={addMilestone} size="sm">
+                                    <Button
+                                        type="button"
+                                        onClick={addMilestone}
+                                        size="sm"
+                                        className="bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600"
+                                    >
                                         <Plus className="mr-1 h-4 w-4" />
                                         Add Milestone
                                     </Button>
@@ -650,23 +869,53 @@ export default function NewProposalForm() {
                                 {/* Milestones List */}
                                 {data.milestones.length > 0 && (
                                     <div className="space-y-2">
-                                        <h4 className="font-medium text-gray-900">Milestones:</h4>
+                                        <h4 className="font-medium text-gray-900 dark:text-white">Milestones:</h4>
                                         {data.milestones.map((milestone) => (
-                                            <div key={milestone.id} className="flex items-center justify-between rounded bg-yellow-50 p-3">
-                                                <div className="flex-1">
-                                                    <h5 className="font-medium">{milestone.title}</h5>
-                                                    <p className="text-sm text-gray-600">{milestone.description}</p>
-                                                    <p className="text-xs text-gray-500">Duration: {milestone.duration}</p>
+                                            <div
+                                                key={milestone.id}
+                                                className="rounded border border-yellow-200 bg-yellow-50 p-3 dark:border-yellow-700 dark:bg-yellow-900/20"
+                                            >
+                                                <div className="mb-2 flex items-center justify-between">
+                                                    <div className="flex-1">
+                                                        <h5 className="font-medium text-gray-900 dark:text-white">{milestone.title}</h5>
+                                                        <p className="text-sm text-gray-600 dark:text-gray-300">{milestone.description}</p>
+                                                        <p className="text-xs text-gray-500 dark:text-gray-400">Duration: {milestone.duration}</p>
+                                                    </div>
+                                                    <Button
+                                                        type="button"
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={() => removeMilestone(milestone.id)}
+                                                        className="border-gray-300 text-red-600 hover:text-red-800 dark:border-gray-600 dark:text-red-400 dark:hover:text-red-300"
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
                                                 </div>
-                                                <Button
-                                                    type="button"
-                                                    variant="outline"
-                                                    size="sm"
-                                                    onClick={() => removeMilestone(milestone.id)}
-                                                    className="text-red-600 hover:text-red-800"
-                                                >
-                                                    <Trash2 className="h-4 w-4" />
-                                                </Button>
+
+                                                {/* Budget Items for this milestone */}
+                                                {milestone.budgetItems && milestone.budgetItems.length > 0 && (
+                                                    <div className="mt-3 border-t border-yellow-300 pt-3 dark:border-yellow-600">
+                                                        <h6 className="mb-2 font-medium text-gray-900 dark:text-white">Budget Breakdown:</h6>
+                                                        <div className="space-y-2">
+                                                            {milestone.budgetItems.map((item) => (
+                                                                <div
+                                                                    key={item.id}
+                                                                    className="flex items-center justify-between rounded bg-white p-2 dark:bg-gray-700"
+                                                                >
+                                                                    <div>
+                                                                        <p className="text-sm font-medium text-gray-900 dark:text-white">
+                                                                            {item.title}
+                                                                        </p>
+                                                                        <p className="text-xs text-gray-600 dark:text-gray-300">{item.description}</p>
+                                                                    </div>
+                                                                    <span className="text-sm font-medium text-green-600 dark:text-green-400">
+                                                                        Ksh {item.amount}
+                                                                    </span>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                )}
                                             </div>
                                         ))}
                                     </div>
@@ -675,36 +924,43 @@ export default function NewProposalForm() {
                         </Card>
 
                         {/* Goals */}
-                        <Card>
+                        <Card className="border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
                             <CardHeader>
-                                <CardTitle className="flex items-center space-x-2">
+                                <CardTitle className="flex items-center space-x-2 text-gray-900 dark:text-white">
                                     <Target className="h-5 w-5" />
                                     <span>Goals</span>
                                 </CardTitle>
-                                <CardDescription>Define the main goals of your proposal</CardDescription>
+                                <CardDescription className="text-gray-600 dark:text-gray-300">Define the main goals of your proposal</CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                     <div className="space-y-1">
-                                        <Label>Title</Label>
+                                        <Label className="text-gray-700 dark:text-gray-300">Title</Label>
                                         <Input
                                             value={newGoal.title}
                                             onChange={(e) => setNewGoal((prev) => ({ ...prev, title: e.target.value }))}
                                             placeholder="Goal title"
+                                            className="border-gray-300 bg-white text-gray-900 placeholder-gray-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
                                         />
                                     </div>
                                     <div className="space-y-1">
-                                        <Label>Description</Label>
+                                        <Label className="text-gray-700 dark:text-gray-300">Description</Label>
                                         <Input
                                             value={newGoal.description}
                                             onChange={(e) => setNewGoal((prev) => ({ ...prev, description: e.target.value }))}
                                             placeholder="Goal description"
+                                            className="border-gray-300 bg-white text-gray-900 placeholder-gray-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
                                         />
                                     </div>
                                 </div>
 
                                 <div className="flex justify-end">
-                                    <Button type="button" onClick={addGoal} size="sm">
+                                    <Button
+                                        type="button"
+                                        onClick={addGoal}
+                                        size="sm"
+                                        className="bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600"
+                                    >
                                         <Plus className="mr-1 h-4 w-4" />
                                         Add Goal
                                     </Button>
@@ -715,19 +971,22 @@ export default function NewProposalForm() {
                                 {/* Goals List */}
                                 {data.goals.length > 0 && (
                                     <div className="space-y-2">
-                                        <h4 className="font-medium text-gray-900">Goals:</h4>
+                                        <h4 className="font-medium text-gray-900 dark:text-white">Goals:</h4>
                                         {data.goals.map((goal) => (
-                                            <div key={goal.id} className="flex items-center justify-between rounded bg-purple-50 p-3">
+                                            <div
+                                                key={goal.id}
+                                                className="flex items-center justify-between rounded border border-purple-200 bg-purple-50 p-3 dark:border-purple-700 dark:bg-purple-900/20"
+                                            >
                                                 <div className="flex-1">
-                                                    <h5 className="font-medium">{goal.title}</h5>
-                                                    <p className="text-sm text-gray-600">{goal.description}</p>
+                                                    <h5 className="font-medium text-gray-900 dark:text-white">{goal.title}</h5>
+                                                    <p className="text-sm text-gray-600 dark:text-gray-300">{goal.description}</p>
                                                 </div>
                                                 <Button
                                                     type="button"
                                                     variant="outline"
                                                     size="sm"
                                                     onClick={() => removeGoal(goal.id)}
-                                                    className="text-red-600 hover:text-red-800"
+                                                    className="border-gray-300 text-red-600 hover:text-red-800 dark:border-gray-600 dark:text-red-400 dark:hover:text-red-300"
                                                 >
                                                     <Trash2 className="h-4 w-4" />
                                                 </Button>
@@ -739,16 +998,25 @@ export default function NewProposalForm() {
                         </Card>
 
                         {/* Submit Buttons */}
-                        <Card>
+                        <Card className="border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
                             <CardFooter className="flex justify-end space-x-4">
-                                <Button variant="outline" type="button" onClick={() => window.history.back()} disabled={processing}>
+                                <Button
+                                    variant="outline"
+                                    type="button"
+                                    onClick={() => router.visit('/project/viewproposals', {
+                                        method: 'get',
+                                        preserveState: false,
+                                        preserveScroll: false,
+                                    })}
+                                    disabled={processing}
+                                    className="border-gray-300 text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
+                                >
                                     Cancel
                                 </Button>
                                 <Button
                                     type="submit"
                                     onClick={handleSubmit}
                                     disabled={processing}
-                                    className="bg-blue-600 text-white hover:bg-blue-700"
                                 >
                                     {processing ? 'Submitting...' : 'Submit Proposal'}
                                 </Button>

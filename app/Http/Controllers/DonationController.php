@@ -6,6 +6,7 @@ use App\Models\Donor;
 use App\Models\ArtifactProposal;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Inertia\Inertia;
 
@@ -24,6 +25,9 @@ class DonationController extends Controller
      */
     public function store(Request $request)
     {
+        Log::info('Donation proposal submitted',[$request->all()]);
+
+        Log::info('images',[$request->allFiles()]);
         // Validate the request
         $validator = Validator::make($request->all(), [
             // Artifact information
@@ -31,12 +35,12 @@ class DonationController extends Controller
             'description' => 'required|string|max:2000',
             'source' => 'required|string|max:500',
             'images.*' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120', // 5MB max per image
-            
+
             // Donor information
             'donor_full_name' => 'required|string|max:255',
             'donor_email' => 'required|email|max:255',
             'donor_phone' => 'required|string|max:20',
-            
+
             // Next of kin information (optional)
             'next_of_kin_name' => 'nullable|string|max:255',
             'next_of_kin_email' => 'nullable|email|max:255',
@@ -66,19 +70,18 @@ class DonationController extends Controller
             if ($request->hasFile('images')) {
                 foreach ($request->file('images') as $image) {
                     $artifactProposal->addMediaFromRequest('images')
-                        ->each(function ($fileAdder) {
-                            $fileAdder->toMediaCollection('artifact_images');
-                        });
+                        ->toMediaCollection('artifact_images');
                 }
             }
 
             DB::commit();
 
-            return redirect()->back()->with('success', 'Your artifact donation proposal has been submitted successfully! We will review it and contact you soon.');
+            return redirect()->route('home')->with('success', 'Your artifact donation proposal has been submitted successfully! We will review it and contact you soon.');
 
         } catch (\Exception $e) {
             DB::rollBack();
-            
+            Log::info('Error submitting donation proposal: ' . $e->getMessage());;
+
             return back()->withErrors([
                 'submission' => 'There was an error submitting your proposal. Please try again.'
             ])->withInput();
@@ -162,5 +165,5 @@ public function updateStatus(Request $request, ArtifactProposal $artifactProposa
     /**
      * Update proposal status
      */
-   
+
 }

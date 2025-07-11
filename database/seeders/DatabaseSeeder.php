@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Console\Commands\Permission;
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -13,18 +14,20 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User seeding
-        // User::factory(10)->create();
-
+//         //User seeding
+//         User::factory(10)->create();
+//
 //        User::factory()->create([
 //            'name' => 'Test User',
 //            'email' => 'test@example.com',
 //        ]);
 
-        // Call your ArtifactSeeder
+        // Call your seeders
         $this->call([
             CategorySeeder::class,
-            ArtifactSeeder::class,
+//            ArtifactSeeder::class,
+            PermissionSeeder::class,
+            ProjectProposalSeeder::class,
         ]);
     }
 }

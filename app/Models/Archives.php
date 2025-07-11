@@ -4,10 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
 
-class Archives extends Model
+class Archives extends Model implements HasMedia
 {
-    use HasFactory;
+    use HasFactory, InteractsWithMedia;
 
     /**
      * The table associated with the model.
@@ -33,8 +35,9 @@ class Archives extends Model
     protected $fillable = [
         'title',
         'author',
-        'documentpath',
         'category',
+        'user_id',
+        'is_published',
     ];
 
     /**
@@ -57,9 +60,9 @@ class Archives extends Model
         return [
             self::CATEGORY_RESEARCH => 'Research',
             self::CATEGORY_CONTEXT => 'Context',
-            self::CATEGORY_DOCUMENTATION => 'Documentation',
-            self::CATEGORY_HISTORICAL => 'Historical',
-            self::CATEGORY_CULTURAL => 'Cultural',
+            'documentation' => 'Documentation',
+            'historical' => 'Historical',
+            'cultural' => 'Cultural',
         ];
     }
 
@@ -137,5 +140,94 @@ class Archives extends Model
     public function getFileName(): string
     {
         return pathinfo($this->documentpath, PATHINFO_BASENAME);
+    }
+
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('documents')
+            ->acceptsMimeTypes(['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/vnd.ms-powerpoint', 'application/vnd.openxmlformats-officedocument.presentationml.presentation']);
+        $this->addMediaCollection('images')
+            ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/jpg', 'image/webp']);
+    }
+
+    public function getDocumentsAttribute()
+    {
+        return $this->getMedia('documents');
+    }
+
+    public function getImagesAttribute()
+    {
+        return $this->getMedia('images');
+    }
+
+    /**
+     * Get the user who uploaded the archive
+     */
+    public function user()
+    {
+        return $this->belongsTo(\App\Models\User::class, 'user_id');
+    }
+
+    /**
+     * Get the artifacts related to this archive.
+     */
+    public function artifacts()
+    {
+        return $this->belongsToMany(
+            Artifact::class,
+            'artifact_archives',
+            'archive_id',
+            'artifact_id'
+        )->withPivot([
+            'relationship_type',
+            'notes',
+            'document_date',
+            'document_author',
+            'is_primary'
+        ])->withTimestamps();
+    }
+
+    /**
+     * Get relationship types for museum documentation.
+     */
+    public static function getRelationshipTypes(): array
+    {
+        return [
+            'conservation_report' => 'Conservation Report',
+            'excavation_notes' => 'Excavation Notes',
+            'research_paper' => 'Research Paper',
+            'exhibition_catalog' => 'Exhibition Catalog',
+            'provenance_document' => 'Provenance Document',
+            'condition_assessment' => 'Condition Assessment',
+            'acquisition_document' => 'Acquisition Document',
+            'photographic_record' => 'Photographic Record',
+            'technical_analysis' => 'Technical Analysis',
+            'other' => 'Other'
+        ];
+    }
+
+    /**
+     * Get the display name for a relationship type.
+     */
+    public function getRelationshipTypeDisplayName($type): string
+    {
+        $types = self::getRelationshipTypes();
+        return $types[$type] ?? $type;
+    }
+
+    /**
+     * Check if this archive is linked to any artifacts.
+     */
+    public function hasLinkedArtifacts(): bool
+    {
+        return $this->artifacts()->exists();
+    }
+
+    /**
+     * Get the primary artifact for this archive.
+     */
+    public function getPrimaryArtifact()
+    {
+        return $this->artifacts()->wherePivot('is_primary', true)->first();
     }
 }

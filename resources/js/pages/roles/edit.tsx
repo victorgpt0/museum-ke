@@ -88,14 +88,14 @@ export default function Edit({ role, role_permissions, permissions }) {
                                     <div className={`grid gap-2`}>
                                         {permissions.map((permission) => (
                                             <Label key={permission} className={`flex items-center space-x-2`}>
-                                                <Input
+                                                <input
                                                     type={`checkbox`}
                                                     className={`h-4 w-4`}
                                                     value={permission}
                                                     checked={data.permissions.includes(permission)}
                                                     id={permission}
                                                     onChange={(e) => handleCheckboxChange(permission, e.target.checked)}
-                                                ></Input>
+                                                ></input>
                                                 <span className={`ml-2 text-gray-700`}>{permission.split('.').slice(1).join('.')}</span>
                                             </Label>
                                         ))}

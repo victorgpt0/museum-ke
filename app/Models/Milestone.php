@@ -3,12 +3,16 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * Milestone Model Template
- * 
+ *
  * REUSABLE TEMPLATE INSTRUCTIONS:
  * 1. Change class name from 'Milestone' to your desired model name
  * 2. Update $table property to match your table name
@@ -17,9 +21,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * 5. Change relationship method names and related models
  * 6. Update foreign key references in relationships
  */
-class Milestone extends Model
+class Milestone extends Model implements HasMedia
 {
-    use HasFactory;
+    use HasFactory, InteractsWithMedia;
 
     /**
      * The table associated with the model.
@@ -56,7 +60,7 @@ class Milestone extends Model
 
     /**
      * Get the project that owns this milestone.
-     * 
+     *
      * TEMPLATE USAGE:
      * - Change method name to match your relationship (e.g., user(), category(), etc.)
      * - Change 'Project::class' to your related model class
@@ -66,22 +70,68 @@ class Milestone extends Model
     {
         return $this->belongsTo(Project::class, 'project_id');
     }
+     public function goals(): HasMany
+{
+    return $this->hasMany(Goals::class);
+}
+
+/**
+ * Get the budgets for this milestone.
+ */
+public function budgets(): HasMany
+{
+    return $this->hasMany(Budget::class);
+}
+
+        public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('milestone_documents')
+            ->acceptsMimeTypes([
+                'application/pdf',
+                'application/msword',
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                'application/vnd.ms-excel',
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'text/plain'
+            ]);
+
+        $this->addMediaCollection('milestone_images')
+            ->acceptsMimeTypes([
+                'image/jpeg',
+                'image/jpg',
+                'image/png',
+                'image/webp'
+            ]);
+    }
+
+    /**
+     * Define media conversions (optional - for image processing)
+     */
+    public function registerMediaConversions(?Media $media = null): void
+    {
+        $this->addMediaConversion('thumb')
+            ->width(300)
+            ->height(300)
+            ->sharpen(10)
+            ->performOnCollections('milestone_images');
+    }
+
 
     /**
      * ADDITIONAL RELATIONSHIP EXAMPLES FOR REUSE:
-     * 
+     *
      * // One-to-Many (if this model has many related records)
      * public function relatedItems(): HasMany
      * {
      *     return $this->hasMany(RelatedModel::class, 'foreign_key_field');
      * }
-     * 
+     *
      * // Many-to-Many
      * public function tags(): BelongsToMany
      * {
      *     return $this->belongsToMany(Tag::class, 'pivot_table_name');
      * }
-     * 
+     *
      * // Has One
      * public function detail(): HasOne
      * {
@@ -138,4 +188,6 @@ class Milestone extends Model
     {
         $this->attributes['title'] = ucfirst(trim($value));
     }
+
+
 }

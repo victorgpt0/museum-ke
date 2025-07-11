@@ -96,22 +96,28 @@ const Notifications: React.FC = () => {
         }
     }, []);
 
-    const markAsRead = (id: number, e) => {
+    const markAsRead = async (id: number, e): Promise<void> => {
         e.preventDefault();
         e.stopPropagation();
-        router.post(
-            route('notifications.mark-as-read', id),
-            {},
-            {
-                preserveScroll: true,
-                preserveState: true,
-                only: ['notifications', 'unreadCount'],
-                onSuccess: () => {
-                    setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
-                    setUnreadCount((prev) => Math.max(0, prev - 1));
+        return new Promise((resolve) => {
+            router.post(
+                route('notifications.mark-as-read', id),
+                {},
+                {
+                    preserveScroll: true,
+                    preserveState: true,
+                    only: ['notifications', 'unreadCount'],
+                    onSuccess: () => {
+                        setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
+                        setUnreadCount((prev) => Math.max(0, prev - 1));
+                        resolve();
+                    },
+                    onError: () => {
+                        resolve();
+                    },
                 },
-            },
-        );
+            );
+        });
     };
 
     const markAllAsRead = () => {
@@ -146,20 +152,19 @@ const Notifications: React.FC = () => {
             },
         });
     };
-
-    const handleRedirect = (redirect: string, id, e) => {
+  
+    const handleRedirect = async (redirect: string, id, e) => {
         if (redirect) {
-            router.visit(redirect, {
-                onSuccess: () => markAsRead(id, e),
-            });
+            await markAsRead(id, e);
+            router.visit(redirect);
         } else {
-            markAsRead(id, e);
+            await markAsRead(id, e);
         }
     };
 
     return (
         <DropdownMenu>
-            <DropdownMenuTrigger className="relative">
+            <DropdownMenuTrigger className="relative" asChild>
                 <div className="relative">
                     {unreadCount > 0 ? (
                         <span className="absolute -top-1.5 -right-1.5 z-10 flex h-5 w-5 items-center justify-center rounded-full border-2 border-white bg-red-500 text-[10px] font-bold text-white dark:border-gray-800">

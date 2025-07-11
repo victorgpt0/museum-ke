@@ -56,6 +56,7 @@ export default function Create({ roles }: Props) {
                             onChange={(e) => setData('name', e.target.value)}
                             placeholder={`Enter User Name`}
                             className={`max-w-md`}
+                            required
                         />
                         <InputError message={errors.name} />
                     </div>

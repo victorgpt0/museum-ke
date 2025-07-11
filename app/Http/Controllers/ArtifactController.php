@@ -2,93 +2,272 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ArtifactRequest;
 use App\Models\Artifact;
 use App\Models\Category;
+use App\Models\Donor;
+use App\Models\Tag;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use App\Models\Archives;
 
 class ArtifactController extends Controller
 {
     /**
-     * Get all artifacts
+     * Display a listing of the resource.
      */
     public function index(Request $request)
     {
-        $perPage = $request->input('per_page', 10); // Default 10 items per page
-        $page = $request->input('page', 1);
+        $query = Artifact::query()->with(['category', 'donor', 'tags']);
 
-        $query = Artifact::with(['category', 'relatedTo']);
-
-        // Handle any filtering here if needed
-        if ($request->has('search')) {
-            $search = $request->input('search');
-            $query->where('title', 'like', "%{$search}%")
-                ->orWhere('description', 'like', "%{$search}%")
-                ->orWhereHas('category', function($q) use ($search) {
-                    $q->where('title', 'like', "%{$search}%");
-                });
+        // Apply filters
+        if ($request->filled('category_id')) {
+            $query->where('category_id', $request->category_id);
+        }
+        if ($request->filled('condition')) {
+            $query->where('condition', $request->condition);
+        }
+        if ($request->filled('location')) {
+            $query->where('location', 'ilike', '%'.$request->location.'%');
+        }
+        if ($request->filled('search')) {
+            $query->where('title', 'ilike', '%'.$request->search.'%');
+        }
+        if ($request->filled('user_id')) {
+            if (str_starts_with($request->user_id, 'not:')) {
+                $id = substr($request->user_id, 4);
+                $query->where('user_id', '!=', $id);
+            } else {
+                $query->where('user_id', $request->user_id);
+            }
         }
 
-        $artifacts = $query->paginate($perPage);
-        $totalArtifacts = Artifact::count();
+        $artifacts = $query->latest()->paginate(request('perPage', 8))->withQueryString();
+        $condition = Artifact::select('condition')->distinct()->pluck('condition');
+        $tags = Tag::all();
 
-        return response()->json([
-            'artifacts' => $artifacts->items(),
-            'total' => $totalArtifacts,
-            'current_page' => $artifacts->currentPage(),
-            'per_page' => $artifacts->perPage(),
-            'last_page' => $artifacts->lastPage(),
-            'total_pages' => ceil($totalArtifacts / $perPage)
+        return Inertia::render('artifacts/index', [
+            'artifacts' => $artifacts,
+            'categories' => Category::all(),
+            'condition' => $condition,
+            'tags' => $tags,
+            'filters' => $request->only(['category_id', 'condition', 'location', 'search', 'user_id']),
         ]);
     }
 
     /**
-     * Get artifacts by category
+     * Show the form for creating a new resource.
      */
-    public function byCategory($categoryId)
-    {
-        $artifacts = Artifact::where('category_id', $categoryId)
-            ->with(['category', 'relatedTo'])
-            ->get();
-
-        return response()->json($artifacts);
-    }
-
-    /**
-     * Get single artifact by ID
-     */
-    public function show($id)
-    {
-        $artifact = Artifact::with(['category', 'relatedTo', 'relatedArtifacts'])
-            ->findOrFail($id);
-
-        return response()->json($artifact);
-    }
-
-
-
-    /**
-     * Store a newly created artifact in storage.
-     */
-    public function store(Request $request)
-{
-    $validated = $request->validate([
-        'title' => 'required|string|max:255',
-        'description' => 'nullable|string',
-        'category_id' => 'required|exists:category,id', // Changed validation rule
-        'condition' => 'required|in:good,poor',
-        'location' => 'nullable|string|max:255',
-    ]);
-
-    Artifact::create($validated);
-
-    return redirect()->route('dashboard')->with('message', 'Artifact created successfully');
-}
     public function create()
-{
-    $categories = \App\Models\Category::all();
-    return Inertia::render('NewArtifact', [
-        'categories' => $categories
-    ]);
-}
+    {
+        return Inertia::render('artifacts/create', [
+            'categories' => Category::all(),
+            'donors' => Donor::all(),
+            'tags' => Tag::all(),
+        ]);
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(ArtifactRequest $request)
+    {
+        try {
+            $validated = $request->validated();
+            $validated['user_id'] = auth()->id();
+
+            // Remove file fields so they're not passed to the DB
+            unset($validated['images'], $validated['documents']);
+
+//            dd($validated);
+
+            $artifact = Artifact::create($validated);
+
+            // Handle file uploads
+            if ($request->hasFile('images')) {
+                foreach ($request->file('images') as $image) {
+                    $artifact->addMedia($image)->toMediaCollection('images');
+                }
+            }
+
+            if ($request->hasFile('documents')) {
+                foreach ($request->file('documents') as $doc) {
+                    $artifact->addMedia($doc)->toMediaCollection('documents');
+                }
+            }
+
+            // Handle tags
+            if ($request->filled('tags')) {
+                $artifact->tags()->sync($request->input('tags'));
+            }
+
+            return redirect()->route('artifacts.index')->with('success', 'Artifact created successfully.');
+        } catch (\Exception $e) {
+            return back()->with('error' ,'Failed to create artifact: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Display the specified resource.
+     */
+    public function show(string $id)
+    {
+        try {
+            $artifact = Artifact::with(['category', 'donor', 'tags', 'archives.user'])->findOrFail($id);
+            $images = $artifact->getMedia('images');
+            $documents = $artifact->getMedia('documents');
+
+            // Group archives by relationship type
+            $archivesByType = $artifact->archives->groupBy('pivot.relationship_type');
+
+            return Inertia::render('artifacts/show', [
+                'artifact' => $artifact,
+                'images' => $images,
+                'documents' => $documents,
+                'archivesByType' => $archivesByType,
+                'relationshipTypes' => Archives::getRelationshipTypes(),
+            ]);
+        } catch (\Exception $e) {
+            return redirect()->route('artifacts.index')->withErrors(['error' => 'Artifact not found.']);
+        }
+    }
+
+    /**
+     * Link an archive to an artifact.
+     */
+    public function linkArchive(Request $request, string $id)
+    {
+        $request->validate([
+            'archive_id' => 'required|exists:archives,id',
+            'relationship_type' => 'required|in:' . implode(',', array_keys(Archives::getRelationshipTypes())),
+            'notes' => 'nullable|string|max:1000',
+            'is_primary' => 'boolean',
+        ]);
+
+        try {
+            $artifact = Artifact::findOrFail($id);
+            $artifact->linkArchive(
+                $request->archive_id,
+                $request->relationship_type,
+                $request->notes,
+                $request->is_primary ?? false
+            );
+
+            return back()->with('success', 'Archive linked successfully.');
+        } catch (\Exception $e) {
+            return back()->withErrors(['error' => 'Failed to link archive: ' . $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Unlink an archive from an artifact.
+     */
+    public function unlinkArchive(Request $request, string $id)
+    {
+        $request->validate([
+            'archive_id' => 'required|exists:archives,id',
+        ]);
+
+        try {
+            $artifact = Artifact::findOrFail($id);
+            $artifact->unlinkArchive($request->archive_id);
+
+            return back()->with('success', 'Archive unlinked successfully.');
+        } catch (\Exception $e) {
+            return back()->withErrors(['error' => 'Failed to unlink archive: ' . $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Get available archives for linking to an artifact.
+     */
+    public function getAvailableArchives(Request $request, string $id)
+    {
+        try {
+            $artifact = Artifact::findOrFail($id);
+            
+            // Get archives that are not already linked to this artifact
+            $linkedArchiveIds = $artifact->archives->pluck('id')->toArray();
+            
+            $availableArchives = Archives::whereNotIn('id', $linkedArchiveIds)
+                ->select('id', 'title', 'author', 'category', 'created_at')
+                ->orderBy('title')
+                ->get();
+
+            return response()->json($availableArchives);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to fetch available archives'], 500);
+        }
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit(string $id)
+    {
+        try {
+            $artifact = Artifact::with(['category', 'donor', 'tags'])->findOrFail($id);
+            $images = $artifact->getMedia('images');
+            $documents = $artifact->getMedia('documents');
+
+            return Inertia::render('artifacts/edit', [
+                'artifact' => $artifact,
+                'categories' => Category::all(),
+                'donors' => Donor::all(),
+                'tags' => Tag::all(),
+                'images' => $images,
+                'documents' => $documents,
+            ]);
+        } catch (\Exception $e) {
+            return redirect()->route('artifacts.index')->withErrors(['error' => 'Artifact not found.']);
+        }
+    }
+
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(ArtifactRequest $request, string $id)
+    {
+        try {
+            $artifact = Artifact::findOrFail($id);
+            $artifact->update($request->validated());
+
+            // Handle file uploads
+            if ($request->hasFile('images')) {
+                foreach ($request->file('images') as $image) {
+                    $artifact->addMedia($image)->toMediaCollection('images');
+                }
+            }
+
+            if ($request->hasFile('documents')) {
+                foreach ($request->file('documents') as $doc) {
+                    $artifact->addMedia($doc)->toMediaCollection('documents');
+                }
+            }
+
+            // Handle tags
+            if ($request->filled('tags')) {
+                $artifact->tags()->sync($request->input('tags'));
+            }
+
+            return redirect()->route('artifacts.index')->with('success', 'Artifact updated successfully.');
+        } catch (\Exception $e) {
+            return back()->withErrors(['error' => 'Failed to update artifact: ' . $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy(string $id)
+    {
+        try {
+            $artifact = Artifact::findOrFail($id);
+            $artifact->delete();
+
+            return redirect()->route('artifacts.index')->with('success', 'Artifact deleted successfully.');
+        } catch (\Exception $e) {
+            return back()->withErrors(['error' => 'Failed to delete artifact: ' . $e->getMessage()]);
+        }
+    }
 }

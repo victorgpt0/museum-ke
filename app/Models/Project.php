@@ -18,12 +18,14 @@ class Project extends Model
     /**
      * The attributes that are mass assignable.
      */
-    protected $fillable = [
-        'title',
-        'description',
-        'duration',
-        'start_date',
-    ];
+        protected $fillable = [
+            'title',
+            'description',
+            'duration',
+            'start_date',
+            'project_proposal_id',
+            'is_published',
+        ];
 
     /**
      * The attributes that should be cast to native types.
@@ -37,10 +39,19 @@ class Project extends Model
     /**
      * Get all milestones for this project.
      */
-    public function milestones(): HasMany
-    {
-        return $this->hasMany(Milestone::class, 'project_id');
-    }
+        public function milestones(): HasMany
+        {
+            return $this->hasMany(Milestone::class, 'project_id');
+        }
+        public function findings(): HasMany
+        {
+            return $this->hasMany(Finding::class, 'project_id');
+        }
+        public function teamMembers(): HasMany
+        {
+            return $this->hasMany(TeamMember::class, 'project_id');
+        }
+
 
     /**
      * Get formatted start date
@@ -49,4 +60,10 @@ class Project extends Model
     {
         return $this->start_date ? $this->start_date->format('M d, Y') : null;
     }
+   public function proposal()
+{
+    return $this->belongsTo(ProjectProposal::class, 'project_proposal_id');
+}
+
+
 }

@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Illuminate\Routing\Controllers\Middleware;
+use Spatie\Permission\Models\Role;
 
 class UserController extends Controller implements HasMiddleware
 {
@@ -34,9 +35,12 @@ class UserController extends Controller implements HasMiddleware
      */
     public function index()
     {
+        $query = User::query()->with('roles');
+        if (!auth()->user()->hasRole('SuperAdmin')){
+            $query->whereIn('user_id', [auth()->user()->id]);
+        }
         return Inertia::render('users/index',[
-            'users' => User::query()
-                ->with('roles')
+            'users' => $query
                 ->when(request('search'), fn ($query, $search) =>
                 $query->where('name', 'like', "%{$search}%")
                 )
@@ -51,7 +55,15 @@ class UserController extends Controller implements HasMiddleware
     public function create()
     {
         return Inertia::render('users/create',[
-            'roles' => StaticDataService::getRoles()
+            'roles' => Role::select('id', 'name')
+                ->orderBy('name')
+                ->get()
+                ->map(function ($role) {
+                    return [
+                        'value' => $role->id,
+                        'label' => $role->name
+                    ];
+                })
         ]);
     }
 
@@ -63,7 +75,7 @@ class UserController extends Controller implements HasMiddleware
         $validator = Validator::make($request->all(), [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
-            'role' => ['required', 'exists:roles,name']
+            'role' => ['required', 'exists:roles,name'],
         ]);
 
         if ($validator->fails()) {
@@ -76,7 +88,10 @@ class UserController extends Controller implements HasMiddleware
         try {
             $user = User::create(
                 $request->only('name','email')
-                + ['password' => Hash::make('password')]
+                + [
+                    'password' => Hash::make('password'),
+                    'user_id' => auth()->user()->id
+                    ]
             );
 
             $user->syncRoles([$request->role]);
@@ -109,7 +124,15 @@ class UserController extends Controller implements HasMiddleware
         return Inertia::render('users/edit',[
             'user' => $user,
             'userRoles' => $user->roles->pluck('name')->first(),
-            'roles' => StaticDataService::getRoles()
+            'roles' => Role::select('id', 'name')
+                ->orderBy('name')
+                ->get()
+                ->map(function ($role) {
+                    return [
+                        'value' => $role->id,
+                        'label' => $role->name
+                    ];
+                })
         ]);
     }
 

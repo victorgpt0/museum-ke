@@ -1,4 +1,5 @@
 import AppLayout from '@/layouts/app-layout';
+import { BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
 import axios from 'axios';
 import React, { useState } from 'react';
@@ -27,8 +28,10 @@ export default function AI() {
         }
     };
 
+    const breadcrumbs: BreadcrumbItem[] = [{ title: 'AI Assistant', href: '/AI' }];
+
     return (
-        <AppLayout>
+        <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="AI Assistant" />
             <div className="py-6">
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">

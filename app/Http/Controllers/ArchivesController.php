@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class ArchivesController extends Controller
 {
@@ -33,11 +34,17 @@ class ArchivesController extends Controller
             $query->where('author', 'LIKE', '%' . $request->author . '%');
         }
 
-        $archives = $query->orderBy('created_at', 'desc')
+        $archives = $query->with('user')->orderBy('created_at', 'desc')
                          ->paginate(12)
                          ->withQueryString();
 
         $categories = Category::all();
+
+        // Add uploader name to each archive
+        $archives->getCollection()->transform(function ($archive) {
+            $archive->uploader_name = $archive->user ? $archive->user->name : 'Unknown';
+            return $archive;
+        });
 
         return Inertia::render('Archives', [
             'archives' => $archives,
@@ -51,11 +58,7 @@ class ArchivesController extends Controller
      */
     public function create()
     {
-        $categories = Category::all();
-        
-        return Inertia::render('NewArchive', [
-            'categories' => $categories
-        ]);
+        return Inertia::render('NewArchive');
     }
 
     /**
@@ -66,33 +69,49 @@ class ArchivesController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'author' => 'required|string|max:255',
-            'category' => 'required|string|max:255',
-            'document' => 'required|file|mimes:pdf,doc,docx,txt,xlsx,xls,ppt,pptx|max:10240', // 10MB max
+            'category' => ['required', 'string', Rule::in(['research', 'context'])],
+            'document' => 'nullable|file|mimes:pdf,doc,docx,txt,xlsx,xls,ppt,pptx|max:10240',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
         ]);
 
-        // Store the uploaded file
-        $documentPath = $request->file('document')->store('archives', 'public');
-
-        // Create the archive record
-        Archives::create([
+        $archive = Archives::create([
             'title' => $validated['title'],
             'author' => $validated['author'],
             'category' => $validated['category'],
-            'documentpath' => $documentPath,
+            'user_id' => auth()->id(),
         ]);
+
+        // Attach document if uploaded
+        if ($request->hasFile('document')) {
+            $archive->addMediaFromRequest('document')->toMediaCollection('documents');
+        }
+        // Attach image if uploaded
+        if ($request->hasFile('image')) {
+            $archive->addMediaFromRequest('image')->toMediaCollection('images');
+        }
 
         return redirect()->route('archives.index')
                         ->with('success', 'Archive created successfully!');
     }
 
     /**
-     * Display the specified Archives.
+     * Display the specified archive.
      */
     public function show(Archives $archive)
     {
+        // Get media collections using Spatie MediaLibrary
+        $documents = $archive->getMedia('documents');
+        $images = $archive->getMedia('images');
+        
+        // Load related artifacts with pivot data
+        $archive->load(['artifacts' => function ($query) {
+            $query->withPivot(['relationship_type', 'notes', 'document_date', 'document_author', 'is_primary']);
+        }]);
+        
         return Inertia::render('Archive/Show', [
             'archive' => $archive,
-            'documentUrl' => Storage::url($archive->documentpath),
+            'documents' => $documents,
+            'images' => $images,
         ]);
     }
 
@@ -101,11 +120,14 @@ class ArchivesController extends Controller
      */
     public function edit(Archives $archive)
     {
-        $categories = Category::all();
+        // Get media collections using Spatie MediaLibrary
+        $documents = $archive->getMedia('documents');
+        $images = $archive->getMedia('images');
         
         return Inertia::render('Archive/Edit', [
             'archive' => $archive,
-            'categories' => $categories
+            'documents' => $documents,
+            'images' => $images,
         ]);
     }
 
@@ -114,26 +136,38 @@ class ArchivesController extends Controller
      */
     public function update(Request $request, Archives $archive)
     {
-        $validated = $request->validate([
+        $request->validate([
             'title' => 'required|string|max:255',
-            'author' => 'required|string|max:255',
-            'category' => 'required|string|max:255',
-            'document' => 'nullable|file|mimes:pdf,doc,docx,txt,xlsx,xls,ppt,pptx|max:10240',
+            'author' => 'nullable|string|max:255',
+            'category' => 'nullable|string|max:255',
+            'documents.*' => 'nullable|file|mimes:pdf,doc,docx,txt,xlsx,xls,ppt,pptx|max:10240',
+            'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         ]);
 
-        // If a new document is uploaded, store it and delete the old one
-        if ($request->hasFile('document')) {
-            // Delete old file
-            Storage::disk('public')->delete($archive->documentpath);
-            
-            // Store new file
-            $validated['documentpath'] = $request->file('document')->store('archives', 'public');
+        $archive->update([
+            'title' => $request->title,
+            'author' => $request->author,
+            'category' => $request->category,
+        ]);
+
+        // Handle document uploads
+        if ($request->hasFile('documents')) {
+            foreach ($request->file('documents') as $document) {
+                $archive->addMedia($document)
+                    ->toMediaCollection('documents');
+            }
         }
 
-        $archive->update($validated);
+        // Handle image uploads
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $image) {
+                $archive->addMedia($image)
+                    ->toMediaCollection('images');
+            }
+        }
 
-        return redirect()->route('archives.index')
-                        ->with('success', 'Archive updated successfully!');
+        return redirect()->route('archives.show', $archive)
+            ->with('success', 'Archive updated successfully.');
     }
 
     /**

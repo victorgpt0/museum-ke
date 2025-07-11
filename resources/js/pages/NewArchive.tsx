@@ -1,25 +1,21 @@
 import AppLayout from '@/layouts/app-layout';
+import { BreadcrumbItem } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { ArrowLeft, FileText, Save, Upload, X } from 'lucide-react';
 import React, { useRef, useState } from 'react';
+import { Button } from '@/components/ui/button';
 
-interface Category {
-    id: number;
-    name: string;
-}
-
-interface Props {
-    categories: Category[];
-}
 
 interface FormData {
     title: string;
     author: string;
     category: string;
     document: File | null;
+    image: File | null;
+    [key: string]: string | File | null;
 }
 
-function NewArchive({ categories }: Props) {
+function NewArchive() {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [dragActive, setDragActive] = useState(false);
     const [selectedFileName, setSelectedFileName] = useState<string>('');
@@ -29,6 +25,7 @@ function NewArchive({ categories }: Props) {
         author: '',
         category: '',
         document: null,
+        image: null,
     });
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -52,7 +49,11 @@ function NewArchive({ categories }: Props) {
     const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
-            handleFileSelect(file);
+            if (e.target.name === 'document') {
+                handleFileSelect(file);
+            } else if (e.target.name === 'image') {
+                setData('image', file);
+            }
         }
     };
 
@@ -118,8 +119,13 @@ function NewArchive({ categories }: Props) {
         }
     };
 
+    const breadcrumbs: BreadcrumbItem[] = [
+        { title: 'Archives', href: '/archives' },
+        { title: 'Add New Archive', href: '/archives/new-file' },
+    ];
+
     return (
-        <>
+        <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="New Archive" />
 
             <div className="py-8">
@@ -150,6 +156,7 @@ function NewArchive({ categories }: Props) {
                                 <input
                                     ref={fileInputRef}
                                     type="file"
+                                    name="document"
                                     onChange={handleFileInputChange}
                                     accept=".pdf,.doc,.docx,.txt,.xlsx,.xls,.ppt,.pptx"
                                     className="hidden"
@@ -177,13 +184,12 @@ function NewArchive({ categories }: Props) {
                                             </p>
                                             <p className="text-xs text-gray-500 dark:text-gray-500">Maximum file size: 10MB</p>
                                         </div>
-                                        <button
+                                        <Button
                                             type="button"
                                             onClick={openFileExplorer}
-                                            className="mt-4 rounded-lg bg-blue-600 px-6 py-2 font-medium text-white transition-colors hover:bg-blue-700"
                                         >
                                             Browse Files
-                                        </button>
+                                        </Button>
                                     </div>
                                 ) : (
                                     <div className="rounded-lg border border-gray-300 bg-gray-50 p-4 dark:border-gray-600 dark:bg-gray-800">
@@ -207,6 +213,19 @@ function NewArchive({ categories }: Props) {
                                 )}
 
                                 {errors.document && <p className="mt-2 text-sm text-red-600 dark:text-red-400">{errors.document}</p>}
+                            </div>
+
+                            {/* Image Upload Section */}
+                            <div>
+                                <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Image (optional)</label>
+                                <input
+                                    type="file"
+                                    name="image"
+                                    accept="image/jpeg,image/png,image/jpg,image/webp"
+                                    onChange={handleFileInputChange}
+                                    className="block w-full cursor-pointer rounded-lg border border-gray-300 bg-white text-sm text-gray-900 focus:outline-none dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+                                />
+                                {errors.image && <p className="mt-2 text-sm text-red-600 dark:text-red-400">{errors.image}</p>}
                             </div>
 
                             {/* Title Field */}
@@ -261,15 +280,8 @@ function NewArchive({ categories }: Props) {
                                     <option value="" className="bg-white text-gray-900 dark:bg-gray-800 dark:text-gray-100">
                                         Select a category
                                     </option>
-                                    {categories.map((category) => (
-                                        <option
-                                            key={category.id}
-                                            value={category.name}
-                                            className="bg-white text-gray-900 dark:bg-gray-800 dark:text-gray-100"
-                                        >
-                                            {category.name}
-                                        </option>
-                                    ))}
+                                    <option value="research">Research</option>
+                                    <option value="context">Context</option>
                                 </select>
                                 {errors.category && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.category}</p>}
                             </div>
@@ -302,10 +314,9 @@ function NewArchive({ categories }: Props) {
                                 >
                                     Cancel
                                 </Link>
-                                <button
+                                <Button
                                     type="submit"
                                     disabled={processing}
-                                    className="flex items-center gap-2 rounded-lg bg-blue-600 px-6 py-2 font-medium text-white transition-colors hover:bg-blue-700 disabled:bg-blue-400"
                                 >
                                     {processing ? (
                                         <>
@@ -318,7 +329,7 @@ function NewArchive({ categories }: Props) {
                                             Save Archive
                                         </>
                                     )}
-                                </button>
+                                </Button>
                             </div>
                         </form>
                     </div>
@@ -340,11 +351,7 @@ function NewArchive({ categories }: Props) {
                     </div>
                 </div>
             </div>
-        </>
+        </AppLayout>
     );
 }
-
-// Wrap the component with your layout
-NewArchive.layout = (page: React.ReactElement) => <AppLayout>{page}</AppLayout>;
-
 export default NewArchive;

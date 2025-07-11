@@ -1,12 +1,20 @@
 <?php
 
+use App\Http\Controllers\AcquisitionController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\SearchController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\ArtifactController;
 use App\Http\Controllers\ArchivesController;
 use App\Http\Controllers\DonationController;
+use App\Http\Controllers\ProjectProposalController;
+use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\MilestoneController;
+use App\Http\Controllers\GoalController;
+use App\Http\Controllers\FindingController;
+use App\Http\Controllers\TeamMembersController;
 
 
 
@@ -14,11 +22,31 @@ Route::get('/', function () {
     return Inertia::render('welcome');
 })->name('home');
 
+// Public search route
+Route::get('/search', [SearchController::class, 'search'])->name('search');
+
+Route::get('/explore', function () {
+    return Inertia::render('explore');
+})->name('explore');
+
+Route::middleware('guest')->group(function () {
+    Route::get('/landingpage', function () {
+        return Inertia::render('theDashboard');
+    })->name('landingpage');
+
+    Route::prefix('acquisitions')
+        ->controller(AcquisitionController::class)
+        ->name('acquisitions.')
+        ->group(function () {
+            Route::get('/create', 'create')->name('create');
+            Route::post('/', 'store')->name('store');
+        });
+});
+
+
 Route::middleware(['auth', 'verified'])->group(function () {
 
-    Route::get('dashboard', function () {
-        return Inertia::render('dashboard');
-    })->name('dashboard');
+    Route::get('dashboard', [App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard');
 
     Route::resource('users', UserController::class);
     Route::resource('roles', RoleController::class);
@@ -33,18 +61,81 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('/{id}', 'destroy')->name('destroy');
     });
 
+    Route::resource('acquisitions', AcquisitionController::class)->except(['create', 'store']);
+    Route::resource('artifacts', ArtifactController::class);
+    Route::post('/artifacts/{id}/link-archive', [ArtifactController::class, 'linkArchive'])->name('artifacts.link-archive');
+    Route::delete('/artifacts/{id}/unlink-archive', [ArtifactController::class, 'unlinkArchive'])->name('artifacts.unlink-archive');
+    Route::get('/artifacts/{id}/available-archives', [ArtifactController::class, 'getAvailableArchives'])->name('artifacts.available-archives');
+
+    // Approve and reject artifact proposals
+    Route::post('/acquisition/{artifactProposal}/approve', [AcquisitionController::class, 'approve'])->name('acquisitions.approve');
+    Route::post('/acquisition/{artifactProposal}/reject', [AcquisitionController::class, 'reject'])->name('acquisitions.reject');
+
+    // Media Library Routes
+    Route::controller(App\Http\Controllers\MediaLibraryController::class)
+        ->prefix('media-library')
+        ->name('media-library.')
+        ->group(function () {
+            // List and search routes
+            Route::get('/', 'index')->name('index');
+            Route::get('search', 'search')->name('search');
+            Route::get('analytics', 'analytics')->name('analytics');
+            Route::get('type/{type}', 'byType')->name('by-type');
+
+            // Bulk operations
+            Route::post('bulk-action', 'bulkAction')->name('bulk-action');
+
+            // Individual media item routes
+            Route::get('{id}', 'show')->name('show');
+            Route::get('{id}/edit', 'edit')->name('edit');
+            Route::put('{id}', 'update')->name('update');
+            Route::delete('{id}', 'destroy')->name('destroy');
+            Route::get('{id}/download', 'download')->name('download');
+            Route::get('{id}/conversion/{conversion}', 'conversion')->name('conversion');
+        });
+    //------PROJECT-------->
+    //proposals
+    Route::get('/project/all-projects', [ProjectController::class, 'showAll'])->name('project.all');
+    Route::get('/project/dashboard/{id}', [ProjectController::class, 'show'])->name('project.show');
+
+    Route::get('/project/new-proposal', function () {
+        return Inertia::render('Project/proposal/new-proposal');
+    })->name('projectproposal.new');
+    Route::post('/project/saveproposal', [ProjectProposalController::class, 'store'])->name('projectproposal.store');
+    Route::get('/project/viewproposals', [ProjectProposalController::class, 'index'])->name('project.proposal.index');
+    Route::post('/project/proposal/approve', [ProjectProposalController::class, 'approve']);
+    Route::post('/project/proposal/reject', [ProjectProposalController::class, 'reject']);
+
+    Route::get('/projects/{project}/findings/create', [FindingController::class, 'create'])->name('findings.create');
+    Route::post('/projects/{project}/findings', [FindingController::class, 'store'])->name('findings.store');
+    Route::post('/projects/{project}/team-members', [TeamMembersController::class, 'store'])->name('findings.team-members');
+    Route::get('/projects/{project}/team-members/create', [TeamMembersController::class, 'create'])->name('findings.team-members.create');
+
+    // Milestone routes
+    Route::post('/projects/{project}/savemilestones', [MilestoneController::class, 'store'])->name('project.milestones.store');
+    Route::put('/milestones/{milestone}', [MilestoneController::class, 'update'])->name('milestones.update');
+    Route::get('/projects/{project}/milestones/create', [MilestoneController::class, 'create'])->name('project.milestones.create');
+
+    // Goal routes
+    Route::post('/goals', [GoalController::class, 'storeWithMilestone'])->name('goals.store');
+    Route::put('/goals/{goal:id}/save', [GoalController::class, 'update'])->name('goals.update');
+    Route::get('/projects/{project}/milestones/{milestone}', [MilestoneController::class, 'show'])->name('project.milestones.show');
+    Route::put('/projects/{project}/milestones/{milestone}/goals', [MilestoneController::class, 'updateGoals'])->name('project.milestones.update-goals');
+    Route::put('/projects/{project}/milestones/{milestone}/budget', [MilestoneController::class, 'updateBudget'])->name('project.milestones.update-budget');
+
+    Route::post('/project/{id}/complete', [ProjectController::class, 'markComplete'])->name('project.complete');
+    Route::get('/proposals/{id}', [ProjectProposalController::class, 'show'])->name('proposals.show');
+
 });
 
-Route::get('/artifacts', [ArtifactController::class, 'index']);
-Route::get('/artifacts/category/{categoryId}', [ArtifactController::class, 'byCategory']);
-Route::get('/artifacts/{id}', [ArtifactController::class, 'show']);
+//Guest Routes
 
-Route::get('/dashboard/new-artifact', [ArtifactController::class, 'create'])->name('artifacts.create');
-Route::post('/artifacts', [ArtifactController::class, 'store'])->name('artifacts.store');
+Route::get('/dashboard/new-artifact', [ArtifactController::class, 'create'])->name('artifact.create');
 
 // In your web.php routes file
 Route::get('/archives', [ArchivesController::class, 'index'])->name('archives.index');
 Route::get('/archives/new-file', [ArchivesController::class, 'create'])->name('archives.create');
+Route::post('/archives', [ArchivesController::class, 'store'])->name('archives.store');
 // Existing routes...
 Route::get('/archives/{archive}', [ArchivesController::class, 'show'])->name('archives.show');
 Route::get('/archives/{archive}/edit', [ArchivesController::class, 'edit'])->name('archives.edit');
@@ -55,10 +146,11 @@ Route::get('/map', function () {
     return Inertia::render('Map');
 })->name('map');
 
-//Acquisition
+Route::middleware('guest')->group(function () {
+    Route::get('/curator/acquisition-portal', [DonationController::class, 'create'])->name('donations.create');
+    Route::post('/curator/save', [DonationController::class, 'store'])->name('donations.store');
+});
 
-Route::get('/curator/acquisition-portal', [DonationController::class, 'create'])->name('donations.create');
-Route::post('/curator/save', [DonationController::class, 'store'])->name('donations.store');
 
     // Display all donation proposals
     Route::get('/curator/acquisition-history', [DonationController::class, 'index'])->name('admin.donations.index');
@@ -82,11 +174,12 @@ Route::post('/api/ai/query', [App\Http\Controllers\AIController::class, 'query']
     ->middleware(['auth'])
     ->name('ai.query');
 
-//------PROJECT-------->
-//proposals
-Route::get('/project/new-proposal', function () {
-    return Inertia::render('Project/proposal/new-proposal');
-});
+Route::get('activity-logs', [App\Http\Controllers\ActivityLogController::class, 'index'])->name('activity-logs.index');
+
+
+Route::post('/project/{id}/complete', [ProjectController::class, 'markComplete'])->middleware(['auth'])->name('project.complete');
+
+Route::get('/proposals/{id}', [App\Http\Controllers\ProjectProposalController::class, 'show'])->name('proposals.show');
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';
