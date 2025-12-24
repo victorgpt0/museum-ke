@@ -29,8 +29,6 @@ COPY --chown=www-data:www-data . .
 COPY --from=vendor --chown=www-data:www-data /app/vendor ./vendor
 COPY --from=node_modules --chown=www-data:www-data /app/public/build ./public/build
 
-RUN composer dump-autoload --optimize --no-dev
-
 RUN touch database/database.sqlite && \
     chown -R www-data:www-data /var/www/html && \
     chmod -R 775 storage bootstrap/cache database && \
