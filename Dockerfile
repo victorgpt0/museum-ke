@@ -1,5 +1,8 @@
 FROM serversideup/php:8.4-fpm AS vendor
 WORKDIR /app
+USER root
+RUN install-php-extensions exif
+USER www-data
 COPY composer.json composer.lock ./
 RUN --mount=type=cache,target=/root/.composer \
     composer install --no-dev --no-scripts --no-autoloader --prefer-dist
@@ -12,18 +15,19 @@ RUN  --mount=type=cache,target=/root/.npm \
 COPY . .
 RUN npm run build
 
-FROM serversideup/php:8.4-fpm
+FROM serversideup/php:8.4-fpm-nginx
 
 SHELL ["/bin/sh", "-e", "-c"]
 
 WORKDIR /var/www/html
 
+USER root
+RUN install-php-extensions exif
+
 COPY docker/php.ini /usr/local/etc/php/conf.d/99-laravel.ini
 COPY docker/nginx.conf /etc/nginx/http.d/default.conf
 COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
-
-RUN chmod +x docker/entrypoint.sh
 
 COPY . .
 
@@ -34,7 +38,9 @@ RUN touch database/database.sqlite && \
     chown -R www-data:www-data /var/www/html && \
     chmod -R 775 storage bootstrap/cache database
 
-EXPOSE 80/tcp
+USER www-data
+
+EXPOSE 8080/tcp
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 \
     CMD curl -f http://localhost/up || exit 1
