@@ -1,37 +1,34 @@
-FROM node:22-alpine AS builder
+FROM serversideup/php:8.4-fpm AS vendor
 WORKDIR /app
-COPY . .
-RUN npm install && npm run build
+COPY composer.json composer.lock ./
+RUN --mount=type=cache,target=/root/.composer \
+    composer install --no-dev --no-scripts --no-autoloader --prefer-dist
 
-FROM php:8.2-fpm-alpine
+FROM node:22-alpine AS node_modules
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN  --mount=type=cache,target=/root/.npm \
+     npm ci
+COPY . .
+RUN npm run build
+
+FROM serversideup/php:8.4-fpm
 
 SHELL ["/bin/sh", "-e", "-c"]
 
-RUN apk add --no-cache \
-    nginx \
-    supervisor \
-    libpng-dev \
-    libxml2-dev \
-    zip \
-    unzip \
-    git \
-    curl \
-    icu-dev \
-    sqlite-dev \
-    && docker-php-ext-install pdo pdo_mysql pdo_sqlite bcmath xml intl gd opcache exif pcntl posix
-
 WORKDIR /var/www/html
-COPY . .
-COPY --from=builder /app/public/build ./public/build
-
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
-RUN composer install --no-dev --optimize-autoloader --no-scripts \
-    && chmod +x docker/entrypoint.sh
 
 COPY docker/php.ini /usr/local/etc/php/conf.d/99-laravel.ini
 COPY docker/nginx.conf /etc/nginx/http.d/default.conf
 COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
+
+RUN chmod +x docker/entrypoint.sh
+
+COPY . .
+
+COPY --from=vendor /app/vendor ./vendor
+COPY --from=node_modules /app/public/build ./public/build
 
 RUN touch database/database.sqlite && \
     chown -R www-data:www-data /var/www/html && \
