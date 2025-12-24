@@ -1,7 +1,10 @@
-FROM serversideup/php:8.4-fpm AS vendor
-WORKDIR /app
+FROM serversideup/php:8.4-fpm-nginx AS base
+WORKDIR /var/www/html
 USER root
 RUN install-php-extensions exif
+
+FROM base AS vendor
+WORKDIR /app
 COPY composer.json composer.lock ./
 RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist
 
@@ -12,15 +15,13 @@ RUN  npm ci
 COPY . .
 RUN npm run build
 
-FROM serversideup/php:8.4-fpm-nginx
+FROM base AS final
 WORKDIR /var/www/html
 USER root
 
-RUN install-php-extensions exif
-
 COPY docker/php.ini /usr/local/etc/php/conf.d/99-laravel.ini
 COPY docker/nginx.conf /etc/nginx/http.d/default.conf
-COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY docker/supervisord.conf /etc/supervisord/conf.d/supervisord.conf
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 
 RUN chmod +x /usr/local/bin/entrypoint.sh
@@ -28,6 +29,8 @@ RUN chmod +x /usr/local/bin/entrypoint.sh
 COPY --chown=www-data:www-data . .
 COPY --from=vendor --chown=www-data:www-data /app/vendor ./vendor
 COPY --from=node_modules --chown=www-data:www-data /app/public/build ./public/build
+
+RUN composer dump-autoload --optimize --classmap-authoritative
 
 RUN touch database/database.sqlite && \
     chown -R www-data:www-data /var/www/html && \
