@@ -1,4 +1,5 @@
 #!/usr/bin/env sh
+set -e
 
 php artisan storage:link -n -vvv
 
