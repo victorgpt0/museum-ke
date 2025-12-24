@@ -2,26 +2,20 @@ FROM serversideup/php:8.4-fpm AS vendor
 WORKDIR /app
 USER root
 RUN install-php-extensions exif
-USER www-data
 COPY composer.json composer.lock ./
-RUN --mount=type=cache,target=/root/.composer \
-    composer install --no-dev --no-scripts --no-autoloader --prefer-dist
+RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist
 
 FROM node:22-alpine AS node_modules
 WORKDIR /app
 COPY package.json package-lock.json ./
-RUN  --mount=type=cache,target=/root/.npm \
-     npm ci
+RUN  npm ci
 COPY . .
 RUN npm run build
 
 FROM serversideup/php:8.4-fpm-nginx
-
-SHELL ["/bin/sh", "-e", "-c"]
-
 WORKDIR /var/www/html
-
 USER root
+
 RUN install-php-extensions exif
 
 COPY docker/php.ini /usr/local/etc/php/conf.d/99-laravel.ini
@@ -29,14 +23,18 @@ COPY docker/nginx.conf /etc/nginx/http.d/default.conf
 COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 
-COPY . .
+RUN chmod +x /usr/local/bin/entrypoint.sh
 
-COPY --from=vendor /app/vendor ./vendor
-COPY --from=node_modules /app/public/build ./public/build
+COPY --chown=www-data:www-data . .
+COPY --from=vendor --chown=www-data:www-data /app/vendor ./vendor
+COPY --from=node_modules --chown=www-data:www-data /app/public/build ./public/build
+
+RUN composer dump-autoload --optimize --no-dev
 
 RUN touch database/database.sqlite && \
     chown -R www-data:www-data /var/www/html && \
-    chmod -R 775 storage bootstrap/cache database
+    chmod -R 775 storage bootstrap/cache database && \
+    chmod 664 database/database.sqlite
 
 USER www-data
 
