@@ -1,0 +1,20 @@
+# Git
+.git
+.gitignore
+
+# Laravel local artifacts
+/vendor
+/node_modules
+/public/storage
+/storage/*.key
+/database/database.sqlite
+.env
+.phpunit.result.cache
+
+# Docker/Build files
+Dockerfile
+.dockerignore
+
+# OS files
+.DS_Store
+Thumbs.db

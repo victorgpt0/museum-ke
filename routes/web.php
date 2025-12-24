@@ -21,7 +21,9 @@ use App\Http\Controllers\TeamMembersController;
 Route::get('/', function () {
     return Inertia::render('welcome');
 })->name('home');
-
+Route::get('/up', function () {
+    return response()->noContent();
+});
 // Public search route
 Route::get('/search', [SearchController::class, 'search'])->name('search');
 
