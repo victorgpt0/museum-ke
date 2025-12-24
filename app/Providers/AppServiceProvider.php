@@ -20,6 +20,11 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton('hashids', function () {
             return new Hashids(config('hashids.salt'), config('hashids.min_length'));
         });
+
+        if ($this->app->isLocal()) {
+            $this->app->register(\Laravel\Telescope\TelescopeServiceProvider::class);
+            $this->app->register(TelescopeServiceProvider::class);
+        }
     }
 
     /**
