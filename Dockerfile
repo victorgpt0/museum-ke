@@ -30,14 +30,14 @@ COPY --chown=www-data:www-data . .
 COPY --from=vendor --chown=www-data:www-data /app/vendor ./vendor
 COPY --from=node_modules --chown=www-data:www-data /app/public/build ./public/build
 
-RUN composer dump-autoload --optimize --classmap-authoritative
-
-RUN touch database/database.sqlite && \
+RUN composer dump-autoload --optimize --classmap-authoritative && \
     chown -R www-data:www-data /var/www/html && \
-    chmod -R 775 storage bootstrap/cache database && \
-    chmod 664 database/database.sqlite
+    chmod -R 775 storage bootstrap/cache database
 
 USER www-data
+
+RUN touch database/database.sqlite && \
+    chmod 664 database/database.sqlite
 
 EXPOSE 8080/tcp
 
