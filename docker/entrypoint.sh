@@ -1,19 +1,14 @@
 #!/usr/bin/env sh
 set -e
 
-# Ensure database file exists and is writable
-if [ ! -f database/database.sqlite ]; then
-    echo "Creating database file..."
-    touch database/database.sqlite
-    chmod 664 database/database.sqlite
-fi
+echo "Starting Postgresql..."
 
-# Verify database is writable
-if [ ! -w database/database.sqlite ]; then
-    echo "ERROR: database/database.sqlite is not writable"
-    ls -la database/
-    exit 1
-fi
+su - postgres -c "pg_ctl -D /var/lib/postgresql/data -l /var/lib/postgresql/logfile start"
+
+su - postgres -c "psql -c \"CREATE DATABASE ${DB_DATABASE};\"" || echo "Database already exists"
+su - postgres -c "psql -c \"CREATE USER ${DB_USERNAME} WITH PASSWORD '${DB_PASSWORD}';\"" 2>/dev/null || echo "User already exists"
+su - postgres -c "psql -c \"GRANT ALL PRIVILEGES ON DATABASE ${DB_DATABASE} TO ${DB_USERNAME};\"" 2>/dev/null || true
+su - postgres -c "psql -d ${DB_DATABASE} -c \"GRANT ALL ON SCHEMA public TO ${DB_USERNAME};\"" 2>/dev/null || true
 
 echo "Starting Laravel application..."
 

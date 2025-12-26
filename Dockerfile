@@ -1,7 +1,8 @@
 FROM serversideup/php:8.4-fpm-nginx AS base
 WORKDIR /var/www/html
 USER root
-RUN install-php-extensions exif
+RUN install-php-extensions exif pgsql pdo_pgsql && \
+    apk add --no-cache postgresql postgresql-contrib
 
 FROM base AS vendor
 WORKDIR /app
@@ -34,10 +35,11 @@ RUN composer dump-autoload --optimize --classmap-authoritative && \
     chown -R www-data:www-data /var/www/html && \
     chmod -R 775 storage bootstrap/cache database
 
-USER www-data
+RUN su - postgres -c "initdb -D /var/lib/postgresql/data" && \
+    su - postgres -c "echo \"host all all 0.0.0.0/0 md5\" >> /var/lib/postgresql/data/pg_hba.conf" && \
+    su - postgres -c "initdb \"listen_addresses='*'\" >> /var/lib/postgresql/data/postgresql.conf"
 
-RUN touch database/database.sqlite && \
-    chmod 664 database/database.sqlite
+USER www-data
 
 EXPOSE 8080/tcp
 
