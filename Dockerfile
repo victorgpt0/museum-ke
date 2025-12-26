@@ -38,9 +38,14 @@ RUN composer dump-autoload --optimize --classmap-authoritative && \
     chown -R www-data:www-data /var/www/html && \
     chmod -R 775 storage bootstrap/cache database
 
-RUN su - postgres -c "initdb -D /var/lib/postgresql/data" && \
-    su - postgres -c "echo \"host all all 0.0.0.0/0 md5\" >> /var/lib/postgresql/data/pg_hba.conf" && \
-    su - postgres -c "initdb \"listen_addresses='*'\" >> /var/lib/postgresql/data/postgresql.conf"
+RUN mkdir -p /var/lib/postgresql/data /run/postgresql && \
+    chown -R postgres:postgres /var/lib/postgresql /run/postgresql && \
+    chmod 0700 /var/lib/postgresql/data
+
+USER postgres
+RUN /usr/lib/postgresql/*/bin/initdb -D /var/lib/postgresql/data && \
+    echo "host all all 0.0.0.0/0 md5" >> /var/lib/postgresql/data/pg_hba.conf && \
+    echo "listen_addresses='*'" >> /var/lib/postgresql/data/postgresql.conf
 
 USER www-data
 
