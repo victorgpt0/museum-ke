@@ -10,6 +10,8 @@ runuser -u postgres -- $PG_BIN/pg_ctl -D /var/lib/postgresql/data -l /var/lib/po
 
 sleep 3
 
+echo DB_DATABASE
+
 runuser -u postgres -- psql -c "CREATE DATABASE ${DB_DATABASE};" 2>/dev/null || echo "Database already exists"
 runuser -u postgres -- psql -c  "CREATE USER ${DB_USERNAME} WITH PASSWORD '${DB_PASSWORD}';" 2>/dev/null || echo "User already exists"
 runuser -u postgres -- psql -c  "GRANT ALL PRIVILEGES ON DATABASE ${DB_DATABASE} TO ${DB_USERNAME};\"" 2>/dev/null || true
