@@ -2,7 +2,10 @@ FROM serversideup/php:8.4-fpm-nginx AS base
 WORKDIR /var/www/html
 USER root
 RUN install-php-extensions exif pgsql pdo_pgsql && \
-    apk add --no-cache postgresql postgresql-contrib
+    apt-get update && \
+    apt-get install -y postgresql postgresql-contrib && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
 FROM base AS vendor
 WORKDIR /app
