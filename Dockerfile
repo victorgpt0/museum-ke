@@ -5,6 +5,7 @@ RUN install-php-extensions exif pgsql pdo_pgsql && \
     apt-get update && \
     apt-get install -y postgresql postgresql-contrib supervisor nginx && \
     apt-get clean && \
+    rm -f /etc/nginx/sites-enabled/default && \
     rm -rf /var/lib/apt/lists/*
 
 FROM base AS vendor
