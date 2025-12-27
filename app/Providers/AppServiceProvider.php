@@ -30,7 +30,7 @@ class AppServiceProvider extends ServiceProvider
         DB::prohibitDestructiveCommands($this->app->isProduction());
         Model::shouldBeStrict();
         Model::unguard();
-//        URL::forceScheme('https');
+        URL::forceScheme('https');
         Vite::usePrefetchStrategy('aggressive');
 
 //        Gate::before(function ($user, $ability) {
