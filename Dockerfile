@@ -1,9 +1,9 @@
-FROM serversideup/php:8.4-fpm-nginx AS base
+FROM serversideup/php:8.4-fpm AS base
 WORKDIR /var/www/html
 USER root
 RUN install-php-extensions exif pgsql pdo_pgsql && \
     apt-get update && \
-    apt-get install -y postgresql postgresql-contrib supervisor && \
+    apt-get install -y postgresql postgresql-contrib supervisor nginx && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
@@ -24,7 +24,7 @@ WORKDIR /var/www/html
 USER root
 
 COPY docker/php.ini /usr/local/etc/php/conf.d/99-laravel.ini
-COPY docker/nginx.conf /etc/nginx/http.d/default.conf
+COPY docker/nginx.conf /etc/nginx/conf.d/default.conf
 COPY docker/supervisord.conf /etc/supervisord/conf.d/supervisord.conf
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 
