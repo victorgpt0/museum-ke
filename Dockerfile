@@ -26,6 +26,7 @@ USER root
 COPY docker/php.ini /usr/local/etc/php/conf.d/99-laravel.ini
 COPY docker/nginx.conf /etc/nginx/conf.d/default.conf
 COPY docker/supervisord.conf /etc/supervisord/conf.d/supervisord.conf
+COPY docker/www.conf /usr/local/etc/php-fpm.d/www.conf
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 
 RUN chmod +x /usr/local/bin/entrypoint.sh
@@ -49,7 +50,7 @@ RUN /usr/lib/postgresql/*/bin/initdb -D /var/lib/postgresql/data && \
 
 USER root
 
-EXPOSE 8080/tcp
+EXPOSE 80
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 \
     CMD curl -f http://localhost/up || exit 1
