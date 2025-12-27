@@ -10,7 +10,7 @@ RUN install-php-extensions exif pgsql pdo_pgsql && \
 FROM base AS vendor
 WORKDIR /app
 COPY composer.json composer.lock ./
-RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist
+RUN composer install --no-scripts --no-autoloader --prefer-dist
 
 FROM node:22-alpine AS node_modules
 WORKDIR /app
