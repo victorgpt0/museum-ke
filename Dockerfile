@@ -3,7 +3,7 @@ WORKDIR /var/www/html
 USER root
 RUN install-php-extensions exif pgsql pdo_pgsql && \
     apt-get update && \
-    apt-get install -y postgresql postgresql-contrib && \
+    apt-get install -y postgresql postgresql-contrib supervisor && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
