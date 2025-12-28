@@ -80,8 +80,9 @@ class DashboardController extends Controller
 
         // Users stats
         if (in_array('users.view', $permissions)) {
-            $stats['totalUsers'] = User::count();
-            $stats['activeUsers'] = User::count(); // All users are considered active for now
+            $users = User::count();
+            $stats['totalUsers'] = $users;
+            $stats['activeUsers'] = $users; // All users are considered active for now
         }
 
         // Archives stats
